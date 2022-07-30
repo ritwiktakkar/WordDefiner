@@ -75,14 +75,15 @@ class _HomePageState extends State<HomePage> {
                 bottom: 20,
               ),
               child: CupertinoSearchTextField(
-                placeholder: 'Search',
+                placeholder: 'Look up a word',
                 controller: inputController,
                 onChanged: (String value) {
                   debugPrint('The text has changed to: $value');
                 },
-                onSubmitted: (String value) {
+                onSubmitted: ((String value) async {
                   debugPrint('Submitted text: $value');
-                },
+                  definition = await API.getiDefinition(wordToDefine);
+                }),
                 style: TextStyle(
                   color: CupertinoColors.white,
                 ),
@@ -117,119 +118,6 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.white,
                               fontSize: 15,
                             ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Container(
-                                width: MediaQuery.of(context).size.width * 0.3,
-                                height: 80,
-                                child: Tooltip(
-                                  message: "Shorten URL in input field",
-                                  child: Builder(
-                                    builder: (context) => TextButton(
-                                      onPressed: () async {
-                                        FocusScope.of(context).unfocus();
-                                        wordToDefine = inputController.text;
-                                        definition = await API
-                                            .getiDefinition(wordToDefine);
-                                        FocusScope.of(context).unfocus();
-                                        // if (isURL(inputController.text)) {
-                                        //   // check if device has internet connection
-                                        //   var result =
-                                        //       await Connectivity().checkConnectivity();
-                                        //   if (result == ConnectivityResult.none) {
-                                        //     // Show no internet connection error dialog
-                                        //     Dialogs.showNoInternetConnection(context);
-                                        //   } else {
-                                        //     // device has network connectivity (android passes this even if only connected to hotel WiFi)
-                                        //     wordToDefine = inputController.text;
-                                        //     definition =
-                                        //         await API.getiDefinition(wordToDefine);
-                                        //     if (definition == null ||
-                                        //         definition.idefinition == '') {
-                                        //       Dialogs.showShorteningURLError(context);
-                                        //     } else if (definition != null ||
-                                        //         definition.idefinition != '') {
-                                        //       HapticFeedback.lightImpact();
-                                        //       final snackBar = SnackBar(
-                                        //         behavior: SnackBarBehavior.floating,
-                                        //         shape: RoundedRectangleBorder(
-                                        //           borderRadius: BorderRadius.circular(
-                                        //               25), // <-- Radius
-                                        //         ),
-                                        //         backgroundColor: Colors.orange[300],
-                                        //         content: Row(
-                                        //           children: <Widget>[
-                                        //             Icon(
-                                        //               Icons.check,
-                                        //               color: Colors.black54,
-                                        //             ),
-                                        //             SizedBox(
-                                        //               width: 10,
-                                        //             ),
-                                        //             AutoSizeText(
-                                        //               'URL successfully shortened',
-                                        //               textAlign: TextAlign.center,
-                                        //               style: TextStyle(
-                                        //                   fontSize: 16,
-                                        //                   color: Colors.black54),
-                                        //               maxLines: 1,
-                                        //             ),
-                                        //           ],
-                                        //         ),
-                                        //       );
-                                        //       ScaffoldMessenger.of(context)
-                                        //           .hideCurrentSnackBar();
-                                        //       ScaffoldMessenger.of(context)
-                                        //           .showSnackBar(snackBar);
-                                        //       outputController.text =
-                                        //           definition.idefinition;
-                                        //     }
-                                        //   }
-                                        // } else {
-                                        //   Dialogs.showInvalidInput(context);
-                                        //   outputController.text = '';
-                                        // }
-                                      },
-                                      style: TextButton.styleFrom(
-                                        backgroundColor: Colors.blue[700],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(25.0),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          AutoSizeText(
-                                            "Shorten",
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          AutoSizeText(
-                                            "URL",
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                           Text(
                             "Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.",
