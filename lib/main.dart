@@ -3,7 +3,8 @@ import 'dart:ui';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:iDefine/definition_model.dart' as definition_model;
+import 'package:http/http.dart';
+import 'package:iDefine/definition.dart';
 import 'package:iDefine/api_requests.dart' as API;
 import 'package:flutter/services.dart';
 import 'package:string_validator/string_validator.dart';
@@ -37,14 +38,14 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  Future<definition_model.iDefinition> iDefinition;
+  late Future<Definition> definition;
 
   // Create a text controller and use it to retrieve the current value of the TextField.
   final inputController = TextEditingController();
@@ -53,7 +54,7 @@ class _HomePageState extends State<HomePage> {
   // final ScrollController _scrollController =
   //     ScrollController(initialScrollOffset: 50.0);
   String wordToDefine = "";
-  definition_model.iDefinition definition;
+  // late definition_model.Definition definition;
 
   TextStyle title = TextStyle(
     color: CupertinoColors.white,
@@ -116,7 +117,8 @@ class _HomePageState extends State<HomePage> {
                       },
                       onSubmitted: ((String wordToDefine) async {
                         debugPrint('Submitted text: $wordToDefine');
-                        definition = await API.getiDefinition(wordToDefine);
+                        final definition =
+                            (await API.getiDefinition(wordToDefine));
                         outputWordController.text = wordToDefine;
                         debugPrint('outputWordController.text =' +
                             outputWordController.text);
