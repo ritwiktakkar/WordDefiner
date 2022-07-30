@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -46,12 +48,36 @@ class _HomePageState extends State<HomePage> {
 
   // Create a text controller and use it to retrieve the current value of the TextField.
   final inputController = TextEditingController();
+  final outputWordController = TextEditingController();
 
   // final ScrollController _scrollController =
   //     ScrollController(initialScrollOffset: 50.0);
-
-  String wordToDefine;
+  String wordToDefine = "";
   definition_model.iDefinition definition;
+
+  TextStyle title = TextStyle(
+    color: CupertinoColors.white,
+    fontWeight: FontWeight.bold,
+    fontSize: 25,
+  );
+
+  TextStyle word = TextStyle(
+    color: CupertinoColors.white,
+    fontWeight: FontWeight.bold,
+    fontSize: 35,
+  );
+
+  TextStyle subtitle = TextStyle(
+    color: CupertinoColors.white,
+    fontWeight: FontWeight.bold,
+    fontSize: 20,
+  );
+
+  TextStyle corporate = TextStyle(
+    color: CupertinoColors.systemGrey,
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+  );
 
   @override
   void dispose() {
@@ -62,6 +88,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -69,70 +98,181 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.black, // make background color black
         body: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 50,
-                bottom: 20,
-              ),
-              child: CupertinoSearchTextField(
-                placeholder: 'Look up a word',
-                controller: inputController,
-                onChanged: (String value) {
-                  debugPrint('The text has changed to: $value');
-                },
-                onSubmitted: ((String value) async {
-                  debugPrint('Submitted text: $value');
-                  definition = await API.getiDefinition(wordToDefine);
-                }),
-                style: TextStyle(
-                  color: CupertinoColors.white,
-                ),
-                itemColor: CupertinoColors.inactiveGray,
-              ),
-            ),
-            Expanded(
-              child: RawScrollbar(
-                thumbColor: CupertinoColors.systemGrey,
-                thickness: 4,
-                radius: Radius.circular(5),
-                // thumbVisibility: true,
-                child: SingleChildScrollView(
-                  // controller: _scrollController,
-                  // contains ALL widgets (scrollable)
-                  child: Column(
-                    children: [
-                      Column(
-                        // first half widgets columns
-                        // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Text(
-                            "Input URL",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 30,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            "Enter a URL to shorten",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                            ),
-                          ),
-                          Text(
-                            "Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.Reloaded 1 of 681 libraries in 129ms.\nReloaded 1 of 681 libraries in 134ms.",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ],
+            Container(
+              height: screenHeight * 0.95,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      top: screenHeight * 0.05,
+                      bottom: 20,
+                    ),
+                    child: CupertinoSearchTextField(
+                      placeholder: 'Look up a word',
+                      controller: inputController,
+                      onChanged: (String value) {
+                        debugPrint('The text has changed to: $value');
+                        // outputWordController.text = value;
+                      },
+                      onSubmitted: ((String wordToDefine) async {
+                        debugPrint('Submitted text: $wordToDefine');
+                        definition = await API.getiDefinition(wordToDefine);
+                        outputWordController.text = wordToDefine;
+                        debugPrint('outputWordController.text =' +
+                            outputWordController.text);
+                      }),
+                      style: TextStyle(
+                        color: CupertinoColors.white,
                       ),
-                    ],
+                      itemColor: CupertinoColors.inactiveGray,
+                    ),
                   ),
-                ),
+                  Expanded(
+                    child: RawScrollbar(
+                      thumbColor: CupertinoColors.systemGrey,
+                      thickness: 4,
+                      radius: Radius.circular(5),
+                      // thumbVisibility: true,
+                      child: SingleChildScrollView(
+                        // controller: _scrollController,
+                        // contains ALL widgets (scrollable)
+                        child: Column(
+                          children: [
+                            Column(
+                              // first half widgets columns
+                              // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Column(
+                                  children: [
+                                    Row(
+                                      // mainAxisAlignment:
+                                      // MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: screenWidth * .3,
+                                          child: AutoSizeText(
+                                            "Word",
+                                            style: title,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                        Container(
+                                          width: screenWidth * .7,
+                                          child: AutoSizeText(
+                                            outputWordController.text,
+                                            style: word,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Divider(
+                                      // divider between first and second half of widgets
+                                      color: Colors.grey[800],
+                                      thickness: 2,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Container(
+                                          width: screenWidth * .3,
+                                          child: AutoSizeText(
+                                            "Phonetics",
+                                            style: title,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(
+                                            left: screenWidth * 0.03,
+                                          ),
+                                          width: screenWidth * .7,
+                                        ),
+                                      ],
+                                    ),
+                                    Divider(
+                                      // divider between first and second half of widgets
+                                      color: Colors.grey[800],
+                                      thickness: 2,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Container(
+                                          width: screenWidth * .3,
+                                          child: AutoSizeText(
+                                            "Meanings",
+                                            style: title,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(
+                                            left: screenWidth * 0.03,
+                                          ),
+                                          width: screenWidth * .7,
+                                        ),
+                                      ],
+                                    ),
+                                    Divider(
+                                      // divider between first and second half of widgets
+                                      color: Colors.grey[800],
+                                      thickness: 2,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Container(
+                                          width: screenWidth * .3,
+                                          child: Text(
+                                            "License",
+                                            style: corporate,
+                                          ),
+                                        ),
+                                        Container(
+                                          width: screenWidth * .7,
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 15,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Container(
+                                          width: screenWidth * .3,
+                                          child: Text(
+                                            "Source URLs",
+                                            style: corporate,
+                                          ),
+                                        ),
+                                        Container(
+                                          width: screenWidth * .7,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+            Text(
+              "Definitions from Dictionary API: dictionaryapi.dev/",
+              style: corporate,
+            )
           ],
         ),
       ),
