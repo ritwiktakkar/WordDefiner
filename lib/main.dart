@@ -5,11 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:iDefine/definition.dart';
+import 'dialogs.dart';
 import 'package:iDefine/api_requests.dart' as API;
 import 'package:flutter/services.dart';
 import 'package:string_validator/string_validator.dart';
-import 'package:iDefine/dialogs.dart';
-import 'package:share/share.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 void main() {
@@ -116,12 +115,16 @@ class _HomePageState extends State<HomePage> {
                         // outputWordController.text = value;
                       },
                       onSubmitted: ((String wordToDefine) async {
+                        outputWordController.text = wordToDefine;
                         debugPrint('Submitted text: $wordToDefine');
                         final definition =
-                            (await API.getiDefinition(wordToDefine));
-                        outputWordController.text = wordToDefine;
-                        debugPrint('outputWordController.text =' +
-                            outputWordController.text);
+                            (await API.getDefinition(wordToDefine));
+                        debugPrint(definition.word);
+                        if (definition.word == '-') {
+                          Dialogs.showNoDefinitions(context);
+                        } else if (definition.word == '') {
+                          Dialogs.showNetworkIssues(context);
+                        }
                       }),
                       style: TextStyle(
                         color: CupertinoColors.white,
