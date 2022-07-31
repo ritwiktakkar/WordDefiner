@@ -75,6 +75,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     // Clean up the controller when the widget is disposed.
     inputController.dispose();
+    outputWordController.dispose();
     super.dispose();
   }
 
@@ -106,10 +107,13 @@ class _HomePageState extends State<HomePage> {
                         outputWordController.text = wordToDefine;
                         final definition =
                             (await API.getDefinition(wordToDefine));
-                        // debugPrint(definition.word);
+                        debugPrint(
+                            '${definition}, ${definition.toString()}, ${definition.word}, ${definition.phonetic}');
                         if (definition.word == '-') {
+                          debugPrint('404 word not found');
                           Dialogs.showNoDefinitions(context);
                         } else if (definition.word == '') {
+                          debugPrint('!caught exception!');
                           Dialogs.showNetworkIssues(context);
                         }
                       }),
@@ -273,6 +277,50 @@ class _HomePageState extends State<HomePage> {
                                           width: screenWidth * .7,
                                         ),
                                       ],
+                                    ),
+                                    Visibility(
+                                      visible: outputWordController.text != '',
+                                      child: Container(
+                                        padding: EdgeInsets.only(
+                                          top: 8,
+                                          right: screenWidth * 0.8,
+                                        ),
+                                        // width: screenWidth * 0.2,
+                                        // height: screenHeight * 0.08,
+                                        child: Tooltip(
+                                          message: "Clear all output fields",
+                                          child: TextButton(
+                                            onPressed: () {
+                                              FocusScope.of(context).unfocus();
+                                              HapticFeedback.mediumImpact();
+                                              outputWordController.text = '';
+                                            },
+                                            style: TextButton.styleFrom(
+                                              backgroundColor: Colors.red[200],
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(25.0),
+                                              ),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: <Widget>[
+                                                AutoSizeText(
+                                                  "Clear",
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
