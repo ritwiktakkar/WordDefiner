@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:iDefine/models.dart';
+import 'package:iDefine/model/definition_model.dart';
 import 'dialogs.dart';
 import 'package:iDefine/api_requests.dart' as API;
 import 'package:flutter/services.dart';
