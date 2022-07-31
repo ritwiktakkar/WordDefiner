@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:iDefine/definition.dart';
+import 'package:iDefine/models.dart';
 import 'dart:convert';
 
 var postURL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
 Future<Definition> getDefinition(String wordToDefine) async {
   try {
-    final response = await http.get(
+    final jsonResponse = await http.get(
       Uri.parse(postURL + wordToDefine),
     );
-    debugPrint('response.body: ' + response.body);
-    if (response.statusCode == 200) {
+    // debugPrint('response.body: ' + response.body);
+    if (jsonResponse.statusCode == 200) {
       // If the server did return a 200 OK response,
       // then parse the JSON.
       debugPrint('200 OK response');
-      Definition definition = Definition.fromJson(
-        jsonDecode(response.body),
+      Definition definition = new Definition.fromJson(
+        jsonDecode(jsonResponse.body),
       );
+      debugPrint(definition.word);
       //  debugPrint('definition.word: ' + definition.word);
       return definition;
       // debugPrint(response.body.toString());
       // return response.body.toString();
       // return Definition.fromJson(json.decode(response.body));
-    } else if (response.statusCode == 404) {
+    } else if (jsonResponse.statusCode == 404) {
       return Definition(
         word: '-',
+        phonetic: '',
         phonetics: [],
         meanings: [],
         license: License(name: '', url: ''),
@@ -37,6 +39,7 @@ Future<Definition> getDefinition(String wordToDefine) async {
   }
   return Definition(
       word: '',
+      phonetic: '',
       phonetics: [],
       meanings: [],
       license: License(name: '', url: ''),

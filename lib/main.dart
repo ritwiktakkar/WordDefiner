@@ -1,14 +1,9 @@
-import 'dart:ui';
-
-import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'package:iDefine/definition.dart';
+import 'package:iDefine/models.dart';
 import 'dialogs.dart';
 import 'package:iDefine/api_requests.dart' as API;
 import 'package:flutter/services.dart';
-import 'package:string_validator/string_validator.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 void main() {
@@ -44,16 +39,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late Future<Definition> definition;
+  // Future<definition.Definition> definition;
 
   // Create a text controller and use it to retrieve the current value of the TextField.
   final inputController = TextEditingController();
   final outputWordController = TextEditingController();
 
-  // final ScrollController _scrollController =
-  //     ScrollController(initialScrollOffset: 50.0);
   String wordToDefine = "";
-  // late definition_model.Definition definition;
 
   TextStyle title = TextStyle(
     color: CupertinoColors.white,
@@ -110,16 +102,11 @@ class _HomePageState extends State<HomePage> {
                     child: CupertinoSearchTextField(
                       placeholder: 'Look up a word',
                       controller: inputController,
-                      onChanged: (String value) {
-                        debugPrint('The text has changed to: $value');
-                        // outputWordController.text = value;
-                      },
                       onSubmitted: ((String wordToDefine) async {
                         outputWordController.text = wordToDefine;
-                        debugPrint('Submitted text: $wordToDefine');
                         final definition =
                             (await API.getDefinition(wordToDefine));
-                        debugPrint(definition.word);
+                        // debugPrint(definition.word);
                         if (definition.word == '-') {
                           Dialogs.showNoDefinitions(context);
                         } else if (definition.word == '') {
@@ -169,6 +156,31 @@ class _HomePageState extends State<HomePage> {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
+                                        ),
+                                      ],
+                                    ),
+                                    Divider(
+                                      // divider between first and second half of widgets
+                                      color: Colors.grey[800],
+                                      thickness: 2,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Container(
+                                          width: screenWidth * .3,
+                                          child: AutoSizeText(
+                                            "Phonetic",
+                                            style: title,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(
+                                            left: screenWidth * 0.03,
+                                          ),
+                                          width: screenWidth * .7,
                                         ),
                                       ],
                                     ),
