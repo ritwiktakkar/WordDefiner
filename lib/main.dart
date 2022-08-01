@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:iDefine/model/definition_model.dart';
 import 'dialogs.dart';
 import 'package:iDefine/api_requests.dart' as API;
 import 'package:flutter/services.dart';
@@ -105,17 +104,19 @@ class _HomePageState extends State<HomePage> {
                       controller: inputController,
                       onSubmitted: ((String wordToDefine) async {
                         outputWordController.text = wordToDefine;
-                        final definition =
+                        final definitionsList =
                             (await API.getDefinition(wordToDefine));
                         debugPrint(
-                            '${definition}, ${definition.toString()}, ${definition.word}, ${definition.phonetic}');
-                        if (definition.word == '-') {
-                          debugPrint('404 word not found');
-                          Dialogs.showNoDefinitions(context);
-                        } else if (definition.word == '') {
-                          debugPrint('!caught exception!');
-                          Dialogs.showNetworkIssues(context);
-                        }
+                            '${definitionsList.toString()}\n${definitionsList.length}');
+                        // debugPrint(
+                        //     '${definition}, ${definition.toString()}, ${definition.word}, ${definition.phonetic}');
+                        // if (definition.word == '-') {
+                        //   debugPrint('404 word not found');
+                        //   Dialogs.showNoDefinitions(context);
+                        // } else if (definition.word == '') {
+                        //   debugPrint('!caught exception!');
+                        //   Dialogs.showNetworkIssues(context);
+                        // }
                       }),
                       style: TextStyle(
                         color: CupertinoColors.white,
@@ -157,6 +158,7 @@ class _HomePageState extends State<HomePage> {
                                           child: AutoSizeText(
                                             outputWordController.text,
                                             style: word,
+                                            textAlign: TextAlign.center,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -278,49 +280,61 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ],
                                     ),
-                                    Visibility(
-                                      visible: outputWordController.text != '',
-                                      child: Container(
-                                        padding: EdgeInsets.only(
-                                          top: 8,
-                                          right: screenWidth * 0.8,
-                                        ),
-                                        // width: screenWidth * 0.2,
-                                        // height: screenHeight * 0.08,
-                                        child: Tooltip(
-                                          message: "Clear all output fields",
-                                          child: TextButton(
-                                            onPressed: () {
-                                              FocusScope.of(context).unfocus();
-                                              HapticFeedback.mediumImpact();
-                                              outputWordController.text = '';
-                                            },
-                                            style: TextButton.styleFrom(
-                                              backgroundColor: Colors.red[200],
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(25.0),
-                                              ),
+                                    Row(
+                                      children: [
+                                        Visibility(
+                                          visible:
+                                              outputWordController.text != '',
+                                          child: Container(
+                                            padding: EdgeInsets.only(
+                                              top: 8,
+                                              // right: screenWidth * 0.8,
                                             ),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: <Widget>[
-                                                AutoSizeText(
-                                                  "Clear",
-                                                  textAlign: TextAlign.center,
-                                                  maxLines: 1,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.w600,
+                                            // width: screenWidth * 0.2,
+                                            // height: screenHeight * 0.08,
+                                            child: Tooltip(
+                                              message:
+                                                  "Clear all output fields",
+                                              child: TextButton(
+                                                onPressed: () {
+                                                  FocusScope.of(context)
+                                                      .unfocus();
+                                                  HapticFeedback.mediumImpact();
+                                                  outputWordController.text =
+                                                      '';
+                                                },
+                                                style: TextButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.red[200],
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            25.0),
                                                   ),
                                                 ),
-                                              ],
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    AutoSizeText(
+                                                      "Clear",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      maxLines: 1,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ),
                                   ],
                                 ),

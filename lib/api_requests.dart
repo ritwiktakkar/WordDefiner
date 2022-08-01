@@ -1,73 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+// import 'package:iDefine/model/definition_model_old.dart';
 import 'package:iDefine/model/definition_model.dart';
 import 'dart:convert';
 
+import 'package:iDefine/model/definition_model_old.dart';
+
 var postURL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
-List<Phonetic> nullPhoneticList = <Phonetic>[];
-List<Meaning> nullMeaningsList = <Meaning>[];
-
-Definition definitionIfNotFound = Definition(
-  word: '-',
-  phonetic: '',
-  phonetics: PhoneticsList(phonetics: nullPhoneticList),
-  meanings: MeaningsList(meanings: nullMeaningsList),
-  license: License(name: '', url: ''),
-  sourceUrls: [],
-);
-
-Future<Definition> getDefinition(String wordToDefine) async {
+Future<List> getDefinition(String wordToDefine) async {
   try {
-    final jsonResponseInitial = await http.get(
+    final response = await http.get(
       Uri.parse(postURL + wordToDefine),
     );
-    debugPrint(
-        'jsonResponseInitial is: ${jsonResponseInitial.runtimeType}; ${jsonResponseInitial}\n');
-    if (jsonResponseInitial.statusCode == 200) {
+    // debugPrint(
+    // 'response type is: ${response.runtimeType}; body: ${response.body}\n');
+    if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
       // then parse the JSON.
-      debugPrint('200 OK response');
-      debugPrint(
-          'jsonResponseInitial.body.runtimeType: ${jsonResponseInitial.body.runtimeType}; ${jsonResponseInitial.body}\n');
-      String tmpStringResponse = jsonResponseInitial.body;
-      tmpStringResponse =
-          tmpStringResponse.substring(1, tmpStringResponse.length - 1);
-      final jsonResponseFormatted = json.decode(tmpStringResponse);
-      debugPrint(
-          'jsonResponseFormatted is: ${jsonResponseFormatted.runtimeType}; ${jsonResponseFormatted}\n');
+      // debugPrint('200 OK response');
+      // debugPrint(
+      //     'response.body.runtimeType: ${response.body.runtimeType}; ${response.body}\n');
+      // String tmpStringResponse = response.body;
+      // tmpStringResponse =
+      //     tmpStringResponse.substring(1, tmpStringResponse.length - 1);
+      // final response = json.decode(tmpStringResponse);
+      // final response = json.decode(tmpStringResponse);
+      // final parsedJson = json.decode(response.body);
+      // debugPrint(
+      //     'parsedJson type is: ${parsedJson.runtimeType}; parsedJson is: ${parsedJson}\n');
+      // // debugPrint('${parsedJson['word']}, ${parsedJson['phonetic']}');
       // Map<String, dynamic> data = new Map<String, dynamic>.from(
-      //   jsonResponseFormatted.body,
+      //   parsedJson.body,
       // );
       // debugPrint('data is: ${data.runtimeType}; ${data}\n');
-      Definition definition = new Definition.fromJson(
-        jsonResponseFormatted,
-      );
-      // Map<String, dynamic> data = new Map<String, dynamic>.from(
-      //     json.decode(jsonResponseFormatted.body));
-      // debugPrint('data is: ${data.runtimeType}; ${data}\n');0
-      return definition;
+      // DefinitionList definitions = DefinitionList.fromJson(
+      //   parsedJson,
+      // );
+      // debugPrint('definitions.word: ${definitions.word}');
+      // // Map<String, dynamic> data = new Map<String, dynamic>.from(
+      // //     json.decode(response.body));
+      // // debugPrint('data is: ${data.runtimeType}; ${data}\n');0
+      // return definitions;
       // debugPrint(response.body.toString());
       // return response.body.toString();
       // return Definition.fromJson(json.decode(response.body));
-    } else if (jsonResponseInitial.statusCode == 404) {
-      return Definition(
-        word: '-',
-        phonetic: '',
-        phonetics: PhoneticsList(phonetics: nullPhoneticList),
-        meanings: MeaningsList(meanings: nullMeaningsList),
-        license: License(name: '', url: ''),
-        sourceUrls: [],
-      );
+      // for (int i in response.body) {
+//
+      // }
+      // return DefinitionList.fromJson(json.decode(response.body)[0]);
+      var i;
+      return [
+        for (i in json.decode(response.body))
+          Definition.fromJson(json.decode(response.body))
+      ];
+    } else if (response.statusCode == 404) {
+      return [null];
     }
   } catch (e) {
     debugPrint('exception: $e');
   }
-  return Definition(
-      word: '',
-      phonetic: '',
-      phonetics: PhoneticsList(phonetics: nullPhoneticList),
-      meanings: MeaningsList(meanings: nullMeaningsList),
-      license: License(name: '', url: ''),
-      sourceUrls: []);
+  return [null];
 }
