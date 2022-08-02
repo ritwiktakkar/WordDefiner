@@ -134,6 +134,9 @@ class _HomePageState extends State<HomePage> {
                           licenseNameController.clear();
                           licenseUrlsController.clear();
                           sourceUrlsController.clear();
+                          licenseNames.clear();
+                          licenseUrls.clear();
+                          sourceUrls.clear();
                           Dialogs.showNoDefinitions(context);
                         } else if (definitionsList.isNull == true) {
                           debugPrint('!caught exception!');
@@ -144,6 +147,9 @@ class _HomePageState extends State<HomePage> {
                           licenseNameController.clear();
                           licenseUrlsController.clear();
                           sourceUrlsController.clear();
+                          licenseNames.clear();
+                          licenseUrls.clear();
+                          sourceUrls.clear();
                           Dialogs.showNetworkIssues(context);
                         } else {
                           // traverse through list of definitions
@@ -317,7 +323,7 @@ class _HomePageState extends State<HomePage> {
                                                         .speaker_2_fill,
                                                     color: CupertinoColors
                                                         .activeBlue,
-                                                    size: screenHeight * 0.035,
+                                                    // size: screenHeight * 0.05,
                                                   ),
                                                   onPressed: () {
                                                     audioPlayer.play(UrlSource(
@@ -504,6 +510,9 @@ class _HomePageState extends State<HomePage> {
                                                   licenseNameController.clear();
                                                   licenseUrlsController.clear();
                                                   sourceUrlsController.clear();
+                                                  licenseNames.clear();
+                                                  licenseUrls.clear();
+                                                  sourceUrls.clear();
                                                 },
                                                 style: TextButton.styleFrom(
                                                   backgroundColor:
