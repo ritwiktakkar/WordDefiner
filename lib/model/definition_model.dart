@@ -1,4 +1,20 @@
-class DefinitionList {
+class DefinitionElementList {
+  final List<DefinitionElement>? definitionElements;
+
+  DefinitionElementList({
+    this.definitionElements,
+  });
+
+  factory DefinitionElementList.fromJson(List<dynamic> parsedJson) {
+    List<DefinitionElement> definitionElements = <DefinitionElement>[];
+    definitionElements =
+        parsedJson.map((i) => DefinitionElement.fromJson(i)).toList();
+
+    return new DefinitionElementList(definitionElements: definitionElements);
+  }
+}
+
+class DefinitionElement {
   String? word;
   String? phonetic;
   List<Phonetics>? phonetics;
@@ -6,7 +22,7 @@ class DefinitionList {
   License? license;
   List<String>? sourceUrls;
 
-  DefinitionList(param0,
+  DefinitionElement(
       {this.word,
       this.phonetic,
       this.phonetics,
@@ -14,7 +30,7 @@ class DefinitionList {
       this.license,
       this.sourceUrls});
 
-  DefinitionList.fromJson(Map<String, dynamic> json) {
+  DefinitionElement.fromJson(Map<String, dynamic> json) {
     word = json['word'];
     phonetic = json['phonetic'];
     if (json['phonetics'] != null) {

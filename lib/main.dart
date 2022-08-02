@@ -106,14 +106,12 @@ class _HomePageState extends State<HomePage> {
                         outputWordController.text = wordToDefine;
                         final definitionsList =
                             (await API.getDefinition(wordToDefine));
-                        debugPrint(
-                            '${definitionsList.toString()}\n${definitionsList.length}');
                         // debugPrint(
                         //     '${definition}, ${definition.toString()}, ${definition.word}, ${definition.phonetic}');
-                        // if (definition.word == '-') {
+                        // if (definitionsList.word == '-') {
                         //   debugPrint('404 word not found');
                         //   Dialogs.showNoDefinitions(context);
-                        // } else if (definition.word == '') {
+                        // } else if (definitionsList.word == '') {
                         //   debugPrint('!caught exception!');
                         //   Dialogs.showNetworkIssues(context);
                         // }
