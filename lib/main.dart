@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
-import 'package:iDefine/api_requests.dart' as API;
+import 'package:iDefine/services/get_definition.dart' as API;
 import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
