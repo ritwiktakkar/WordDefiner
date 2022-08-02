@@ -4,6 +4,7 @@ import 'dialogs.dart';
 import 'package:iDefine/services/get_definition.dart' as API;
 import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(MyApp());
@@ -45,7 +46,10 @@ class _HomePageState extends State<HomePage> {
   final outputWordController = TextEditingController();
   final outputPhoneticController = TextEditingController();
 
+  final audioPlayer = AudioPlayer();
+
   String wordToDefine = "";
+  String pronounciationAudioSource = '';
 
   TextStyle sectionTitle = TextStyle(
     color: CupertinoColors.white,
@@ -113,23 +117,25 @@ class _HomePageState extends State<HomePage> {
                         outputWordController.text = wordToDefine;
                         final definitionsList =
                             (await API.getDefinition(wordToDefine));
-                        outputPhoneticController.text = definitionsList
-                            .definitionElements?[0].phonetic as String;
-                        // if (definitionsList.definitionElements[0].phonetic! != null) {
-                        //   definitionsList.definitionElements[0].phonetic = null;
-                        // outputPhoneticController.text = definitionsList.definitionElements[0].phonetic!;
-                        // }
-                        // debugPrint(
-                        //     definitionsList.definitionElements?[0].phonetic);
-                        // debugPrint(
-                        //     '${definition}, ${definition.toString()}, ${definition.word}, ${definition.phonetic}');
-
                         if (definitionsList.isNotFound == true) {
                           debugPrint('404 word not found');
+                          outputPhoneticController.clear();
+                          pronounciationAudioSource = '';
+                          audioPlayer.release();
                           Dialogs.showNoDefinitions(context);
                         } else if (definitionsList.isNull == true) {
                           debugPrint('!caught exception!');
+                          outputPhoneticController.clear();
+                          audioPlayer.release();
+                          pronounciationAudioSource = '';
                           Dialogs.showNetworkIssues(context);
+                        } else {
+                          outputPhoneticController.text = definitionsList
+                              .definitionElements?[0].phonetic as String;
+                          pronounciationAudioSource = definitionsList
+                              .definitionElements?[0]
+                              .phonetics?[1]
+                              .audio as String;
                         }
                       }),
                       style: TextStyle(
@@ -185,8 +191,8 @@ class _HomePageState extends State<HomePage> {
                                       thickness: 2,
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                      // mainAxisAlignment:
+                                      //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .3,
@@ -217,8 +223,8 @@ class _HomePageState extends State<HomePage> {
                                       thickness: 2,
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                      // mainAxisAlignment:
+                                      // MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .6,
@@ -228,17 +234,27 @@ class _HomePageState extends State<HomePage> {
                                             maxLines: 1,
                                           ),
                                         ),
-                                        Container(
-                                          padding: EdgeInsets.only(
-                                            left: screenWidth * 0.03,
-                                          ),
-                                          width: screenWidth * .4,
-                                          child: IconButton(
-                                            icon: Icon(
-                                              CupertinoIcons.speaker_2_fill,
-                                              color: CupertinoColors.activeBlue,
+                                        Visibility(
+                                          visible:
+                                              pronounciationAudioSource != '',
+                                          child: Container(
+                                            padding: EdgeInsets.only(
+                                              left: screenWidth * 0.03,
                                             ),
-                                            onPressed: () {},
+                                            width: screenWidth * .4,
+                                            child: IconButton(
+                                              icon: Icon(
+                                                CupertinoIcons.speaker_2_fill,
+                                                color:
+                                                    CupertinoColors.activeBlue,
+                                              ),
+                                              onPressed: () {
+                                                audioPlayer.play(UrlSource(
+                                                    pronounciationAudioSource));
+                                                // audioPlayer.resume();
+                                                // audioPlayer.play;
+                                              },
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -249,8 +265,8 @@ class _HomePageState extends State<HomePage> {
                                       thickness: 2,
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                      // mainAxisAlignment:
+                                      //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .3,
@@ -274,8 +290,8 @@ class _HomePageState extends State<HomePage> {
                                       thickness: 2,
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                      // mainAxisAlignment:
+                                      //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .3,
@@ -293,8 +309,8 @@ class _HomePageState extends State<HomePage> {
                                       height: 15,
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                      // mainAxisAlignment:
+                                      //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .3,
@@ -331,6 +347,9 @@ class _HomePageState extends State<HomePage> {
                                                   outputWordController.clear();
                                                   outputPhoneticController
                                                       .clear();
+                                                  pronounciationAudioSource =
+                                                      '';
+                                                  audioPlayer.release();
                                                 },
                                                 style: TextButton.styleFrom(
                                                   backgroundColor:
