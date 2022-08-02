@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> {
     outputPhoneticController.clear();
     pronounciationSourceController.clear();
     pronounciationAudioSource = '';
+    pronounciationSourceUrl = '';
     audioPlayer.release();
     licenseNameController.clear();
     licenseUrlsController.clear();
@@ -160,12 +161,14 @@ class _HomePageState extends State<HomePage> {
                                     element.phonetic as String)
                                 : (outputPhoneticController.text = ''));
                             // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                            // 2.1 - for audio
                             element.phonetics?.forEach((elementPhonetic) {
                               (((elementPhonetic.audio != '') &&
                                       (elementPhonetic.audio != null))
                                   ? (pronounciationAudioSource =
                                       elementPhonetic.audio as String)
                                   : (pronounciationAudioSource = ''));
+                              // 2.2 - for audio source
                               (((elementPhonetic.sourceUrl != '') &&
                                       (elementPhonetic.sourceUrl != null))
                                   ? (pronounciationSourceUrl =
@@ -174,8 +177,8 @@ class _HomePageState extends State<HomePage> {
                             });
                             // 3 - for meanings (look through each field in meanings)
                             element.meanings?.forEach((elementMeaning) {
-                              debugPrint(
-                                  '${elementMeaning.partOfSpeech as String}\n');
+                              // debugPrint(
+                              //     '${elementMeaning.partOfSpeech as String}\n');
                             });
                             // 4 - for license
                             // 4.1 -  check if license name in licenseNames already
@@ -410,12 +413,10 @@ class _HomePageState extends State<HomePage> {
                                                         "Name: ",
                                                         style: corporate,
                                                       ),
-                                                      Flexible(
-                                                        child: Text(
-                                                          licenseNameController
-                                                              .text,
-                                                          style: corporate,
-                                                        ),
+                                                      Text(
+                                                        licenseNameController
+                                                            .text,
+                                                        style: corporate,
                                                       ),
                                                     ],
                                                   ),
@@ -430,12 +431,10 @@ class _HomePageState extends State<HomePage> {
                                                         "URLs: ",
                                                         style: corporate,
                                                       ),
-                                                      Flexible(
-                                                        child: Text(
-                                                          licenseUrlsController
-                                                              .text,
-                                                          style: corporate,
-                                                        ),
+                                                      Text(
+                                                        licenseUrlsController
+                                                            .text,
+                                                        style: corporate,
                                                       ),
                                                     ],
                                                   ),
@@ -465,11 +464,9 @@ class _HomePageState extends State<HomePage> {
                                           child: Padding(
                                             padding: const EdgeInsets.only(
                                                 left: 8.0),
-                                            child: Flexible(
-                                              child: Text(
-                                                sourceUrlsController.text,
-                                                style: corporate,
-                                              ),
+                                            child: Text(
+                                              sourceUrlsController.text,
+                                              style: corporate,
                                             ),
                                           ),
                                         ),
