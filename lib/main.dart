@@ -133,16 +133,17 @@ class _HomePageState extends State<HomePage> {
                       placeholder: 'Look up a word',
                       controller: inputController,
                       onSubmitted: ((String wordToDefine) async {
+                        clearAllOutput();
                         outputWordController.text = wordToDefine.toLowerCase();
                         final definitionsList =
                             (await API.getDefinition(wordToDefine));
                         if (definitionsList.isNotFound == true) {
                           debugPrint('404 word not found');
-                          clearAllOutput();
+                          // clearAllOutput();
                           Dialogs.showNoDefinitions(context);
                         } else if (definitionsList.isNull == true) {
                           debugPrint('!caught exception!');
-                          clearAllOutput();
+                          // clearAllOutput();
                           Dialogs.showNetworkIssues(context);
                         } else {
                           // traverse through list of definitions
