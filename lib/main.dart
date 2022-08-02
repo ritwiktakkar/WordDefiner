@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:iDefine/model/definition_model.dart';
 import 'dialogs.dart';
 import 'package:iDefine/services/get_definition.dart' as API;
 import 'package:flutter/services.dart';
@@ -44,10 +45,20 @@ class _HomePageState extends State<HomePage> {
   final outputWordController = TextEditingController();
   final outputPhoneticController = TextEditingController();
   final pronounciationSourceController = TextEditingController();
+  final meaningPartOfSpeechController = TextEditingController();
+  final meaningDefinitionController = TextEditingController();
+  final meaningSynonymsController = TextEditingController();
+  final meaningAntonymsController = TextEditingController();
+  final meaningExampleController = TextEditingController();
   final licenseNameController = TextEditingController();
   final licenseUrlsController = TextEditingController();
   final sourceUrlsController = TextEditingController();
 
+  List<String> partofSpeechList = <String>[];
+  List<String> definitionList = <String>[];
+  List<String> synonymList = <String>[];
+  List<String> antonymList = <String>[];
+  List<String> exampleList = <String>[];
   List<String> licenseNames = <String>[];
   List<String> licenseUrls = <String>[];
   List<String> sourceUrls = <String>[];
@@ -69,9 +80,19 @@ class _HomePageState extends State<HomePage> {
     pronounciationAudioSource = '';
     pronounciationSourceUrl = '';
     audioPlayer.release();
+    meaningPartOfSpeechController.clear();
+    meaningDefinitionController.clear();
+    meaningSynonymsController.clear();
+    meaningAntonymsController.clear();
+    meaningExampleController.clear();
     licenseNameController.clear();
     licenseUrlsController.clear();
     sourceUrlsController.clear();
+    partofSpeechList.clear();
+    definitionList.clear();
+    synonymList.clear();
+    antonymList.clear();
+    exampleList.clear();
     licenseNames.clear();
     licenseUrls.clear();
     sourceUrls.clear();
@@ -89,9 +110,21 @@ class _HomePageState extends State<HomePage> {
     fontSize: 35,
   );
 
+  TextStyle body = TextStyle(
+    color: CupertinoColors.white,
+    fontWeight: FontWeight.w300,
+    fontSize: 17,
+  );
+
+  TextStyle synonymsAntonyms = TextStyle(
+    color: CupertinoColors.extraLightBackgroundGray,
+    fontWeight: FontWeight.w300,
+    fontSize: 17,
+  );
+
   TextStyle subsectionTitle = TextStyle(
     color: CupertinoColors.white,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w500,
     fontSize: 20,
   );
 
@@ -102,9 +135,28 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
+    // release memory allocated to existing variables of state
     inputController.dispose();
     outputWordController.dispose();
+    outputPhoneticController.dispose();
+    pronounciationSourceController.dispose();
+    audioPlayer.release();
+    meaningPartOfSpeechController.dispose();
+    meaningDefinitionController.dispose();
+    meaningSynonymsController.dispose();
+    meaningAntonymsController.dispose();
+    meaningExampleController.dispose();
+    licenseNameController.dispose();
+    licenseUrlsController.dispose();
+    sourceUrlsController.dispose();
+    partofSpeechList.clear();
+    definitionList.clear();
+    synonymList.clear();
+    antonymList.clear();
+    exampleList.clear();
+    licenseNames.clear();
+    licenseUrls.clear();
+    sourceUrls.clear();
     super.dispose();
   }
 
