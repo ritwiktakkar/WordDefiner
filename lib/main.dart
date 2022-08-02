@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
   final licenseUrlsController = TextEditingController();
   final sourceUrlsController = TextEditingController();
 
-  List<String> partofSpeechList = <String>[];
+  List<String> partOfSpeechList = <String>[];
   List<String> definitionList = <String>[];
   List<String> synonymList = <String>[];
   List<String> antonymList = <String>[];
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
     licenseNameController.clear();
     licenseUrlsController.clear();
     sourceUrlsController.clear();
-    partofSpeechList.clear();
+    partOfSpeechList.clear();
     definitionList.clear();
     synonymList.clear();
     antonymList.clear();
@@ -149,7 +149,7 @@ class _HomePageState extends State<HomePage> {
     licenseNameController.dispose();
     licenseUrlsController.dispose();
     sourceUrlsController.dispose();
-    partofSpeechList.clear();
+    partOfSpeechList.clear();
     definitionList.clear();
     synonymList.clear();
     antonymList.clear();
@@ -198,9 +198,7 @@ class _HomePageState extends State<HomePage> {
                           // clearAllOutput();
                           Dialogs.showNetworkIssues(context);
                         } else {
-                          // traverse through list of definitions
-                          // outputPhoneticController.text = definitionsList
-                          //     .definitionElements?[0].phonetic as String;
+                          // traverse through list of definitions and assign to controllers so user can see
                           definitionsList.definitionElements
                               ?.forEach((element) {
                             // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
@@ -225,8 +223,12 @@ class _HomePageState extends State<HomePage> {
                             });
                             // 3 - for meanings (look through each field in meanings)
                             element.meanings?.forEach((elementMeaning) {
-                              // debugPrint(
-                              //     '${elementMeaning.partOfSpeech as String}\n');
+                              //   // 3.1 - add part of speech to list
+                              //   partOfSpeechList
+                              //       .add(elementMeaning.partOfSpeech as String);
+                              // 3.2 - add definitions to their list
+
+                              debugPrint(definitionsList.toString());
                             });
                             // 4 - for license
                             // 4.1 -  check if license name in licenseNames already
@@ -489,46 +491,62 @@ class _HomePageState extends State<HomePage> {
                                             // width: screenWidth * 0.2,
                                             // height: screenHeight * 0.08,
                                             child: Tooltip(
-                                              message:
-                                                  "Clear all output fields",
-                                              child: TextButton(
-                                                onPressed: () {
-                                                  debugPrint('pressed clear!');
-                                                  FocusScope.of(context)
-                                                      .unfocus();
-                                                  HapticFeedback.mediumImpact();
-                                                  clearAllOutput(
-                                                      alsoWord: true);
-                                                },
-                                                style: TextButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.red[200],
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            25.0),
-                                                  ),
+                                                message:
+                                                    "Clear all output fields",
+                                                child: IconButton(
+                                                    onPressed: () {
+                                                      debugPrint(
+                                                          'pressed clear!');
+                                                      FocusScope.of(context)
+                                                          .unfocus();
+                                                      HapticFeedback
+                                                          .mediumImpact();
+                                                      clearAllOutput(
+                                                          alsoWord: true);
+                                                    },
+                                                    icon: Icon(
+                                                      CupertinoIcons.delete,
+                                                      color: CupertinoColors
+                                                          .lightBackgroundGray,
+                                                    ))
+                                                // TextButton(
+                                                //   onPressed: () {
+                                                //     debugPrint('pressed clear!');
+                                                //     FocusScope.of(context)
+                                                //         .unfocus();
+                                                //     HapticFeedback.mediumImpact();
+                                                //     clearAllOutput(
+                                                //         alsoWord: true);
+                                                //   },
+                                                //   style: TextButton.styleFrom(
+                                                //     backgroundColor:
+                                                //         Colors.red[200],
+                                                //     shape: RoundedRectangleBorder(
+                                                //       borderRadius:
+                                                //           BorderRadius.circular(
+                                                //               25.0),
+                                                //     ),
+                                                //   ),
+                                                //   child: Column(
+                                                //     mainAxisAlignment:
+                                                //         MainAxisAlignment.center,
+                                                //     children: <Widget>[
+                                                //       AutoSizeText(
+                                                //         "Clear",
+                                                //         textAlign:
+                                                //             TextAlign.center,
+                                                //         maxLines: 1,
+                                                //         style: TextStyle(
+                                                //           fontSize: 16,
+                                                //           color: Colors.white,
+                                                //           fontWeight:
+                                                //               FontWeight.w600,
+                                                //         ),
+                                                //       ),
+                                                //     ],
+                                                //   ),
+                                                // ),
                                                 ),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: <Widget>[
-                                                    AutoSizeText(
-                                                      "Clear",
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
                                           ),
                                         ),
                                       ],
@@ -545,9 +563,13 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Text(
-              "Definitions from Dictionary API: dictionaryapi.dev/",
-              style: corporate,
+            Tooltip(
+              message:
+                  'The developer of this API (not me) provides it for free. Please consider donating by visiting the website below to help them cover the cost of running it, and mention this app\'s name when you do so.',
+              child: Text(
+                "Definitions from Dictionary API: dictionaryapi.dev/",
+                style: corporate,
+              ),
             )
           ],
         ),
