@@ -50,9 +50,11 @@ class _HomePageState extends State<HomePage> {
   final pronounciationSourceController = TextEditingController();
   final licenseNameController = TextEditingController();
   final licenseUrlsController = TextEditingController();
+  final sourceUrlsController = TextEditingController();
 
   List<String> licenseNames = <String>[];
   List<String> licenseUrls = <String>[];
+  List<String> sourceUrls = <String>[];
 
   final audioPlayer = AudioPlayer();
 
@@ -187,16 +189,24 @@ class _HomePageState extends State<HomePage> {
                                     '${element.license?.url} already in licenseUrls'))
                                 : (licenseUrls
                                     .add(element.license?.url as String)));
-                            // 5 - for source urls
+                            // 5 - for source urls (check if license name in licenseNames already)
+                            element.sourceUrls?.forEach((elementSourceUrl) {
+                              (sourceUrls.contains(elementSourceUrl)
+                                  ? (debugPrint(
+                                      '${elementSourceUrl} already in sourceUrls'))
+                                  : (sourceUrls.add(elementSourceUrl)));
+                            });
                           });
                           // assign pronounciationSourceController.text to pronounciationSourceUrl
                           pronounciationSourceController.text =
                               pronounciationSourceUrl;
+                          // assign sourceUrls list to its text editing controller
+                          sourceUrlsController.text = sourceUrls.join('\n');
                           // assign license lists to their respective text editing controllers
                           licenseNameController.text = licenseNames.join(', ');
                           licenseUrlsController.text = licenseUrls.join(', ');
-                          debugPrint(
-                              'licenseNameController.text: ${licenseNameController.text}');
+                          // debugPrint(
+                          //     'licenseNameController.text: ${licenseNameController.text}');
                         }
                       }),
                       style: TextStyle(
@@ -439,14 +449,20 @@ class _HomePageState extends State<HomePage> {
                                       //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
-                                          width: screenWidth * .3,
+                                          width: screenWidth * .2,
                                           child: Text(
                                             "Source URLs",
                                             style: corporate,
                                           ),
                                         ),
                                         Container(
-                                          width: screenWidth * .7,
+                                          width: screenWidth * .8,
+                                          child: AutoSizeText(
+                                            sourceUrlsController.text,
+                                            style: corporate,
+                                            maxLines: 2,
+                                            maxFontSize: 12,
+                                          ),
                                         ),
                                       ],
                                     ),
