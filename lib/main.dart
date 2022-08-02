@@ -55,6 +55,7 @@ class _HomePageState extends State<HomePage> {
   final audioPlayer = AudioPlayer();
 
   String wordToDefine = "";
+  String phonetic = '';
   String pronounciationAudioSource = '';
   String pronounciationSourceUrl = '';
 
@@ -62,6 +63,7 @@ class _HomePageState extends State<HomePage> {
     if (alsoWord == true) {
       outputWordController.clear();
     }
+    phonetic = '';
     outputPhoneticController.clear();
     pronounciationSourceController.clear();
     pronounciationAudioSource = '';
@@ -85,12 +87,6 @@ class _HomePageState extends State<HomePage> {
     color: CupertinoColors.white,
     fontWeight: FontWeight.bold,
     fontSize: 35,
-  );
-
-  TextStyle phonetic = TextStyle(
-    color: CupertinoColors.white,
-    fontWeight: FontWeight.bold,
-    fontSize: 25,
   );
 
   TextStyle subsectionTitle = TextStyle(
@@ -157,9 +153,8 @@ class _HomePageState extends State<HomePage> {
                             // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
                             (((element.phonetic != '') &&
                                     (element.phonetic != null))
-                                ? (outputPhoneticController.text =
-                                    element.phonetic as String)
-                                : (outputPhoneticController.text = ''));
+                                ? (phonetic = element.phonetic as String)
+                                : (phonetic = ''));
                             // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
                             // 2.1 - for audio
                             element.phonetics?.forEach((elementPhonetic) {
@@ -201,11 +196,13 @@ class _HomePageState extends State<HomePage> {
                                   : (sourceUrls.add(elementSourceUrl)));
                             });
                           });
+                          // assign phonetic to phonetic controller
+                          outputPhoneticController.text = phonetic;
                           // assign pronounciationSourceController.text to pronounciationSourceUrl
                           pronounciationSourceController.text =
                               pronounciationSourceUrl;
                           // assign sourceUrls list to its text editing controller
-                          sourceUrlsController.text = sourceUrls.join('\n');
+                          sourceUrlsController.text = sourceUrls.join(', ');
                           // assign license lists to their respective text editing controllers
                           licenseNameController.text = licenseNames.join(', ');
                           licenseUrlsController.text = licenseUrls.join(', ');
@@ -284,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                                           width: screenWidth * .7,
                                           child: AutoSizeText(
                                             outputPhoneticController.text,
-                                            style: phonetic,
+                                            style: subsectionTitle,
                                             textAlign: TextAlign.center,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -377,100 +374,54 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ],
                                     ),
-                                    Divider(
-                                      // divider between first and second half of widgets
-                                      color: Colors.grey[800],
-                                      thickness: 2,
-                                    ),
-                                    Row(
-                                      // mainAxisAlignment:
-                                      //     MainAxisAlignment.spaceAround,
-                                      children: [
-                                        Container(
-                                          width: screenWidth * .2,
-                                          child: Text(
-                                            "License",
-                                            style: corporate,
+                                    Visibility(
+                                      visible: (licenseNameController.text !=
+                                              '') |
+                                          (licenseUrlsController.text != ''),
+                                      child: Column(
+                                        children: [
+                                          Divider(
+                                            color: Colors.grey[800],
+                                            thickness: 2,
                                           ),
-                                        ),
-                                        Visibility(
-                                          visible:
-                                              (licenseNameController.text !=
-                                                      '') |
-                                                  (licenseUrlsController.text !=
-                                                      ''),
-                                          child: Container(
-                                            width: screenWidth * .8,
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 8.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Text(
-                                                        "Name: ",
-                                                        style: corporate,
-                                                      ),
-                                                      Text(
-                                                        licenseNameController
-                                                            .text,
-                                                        style: corporate,
-                                                      ),
-                                                    ],
-                                                  ),
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  "License name: ${licenseNameController.text}",
+                                                  style: corporate,
                                                 ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 8.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Text(
-                                                        "URLs: ",
-                                                        style: corporate,
-                                                      ),
-                                                      Text(
-                                                        licenseUrlsController
-                                                            .text,
-                                                        style: corporate,
-                                                      ),
-                                                    ],
-                                                  ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  "License URLs: ${licenseUrlsController.text}",
+                                                  style: corporate,
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                      height: 15,
-                                    ),
-                                    Row(
-                                      // mainAxisAlignment:
-                                      //     MainAxisAlignment.spaceAround,
-                                      children: [
-                                        Container(
-                                          width: screenWidth * .2,
-                                          child: Text(
-                                            "Source URLs",
-                                            style: corporate,
+                                          Row(
+                                            // mainAxisAlignment:
+                                            //     MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  "Source URLs: ${sourceUrlsController.text}",
+                                                  style: corporate,
+                                                ),
+                                              ),
+                                              // Text(
+                                              //   sourceUrlsController.text,
+                                              //   style: corporate,
+                                              // ),
+                                            ],
                                           ),
-                                        ),
-                                        Container(
-                                          width: screenWidth * .8,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 8.0),
-                                            child: Text(
-                                              sourceUrlsController.text,
-                                              style: corporate,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                     Row(
                                       children: [
