@@ -563,13 +563,25 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Tooltip(
-              message:
-                  'The developer of this API (not me) provides it for free. Please consider donating by visiting the website below to help them cover the cost of running it, and mention this app\'s name when you do so.',
-              child: Text(
-                "Definitions from Dictionary API: dictionaryapi.dev/",
-                style: corporate,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Definitions from Dictionary API: dictionaryapi.dev/",
+                  style: corporate,
+                ),
+                SizedBox(
+                  width: screenWidth * 0.05,
+                ),
+                Tooltip(
+                    message:
+                        'The developer of the API used by this app (not me) provides it for free. Please consider donating by visiting the website below to help keep the server running, and mention this app\'s name when you do so.',
+                    child: Icon(
+                      CupertinoIcons.info,
+                      color: CupertinoColors.inactiveGray,
+                      size: 20,
+                    )),
+              ],
             )
           ],
         ),
