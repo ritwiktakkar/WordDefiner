@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
@@ -88,8 +86,7 @@ class _HomePageState extends State<HomePage> {
 
   TextStyle corporate = TextStyle(
     color: CupertinoColors.systemGrey,
-    fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: 10,
   );
 
   @override
@@ -136,6 +133,7 @@ class _HomePageState extends State<HomePage> {
                           audioPlayer.release();
                           licenseNameController.clear();
                           licenseUrlsController.clear();
+                          sourceUrlsController.clear();
                           Dialogs.showNoDefinitions(context);
                         } else if (definitionsList.isNull == true) {
                           debugPrint('!caught exception!');
@@ -145,6 +143,7 @@ class _HomePageState extends State<HomePage> {
                           audioPlayer.release();
                           licenseNameController.clear();
                           licenseUrlsController.clear();
+                          sourceUrlsController.clear();
                           Dialogs.showNetworkIssues(context);
                         } else {
                           // traverse through list of definitions
@@ -274,9 +273,9 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ),
                                         Container(
-                                          padding: EdgeInsets.only(
-                                            left: screenWidth * 0.03,
-                                          ),
+                                          // padding: EdgeInsets.only(
+                                          //   left: screenWidth * 0.03,
+                                          // ),
                                           width: screenWidth * .7,
                                           child: AutoSizeText(
                                             outputPhoneticController.text,
@@ -318,6 +317,7 @@ class _HomePageState extends State<HomePage> {
                                                         .speaker_2_fill,
                                                     color: CupertinoColors
                                                         .activeBlue,
+                                                    size: screenHeight * 0.035,
                                                   ),
                                                   onPressed: () {
                                                     audioPlayer.play(UrlSource(
@@ -338,14 +338,11 @@ class _HomePageState extends State<HomePage> {
                                         // mainAxisAlignment:
                                         //     MainAxisAlignment.center,
                                         children: [
-                                          Text(
-                                            pronounciationSourceController.text,
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10),
-                                            // style: Te,
-                                            // maxFontSize: 8,
-                                            // maxLines: 1,
+                                          Flexible(
+                                            child: Text(
+                                                pronounciationSourceController
+                                                    .text,
+                                                style: corporate),
                                           )
                                         ],
                                       ),
@@ -401,39 +398,45 @@ class _HomePageState extends State<HomePage> {
                                             width: screenWidth * .8,
                                             child: Column(
                                               children: [
-                                                Row(
-                                                  children: [
-                                                    AutoSizeText(
-                                                      "Name: ",
-                                                      style: corporate,
-                                                      maxLines: 2,
-                                                      maxFontSize: 12,
-                                                    ),
-                                                    AutoSizeText(
-                                                      licenseNameController
-                                                          .text,
-                                                      style: corporate,
-                                                      maxLines: 2,
-                                                      maxFontSize: 12,
-                                                    ),
-                                                  ],
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 8.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        "Name: ",
+                                                        style: corporate,
+                                                      ),
+                                                      Flexible(
+                                                        child: Text(
+                                                          licenseNameController
+                                                              .text,
+                                                          style: corporate,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                                Row(
-                                                  children: [
-                                                    AutoSizeText(
-                                                      "URLs: ",
-                                                      style: corporate,
-                                                      maxLines: 2,
-                                                      maxFontSize: 12,
-                                                    ),
-                                                    AutoSizeText(
-                                                      licenseUrlsController
-                                                          .text,
-                                                      style: corporate,
-                                                      maxLines: 2,
-                                                      maxFontSize: 12,
-                                                    ),
-                                                  ],
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 8.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        "URLs: ",
+                                                        style: corporate,
+                                                      ),
+                                                      Flexible(
+                                                        child: Text(
+                                                          licenseUrlsController
+                                                              .text,
+                                                          style: corporate,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -457,11 +460,15 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         Container(
                                           width: screenWidth * .8,
-                                          child: AutoSizeText(
-                                            sourceUrlsController.text,
-                                            style: corporate,
-                                            maxLines: 2,
-                                            maxFontSize: 12,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 8.0),
+                                            child: Flexible(
+                                              child: Text(
+                                                sourceUrlsController.text,
+                                                style: corporate,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -496,6 +503,7 @@ class _HomePageState extends State<HomePage> {
                                                   audioPlayer.release();
                                                   licenseNameController.clear();
                                                   licenseUrlsController.clear();
+                                                  sourceUrlsController.clear();
                                                 },
                                                 style: TextButton.styleFrom(
                                                   backgroundColor:
