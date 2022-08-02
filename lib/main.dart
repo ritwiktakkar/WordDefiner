@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
@@ -130,12 +132,29 @@ class _HomePageState extends State<HomePage> {
                           pronounciationAudioSource = '';
                           Dialogs.showNetworkIssues(context);
                         } else {
-                          outputPhoneticController.text = definitionsList
-                              .definitionElements?[0].phonetic as String;
-                          pronounciationAudioSource = definitionsList
-                              .definitionElements?[0]
-                              .phonetics?[1]
-                              .audio as String;
+                          // traverse through list of definitions
+                          // outputPhoneticController.text = definitionsList
+                          //     .definitionElements?[0].phonetic as String;
+                          definitionsList.definitionElements
+                              ?.forEach((element) {
+                            // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
+                            ((element.phonetic != '')
+                                ? (outputPhoneticController.text =
+                                    element.phonetic as String)
+                                : (outputPhoneticController.text = ''));
+                            // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                            element.phonetics?.forEach((elementPhonetic) {
+                              ((elementPhonetic.audio != '')
+                                  ? (pronounciationAudioSource =
+                                      elementPhonetic.audio as String)
+                                  : (pronounciationAudioSource = ''));
+                            });
+                          });
+                          // pronounciationAudioSource = definitionsList
+                          //     .definitionElements?[0]
+                          //     .phonetics?[1]
+                          //     .audio as String;
+                          // debugPrint(pronounciationAudioSource);
                         }
                       }),
                       style: TextStyle(
@@ -236,24 +255,29 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         Visibility(
                                           visible:
-                                              pronounciationAudioSource != '',
+                                              (pronounciationAudioSource != ''),
                                           child: Container(
                                             padding: EdgeInsets.only(
                                               left: screenWidth * 0.03,
                                             ),
                                             width: screenWidth * .4,
-                                            child: IconButton(
-                                              icon: Icon(
-                                                CupertinoIcons.speaker_2_fill,
-                                                color:
-                                                    CupertinoColors.activeBlue,
-                                              ),
-                                              onPressed: () {
-                                                audioPlayer.play(UrlSource(
-                                                    pronounciationAudioSource));
-                                                // audioPlayer.resume();
-                                                // audioPlayer.play;
-                                              },
+                                            child: Row(
+                                              children: [
+                                                IconButton(
+                                                  icon: Icon(
+                                                    CupertinoIcons
+                                                        .speaker_2_fill,
+                                                    color: CupertinoColors
+                                                        .activeBlue,
+                                                  ),
+                                                  onPressed: () {
+                                                    audioPlayer.play(UrlSource(
+                                                        pronounciationAudioSource));
+                                                    // audioPlayer.resume();
+                                                    // audioPlayer.play;
+                                                  },
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ),
