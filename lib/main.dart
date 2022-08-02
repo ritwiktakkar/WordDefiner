@@ -55,7 +55,9 @@ class _HomePageState extends State<HomePage> {
   final sourceUrlsController = TextEditingController();
 
   List<String> meaningPartOfSpeechList = <String>[];
-  List<String> meaningDefinitionsList = <String>[];
+  List<String> meaningDefinitionsList_1 = <String>[];
+  List<String> meaningDefinitionsList_tmp = <String>[];
+  List<List<String>> meaningDefinitionsList = [];
   var meaningDefinitionsMap = new Map();
   List<String> meaningSynonymList = <String>[];
   List<String> meaningAntonymList = <String>[];
@@ -90,7 +92,9 @@ class _HomePageState extends State<HomePage> {
     licenseUrlsController.clear();
     sourceUrlsController.clear();
     meaningPartOfSpeechList.clear();
-    // meaningDefinitionsList.clear();
+    meaningDefinitionsList_1.clear();
+    meaningDefinitionsList_tmp.clear();
+    meaningDefinitionsList.clear();
     meaningSynonymList.clear();
     meaningAntonymList.clear();
     meaningExampleList.clear();
@@ -151,7 +155,9 @@ class _HomePageState extends State<HomePage> {
     licenseUrlsController.dispose();
     sourceUrlsController.dispose();
     meaningPartOfSpeechList.clear();
-    // meaningDefinitionsList.clear();
+    meaningDefinitionsList_1.clear();
+    meaningDefinitionsList_tmp.clear();
+    meaningDefinitionsList.clear();
     meaningSynonymList.clear();
     meaningAntonymList.clear();
     meaningExampleList.clear();
@@ -228,37 +234,21 @@ class _HomePageState extends State<HomePage> {
                               meaningPartOfSpeechList
                                   .add(elementMeaning.partOfSpeech as String);
                               // 3.2 - add definitions list to their list
-                              // elementMeaning.definitions
-                              //     ?.forEach((elementDefinition) {
-                              //   meaningDefinitionsList.add(
-                              //       elementDefinition.definition as String);
-                              // });
-                              for (var i = 0;
+                              for (int i = 0;
                                   i < meaningPartOfSpeechList.length;
                                   i++) {
                                 elementMeaning.definitions
-                                    ?.forEach((elementMeaningDefinition) {
-                                  meaningDefinitionsList.add(
-                                      elementMeaningDefinition.definition
+                                    ?.forEach((elementMeaningDefinitions) {
+                                  meaningDefinitionsList_1.add(
+                                      elementMeaningDefinitions.definition
                                           as String);
-                                  meaningDefinitionsMap[i] =
-                                      meaningDefinitionsList;
-                                  meaningDefinitionsList.clear();
                                 });
-                                // if (elementMeaning.definitions.definition != null) {
-
-                                // }
-                                // meaningDefinitionsList.add(elementMeaning.definitions.definition as String);
-                                // meaningDefinitionsMap[meaningPartOfSpeechList[i]] = meaningDefinitionsList;
-                                // meaningDefinitionsList.clear();
-                                elementMeaning.definitions?.forEach((element) {
-                                  debugPrint('${element}');
-                                });
-                                // meaningDefinitionsList[i].add(elementMeaning.definitions.definition as String);
+                                meaningDefinitionsMap[elementMeaning
+                                    .partOfSpeech] = meaningDefinitionsList_1;
+                                debugPrint(
+                                    'meaningDefinitionsList_1: ${meaningDefinitionsList_1}; meaningDefinitionsMap: ${meaningDefinitionsMap}');
+                                meaningDefinitionsList_1 = [];
                               }
-                              // meaningDefinitionsList.add(
-                              //     elementMeaning.definitions.definition as String);
-                              // debugPrint(meaningDefinitionsList.toString());
                             });
                             // 4 - for license
                             // 4.1 -  check if license name in licenseNames already
@@ -282,11 +272,13 @@ class _HomePageState extends State<HomePage> {
                             });
                           });
                           // debug printing for meanings
-                          debugPrint('Debugging meanings...');
-                          debugPrint(
-                              'meaningPartOfSpeechList: ${meaningPartOfSpeechList.toString()}');
-                          debugPrint(
-                              'meaningDefinitionsList: ${meaningDefinitionsList.toString()}');
+                          // debugPrint('Debugging meanings...');
+                          // debugPrint(
+                          //     'meaningPartOfSpeechList: ${meaningPartOfSpeechList.toString()}');
+                          // debugPrint(
+                          //     'meaningDefinitionsList_1: ${meaningDefinitionsList_1.toString()}');
+                          // debugPrint(
+                          //     'meaningDefinitionsList: ${meaningDefinitionsList.toString()}');
                           // assign phonetic to phonetic controller
                           outputPhoneticController.text = phonetic;
                           // assign pronounciationSourceController.text to pronounciationSourceUrl
