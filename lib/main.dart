@@ -47,8 +47,8 @@ class _HomePageState extends State<HomePage> {
   final pronounciationSourceController = TextEditingController();
   final meaningPartOfSpeechController = TextEditingController();
   final meaningDefinitionController = TextEditingController();
-  final meaningSynonymsController = TextEditingController();
-  final meaningAntonymsController = TextEditingController();
+  // final meaningSynonymsController = TextEditingController();
+  // final meaningAntonymsController = TextEditingController();
   final meaningExampleController = TextEditingController();
   final licenseNameController = TextEditingController();
   final licenseUrlsController = TextEditingController();
@@ -72,6 +72,7 @@ class _HomePageState extends State<HomePage> {
   String phonetic = '';
   String pronounciationAudioSource = '';
   String pronounciationSourceUrl = '';
+  String wordExample = '';
 
   void clearAllOutput({bool alsoWord = false}) {
     if (alsoWord == true) {
@@ -85,8 +86,8 @@ class _HomePageState extends State<HomePage> {
     audioPlayer.release();
     meaningPartOfSpeechController.clear();
     meaningDefinitionController.clear();
-    meaningSynonymsController.clear();
-    meaningAntonymsController.clear();
+    // meaningSynonymsController.clear();
+    // meaningAntonymsController.clear();
     meaningExampleController.clear();
     licenseNameController.clear();
     licenseUrlsController.clear();
@@ -148,8 +149,8 @@ class _HomePageState extends State<HomePage> {
     audioPlayer.release();
     meaningPartOfSpeechController.dispose();
     meaningDefinitionController.dispose();
-    meaningSynonymsController.dispose();
-    meaningAntonymsController.dispose();
+    // meaningSynonymsController.dispose();
+    // meaningAntonymsController.dispose();
     meaningExampleController.dispose();
     licenseNameController.dispose();
     licenseUrlsController.dispose();
@@ -440,7 +441,7 @@ class _HomePageState extends State<HomePage> {
                                       //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
-                                          width: screenWidth * .3,
+                                          width: screenWidth * .25,
                                           child: AutoSizeText(
                                             "Meanings",
                                             style: sectionTitle,
@@ -448,10 +449,70 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ),
                                         Container(
-                                          padding: EdgeInsets.only(
-                                            left: screenWidth * 0.03,
+                                          // padding: EdgeInsets.only(
+                                          //   left: screenWidth * 0.03,
+                                          // ),
+                                          width: screenWidth * .3,
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    'Part of speech',
+                                                    style: TextStyle(
+                                                        color: CupertinoColors
+                                                            .white,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    'Noun',
+                                                    style: TextStyle(
+                                                        color: CupertinoColors
+                                                            .white,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
-                                          width: screenWidth * .7,
+                                        ),
+                                        Container(
+                                          // padding: EdgeInsets.only(
+                                          //   left: screenWidth * 0.03,
+                                          // ),
+                                          width: screenWidth * .45,
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      'Part of speech:  Part of speech:  Part of speech:  Part of speech: Part of speech:  Part of speech:  Part of speech:  Part of speech: ',
+                                                      style: body,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                  )
+                                                ],
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),
