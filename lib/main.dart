@@ -47,11 +47,18 @@ class _HomePageState extends State<HomePage> {
   final inputController = TextEditingController();
   final outputWordController = TextEditingController();
   final outputPhoneticController = TextEditingController();
+  final pronounciationSourceController = TextEditingController();
+  final licenseNameController = TextEditingController();
+  final licenseUrlsController = TextEditingController();
+
+  List<String> licenseNames = <String>[];
+  List<String> licenseUrls = <String>[];
 
   final audioPlayer = AudioPlayer();
 
   String wordToDefine = "";
   String pronounciationAudioSource = '';
+  String pronounciationSourceUrl = '';
 
   TextStyle sectionTitle = TextStyle(
     color: CupertinoColors.white,
@@ -123,13 +130,19 @@ class _HomePageState extends State<HomePage> {
                           debugPrint('404 word not found');
                           outputPhoneticController.clear();
                           pronounciationAudioSource = '';
+                          pronounciationSourceController.clear();
                           audioPlayer.release();
+                          licenseNameController.clear();
+                          licenseUrlsController.clear();
                           Dialogs.showNoDefinitions(context);
                         } else if (definitionsList.isNull == true) {
                           debugPrint('!caught exception!');
                           outputPhoneticController.clear();
-                          audioPlayer.release();
                           pronounciationAudioSource = '';
+                          pronounciationSourceController.clear();
+                          audioPlayer.release();
+                          licenseNameController.clear();
+                          licenseUrlsController.clear();
                           Dialogs.showNetworkIssues(context);
                         } else {
                           // traverse through list of definitions
@@ -138,23 +151,52 @@ class _HomePageState extends State<HomePage> {
                           definitionsList.definitionElements
                               ?.forEach((element) {
                             // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                            ((element.phonetic != '')
+                            (((element.phonetic != '') &&
+                                    (element.phonetic != null))
                                 ? (outputPhoneticController.text =
                                     element.phonetic as String)
                                 : (outputPhoneticController.text = ''));
                             // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
                             element.phonetics?.forEach((elementPhonetic) {
-                              ((elementPhonetic.audio != '')
+                              (((elementPhonetic.audio != '') &&
+                                      (elementPhonetic.audio != null))
                                   ? (pronounciationAudioSource =
                                       elementPhonetic.audio as String)
                                   : (pronounciationAudioSource = ''));
+                              (((elementPhonetic.sourceUrl != '') &&
+                                      (elementPhonetic.sourceUrl != null))
+                                  ? (pronounciationSourceUrl =
+                                      elementPhonetic.sourceUrl as String)
+                                  : (pronounciationSourceUrl = ''));
                             });
+                            // 3 - for meanings (look through each field in meanings)
+                            element.meanings?.forEach((elementMeaning) {
+                              debugPrint(
+                                  '${elementMeaning.partOfSpeech as String}\n');
+                            });
+                            // 4 - for license
+                            // 4.1 -  check if license name in licenseNames already
+                            (licenseNames.contains(element.license?.name)
+                                ? (debugPrint(
+                                    '${element.license?.name} already in licenseNames'))
+                                : (licenseNames
+                                    .add(element.license?.name as String)));
+                            // 4.2 - check if license url in licenseUrls already
+                            (licenseUrls.contains(element.license?.url)
+                                ? (debugPrint(
+                                    '${element.license?.url} already in licenseUrls'))
+                                : (licenseUrls
+                                    .add(element.license?.url as String)));
+                            // 5 - for source urls
                           });
-                          // pronounciationAudioSource = definitionsList
-                          //     .definitionElements?[0]
-                          //     .phonetics?[1]
-                          //     .audio as String;
-                          // debugPrint(pronounciationAudioSource);
+                          // assign pronounciationSourceController.text to pronounciationSourceUrl
+                          pronounciationSourceController.text =
+                              pronounciationSourceUrl;
+                          // assign license lists to their respective text editing controllers
+                          licenseNameController.text = licenseNames.join(', ');
+                          licenseUrlsController.text = licenseUrls.join(', ');
+                          debugPrint(
+                              'licenseNameController.text: ${licenseNameController.text}');
                         }
                       }),
                       style: TextStyle(
@@ -243,7 +285,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     Row(
                                       // mainAxisAlignment:
-                                      // MainAxisAlignment.spaceAround,
+                                      //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .6,
@@ -257,9 +299,6 @@ class _HomePageState extends State<HomePage> {
                                           visible:
                                               (pronounciationAudioSource != ''),
                                           child: Container(
-                                            padding: EdgeInsets.only(
-                                              left: screenWidth * 0.03,
-                                            ),
                                             width: screenWidth * .4,
                                             child: Row(
                                               children: [
@@ -273,8 +312,6 @@ class _HomePageState extends State<HomePage> {
                                                   onPressed: () {
                                                     audioPlayer.play(UrlSource(
                                                         pronounciationAudioSource));
-                                                    // audioPlayer.resume();
-                                                    // audioPlayer.play;
                                                   },
                                                 ),
                                               ],
@@ -282,6 +319,26 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ),
                                       ],
+                                    ),
+                                    Visibility(
+                                      visible:
+                                          pronounciationSourceController.text !=
+                                              '',
+                                      child: Row(
+                                        // mainAxisAlignment:
+                                        //     MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            pronounciationSourceController.text,
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10),
+                                            // style: Te,
+                                            // maxFontSize: 8,
+                                            // maxLines: 1,
+                                          )
+                                        ],
+                                      ),
                                     ),
                                     Divider(
                                       // divider between first and second half of widgets
@@ -318,14 +375,59 @@ class _HomePageState extends State<HomePage> {
                                       //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
-                                          width: screenWidth * .3,
+                                          width: screenWidth * .2,
                                           child: Text(
                                             "License",
                                             style: corporate,
                                           ),
                                         ),
-                                        Container(
-                                          width: screenWidth * .7,
+                                        Visibility(
+                                          visible:
+                                              (licenseNameController.text !=
+                                                      '') |
+                                                  (licenseUrlsController.text !=
+                                                      ''),
+                                          child: Container(
+                                            width: screenWidth * .8,
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    AutoSizeText(
+                                                      "Name: ",
+                                                      style: corporate,
+                                                      maxLines: 2,
+                                                      maxFontSize: 12,
+                                                    ),
+                                                    AutoSizeText(
+                                                      licenseNameController
+                                                          .text,
+                                                      style: corporate,
+                                                      maxLines: 2,
+                                                      maxFontSize: 12,
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    AutoSizeText(
+                                                      "URLs: ",
+                                                      style: corporate,
+                                                      maxLines: 2,
+                                                      maxFontSize: 12,
+                                                    ),
+                                                    AutoSizeText(
+                                                      licenseUrlsController
+                                                          .text,
+                                                      style: corporate,
+                                                      maxLines: 2,
+                                                      maxFontSize: 12,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -373,7 +475,11 @@ class _HomePageState extends State<HomePage> {
                                                       .clear();
                                                   pronounciationAudioSource =
                                                       '';
+                                                  pronounciationSourceController
+                                                      .clear();
                                                   audioPlayer.release();
+                                                  licenseNameController.clear();
+                                                  licenseUrlsController.clear();
                                                 },
                                                 style: TextButton.styleFrom(
                                                   backgroundColor:
