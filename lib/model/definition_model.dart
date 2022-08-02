@@ -1,8 +1,12 @@
 class DefinitionElementList {
   final List<DefinitionElement>? definitionElements;
+  final bool? isNull;
+  final bool? isNotFound;
 
   DefinitionElementList({
     this.definitionElements,
+    this.isNotFound,
+    this.isNull,
   });
 
   factory DefinitionElementList.fromJson(List<dynamic> parsedJson) {

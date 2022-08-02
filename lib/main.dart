@@ -43,10 +43,11 @@ class _HomePageState extends State<HomePage> {
   // Create a text controller and use it to retrieve the current value of the TextField.
   final inputController = TextEditingController();
   final outputWordController = TextEditingController();
+  final outputPhoneticController = TextEditingController();
 
   String wordToDefine = "";
 
-  TextStyle title = TextStyle(
+  TextStyle sectionTitle = TextStyle(
     color: CupertinoColors.white,
     fontWeight: FontWeight.bold,
     fontSize: 25,
@@ -58,7 +59,13 @@ class _HomePageState extends State<HomePage> {
     fontSize: 35,
   );
 
-  TextStyle subtitle = TextStyle(
+  TextStyle phonetic = TextStyle(
+    color: CupertinoColors.white,
+    fontWeight: FontWeight.bold,
+    fontSize: 25,
+  );
+
+  TextStyle subsectionTitle = TextStyle(
     color: CupertinoColors.white,
     fontWeight: FontWeight.bold,
     fontSize: 20,
@@ -106,15 +113,24 @@ class _HomePageState extends State<HomePage> {
                         outputWordController.text = wordToDefine;
                         final definitionsList =
                             (await API.getDefinition(wordToDefine));
+                        outputPhoneticController.text = definitionsList
+                            .definitionElements?[0].phonetic as String;
+                        // if (definitionsList.definitionElements[0].phonetic! != null) {
+                        //   definitionsList.definitionElements[0].phonetic = null;
+                        // outputPhoneticController.text = definitionsList.definitionElements[0].phonetic!;
+                        // }
+                        // debugPrint(
+                        //     definitionsList.definitionElements?[0].phonetic);
                         // debugPrint(
                         //     '${definition}, ${definition.toString()}, ${definition.word}, ${definition.phonetic}');
-                        // if (definitionsList.word == '-') {
-                        //   debugPrint('404 word not found');
-                        //   Dialogs.showNoDefinitions(context);
-                        // } else if (definitionsList.word == '') {
-                        //   debugPrint('!caught exception!');
-                        //   Dialogs.showNetworkIssues(context);
-                        // }
+
+                        if (definitionsList.isNotFound == true) {
+                          debugPrint('404 word not found');
+                          Dialogs.showNoDefinitions(context);
+                        } else if (definitionsList.isNull == true) {
+                          debugPrint('!caught exception!');
+                          Dialogs.showNetworkIssues(context);
+                        }
                       }),
                       style: TextStyle(
                         color: CupertinoColors.white,
@@ -147,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                                           width: screenWidth * .3,
                                           child: AutoSizeText(
                                             "Word",
-                                            style: title,
+                                            style: sectionTitle,
                                             maxLines: 1,
                                           ),
                                         ),
@@ -176,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                                           width: screenWidth * .3,
                                           child: AutoSizeText(
                                             "Phonetic",
-                                            style: title,
+                                            style: sectionTitle,
                                             maxLines: 1,
                                           ),
                                         ),
@@ -185,6 +201,13 @@ class _HomePageState extends State<HomePage> {
                                             left: screenWidth * 0.03,
                                           ),
                                           width: screenWidth * .7,
+                                          child: AutoSizeText(
+                                            outputPhoneticController.text,
+                                            style: phonetic,
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -198,10 +221,10 @@ class _HomePageState extends State<HomePage> {
                                           MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
-                                          width: screenWidth * .3,
+                                          width: screenWidth * .6,
                                           child: AutoSizeText(
-                                            "Phonetics",
-                                            style: title,
+                                            "Pronounciation",
+                                            style: sectionTitle,
                                             maxLines: 1,
                                           ),
                                         ),
@@ -209,7 +232,14 @@ class _HomePageState extends State<HomePage> {
                                           padding: EdgeInsets.only(
                                             left: screenWidth * 0.03,
                                           ),
-                                          width: screenWidth * .7,
+                                          width: screenWidth * .4,
+                                          child: IconButton(
+                                            icon: Icon(
+                                              CupertinoIcons.speaker_2_fill,
+                                              color: CupertinoColors.activeBlue,
+                                            ),
+                                            onPressed: () {},
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -226,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                                           width: screenWidth * .3,
                                           child: AutoSizeText(
                                             "Meanings",
-                                            style: title,
+                                            style: sectionTitle,
                                             maxLines: 1,
                                           ),
                                         ),
@@ -298,8 +328,9 @@ class _HomePageState extends State<HomePage> {
                                                   FocusScope.of(context)
                                                       .unfocus();
                                                   HapticFeedback.mediumImpact();
-                                                  outputWordController.text =
-                                                      '';
+                                                  outputWordController.clear();
+                                                  outputPhoneticController
+                                                      .clear();
                                                 },
                                                 style: TextButton.styleFrom(
                                                   backgroundColor:

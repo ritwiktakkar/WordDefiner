@@ -58,6 +58,7 @@ Future<DefinitionElementList> getDefinition(String wordToDefine) async {
     } else if (response.statusCode == 404) {
       return DefinitionElementList(
         definitionElements: null,
+        isNotFound: true,
       );
     }
   } catch (e) {
@@ -65,5 +66,6 @@ Future<DefinitionElementList> getDefinition(String wordToDefine) async {
   }
   return DefinitionElementList(
     definitionElements: null,
+    isNull: true,
   );
 }
