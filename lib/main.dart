@@ -39,8 +39,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Future<definition.Definition> definition;
-
   // Create a text controller and use it to retrieve the current value of the TextField.
   final inputController = TextEditingController();
   final outputWordController = TextEditingController();
@@ -59,6 +57,22 @@ class _HomePageState extends State<HomePage> {
   String wordToDefine = "";
   String pronounciationAudioSource = '';
   String pronounciationSourceUrl = '';
+
+  void clearAllOutput({bool alsoWord = false}) {
+    if (alsoWord == true) {
+      outputWordController.clear();
+    }
+    outputPhoneticController.clear();
+    pronounciationSourceController.clear();
+    pronounciationAudioSource = '';
+    audioPlayer.release();
+    licenseNameController.clear();
+    licenseUrlsController.clear();
+    sourceUrlsController.clear();
+    licenseNames.clear();
+    licenseUrls.clear();
+    sourceUrls.clear();
+  }
 
   TextStyle sectionTitle = TextStyle(
     color: CupertinoColors.white,
@@ -122,34 +136,16 @@ class _HomePageState extends State<HomePage> {
                       placeholder: 'Look up a word',
                       controller: inputController,
                       onSubmitted: ((String wordToDefine) async {
-                        outputWordController.text = wordToDefine;
+                        outputWordController.text = wordToDefine.toLowerCase();
                         final definitionsList =
                             (await API.getDefinition(wordToDefine));
                         if (definitionsList.isNotFound == true) {
                           debugPrint('404 word not found');
-                          outputPhoneticController.clear();
-                          pronounciationAudioSource = '';
-                          pronounciationSourceController.clear();
-                          audioPlayer.release();
-                          licenseNameController.clear();
-                          licenseUrlsController.clear();
-                          sourceUrlsController.clear();
-                          licenseNames.clear();
-                          licenseUrls.clear();
-                          sourceUrls.clear();
+                          clearAllOutput();
                           Dialogs.showNoDefinitions(context);
                         } else if (definitionsList.isNull == true) {
                           debugPrint('!caught exception!');
-                          outputPhoneticController.clear();
-                          pronounciationAudioSource = '';
-                          pronounciationSourceController.clear();
-                          audioPlayer.release();
-                          licenseNameController.clear();
-                          licenseUrlsController.clear();
-                          sourceUrlsController.clear();
-                          licenseNames.clear();
-                          licenseUrls.clear();
-                          sourceUrls.clear();
+                          clearAllOutput();
                           Dialogs.showNetworkIssues(context);
                         } else {
                           // traverse through list of definitions
@@ -496,23 +492,12 @@ class _HomePageState extends State<HomePage> {
                                                   "Clear all output fields",
                                               child: TextButton(
                                                 onPressed: () {
+                                                  debugPrint('pressed clear!');
                                                   FocusScope.of(context)
                                                       .unfocus();
                                                   HapticFeedback.mediumImpact();
-                                                  outputWordController.clear();
-                                                  outputPhoneticController
-                                                      .clear();
-                                                  pronounciationAudioSource =
-                                                      '';
-                                                  pronounciationSourceController
-                                                      .clear();
-                                                  audioPlayer.release();
-                                                  licenseNameController.clear();
-                                                  licenseUrlsController.clear();
-                                                  sourceUrlsController.clear();
-                                                  licenseNames.clear();
-                                                  licenseUrls.clear();
-                                                  sourceUrls.clear();
+                                                  clearAllOutput(
+                                                      alsoWord: true);
                                                 },
                                                 style: TextButton.styleFrom(
                                                   backgroundColor:
