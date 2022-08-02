@@ -54,11 +54,12 @@ class _HomePageState extends State<HomePage> {
   final licenseUrlsController = TextEditingController();
   final sourceUrlsController = TextEditingController();
 
-  List<String> partOfSpeechList = <String>[];
-  List<String> definitionList = <String>[];
-  List<String> synonymList = <String>[];
-  List<String> antonymList = <String>[];
-  List<String> exampleList = <String>[];
+  List<String> meaningPartOfSpeechList = <String>[];
+  List<String> meaningDefinitionsList = <String>[];
+  var meaningDefinitionsMap = new Map();
+  List<String> meaningSynonymList = <String>[];
+  List<String> meaningAntonymList = <String>[];
+  List<String> meaningExampleList = <String>[];
   List<String> licenseNames = <String>[];
   List<String> licenseUrls = <String>[];
   List<String> sourceUrls = <String>[];
@@ -88,11 +89,11 @@ class _HomePageState extends State<HomePage> {
     licenseNameController.clear();
     licenseUrlsController.clear();
     sourceUrlsController.clear();
-    partOfSpeechList.clear();
-    definitionList.clear();
-    synonymList.clear();
-    antonymList.clear();
-    exampleList.clear();
+    meaningPartOfSpeechList.clear();
+    // meaningDefinitionsList.clear();
+    meaningSynonymList.clear();
+    meaningAntonymList.clear();
+    meaningExampleList.clear();
     licenseNames.clear();
     licenseUrls.clear();
     sourceUrls.clear();
@@ -149,11 +150,11 @@ class _HomePageState extends State<HomePage> {
     licenseNameController.dispose();
     licenseUrlsController.dispose();
     sourceUrlsController.dispose();
-    partOfSpeechList.clear();
-    definitionList.clear();
-    synonymList.clear();
-    antonymList.clear();
-    exampleList.clear();
+    meaningPartOfSpeechList.clear();
+    // meaningDefinitionsList.clear();
+    meaningSynonymList.clear();
+    meaningAntonymList.clear();
+    meaningExampleList.clear();
     licenseNames.clear();
     licenseUrls.clear();
     sourceUrls.clear();
@@ -223,12 +224,41 @@ class _HomePageState extends State<HomePage> {
                             });
                             // 3 - for meanings (look through each field in meanings)
                             element.meanings?.forEach((elementMeaning) {
-                              //   // 3.1 - add part of speech to list
-                              //   partOfSpeechList
-                              //       .add(elementMeaning.partOfSpeech as String);
-                              // 3.2 - add definitions to their list
+                              // 3.1 - add part of speech to list
+                              meaningPartOfSpeechList
+                                  .add(elementMeaning.partOfSpeech as String);
+                              // 3.2 - add definitions list to their list
+                              // elementMeaning.definitions
+                              //     ?.forEach((elementDefinition) {
+                              //   meaningDefinitionsList.add(
+                              //       elementDefinition.definition as String);
+                              // });
+                              for (var i = 0;
+                                  i < meaningPartOfSpeechList.length;
+                                  i++) {
+                                elementMeaning.definitions
+                                    ?.forEach((elementMeaningDefinition) {
+                                  meaningDefinitionsList.add(
+                                      elementMeaningDefinition.definition
+                                          as String);
+                                  meaningDefinitionsMap[i] =
+                                      meaningDefinitionsList;
+                                  meaningDefinitionsList.clear();
+                                });
+                                // if (elementMeaning.definitions.definition != null) {
 
-                              debugPrint(definitionsList.toString());
+                                // }
+                                // meaningDefinitionsList.add(elementMeaning.definitions.definition as String);
+                                // meaningDefinitionsMap[meaningPartOfSpeechList[i]] = meaningDefinitionsList;
+                                // meaningDefinitionsList.clear();
+                                elementMeaning.definitions?.forEach((element) {
+                                  debugPrint('${element}');
+                                });
+                                // meaningDefinitionsList[i].add(elementMeaning.definitions.definition as String);
+                              }
+                              // meaningDefinitionsList.add(
+                              //     elementMeaning.definitions.definition as String);
+                              // debugPrint(meaningDefinitionsList.toString());
                             });
                             // 4 - for license
                             // 4.1 -  check if license name in licenseNames already
@@ -251,6 +281,12 @@ class _HomePageState extends State<HomePage> {
                                   : (sourceUrls.add(elementSourceUrl)));
                             });
                           });
+                          // debug printing for meanings
+                          debugPrint('Debugging meanings...');
+                          debugPrint(
+                              'meaningPartOfSpeechList: ${meaningPartOfSpeechList.toString()}');
+                          debugPrint(
+                              'meaningDefinitionsList: ${meaningDefinitionsList.toString()}');
                           // assign phonetic to phonetic controller
                           outputPhoneticController.text = phonetic;
                           // assign pronounciationSourceController.text to pronounciationSourceUrl
@@ -261,8 +297,6 @@ class _HomePageState extends State<HomePage> {
                           // assign license lists to their respective text editing controllers
                           licenseNameController.text = licenseNames.join(', ');
                           licenseUrlsController.text = licenseUrls.join(', ');
-                          // debugPrint(
-                          //     'licenseNameController.text: ${licenseNameController.text}');
                         }
                       }),
                       style: TextStyle(
