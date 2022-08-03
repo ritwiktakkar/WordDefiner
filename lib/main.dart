@@ -73,8 +73,11 @@ class _HomePageState extends State<HomePage> {
   String? pronounciationSourceUrl = '';
   String wordExample = '';
 
-  void clearAllOutput({bool alsoWord = false}) {
+  void clearAllOutput({bool alsoSearch = false, bool alsoWord = false}) {
     // FocusScope.of(context).unfocus();
+    if (alsoSearch == true) {
+      inputController.clear();
+    }
     if (alsoWord == true) {
       outputWordController.clear();
     }
@@ -558,10 +561,16 @@ class _HomePageState extends State<HomePage> {
                                                           .lightBackgroundGray,
                                                     ),
                                                     onPressed: () {
-                                                      FocusScope.of(context)
-                                                          .unfocus();
-                                                      clearAllOutput(
-                                                          alsoWord: true);
+                                                      // FocusScope.of(context)
+                                                      //     .unfocus();
+                                                      // clearAllOutput(
+                                                      //     alsoSearch: true,
+                                                      //     alsoWord: true);
+                                                      setState(() {
+                                                        clearAllOutput(
+                                                            alsoSearch: true,
+                                                            alsoWord: true);
+                                                      });
                                                     })),
                                           ),
                                         ),
