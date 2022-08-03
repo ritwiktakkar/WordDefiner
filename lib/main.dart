@@ -587,7 +587,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Tooltip(
                       message:
-                          'The developer of the API used by this app (not me) provides it for free. Please consider donating by visiting the website below to help keep the server running, and mention this app\'s name when you do so.',
+                          'The developer of the API used by this app (not me) provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name when you do so.',
                       child: Icon(
                         CupertinoIcons.info,
                         color: CupertinoColors.inactiveGray,
