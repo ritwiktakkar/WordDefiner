@@ -499,7 +499,17 @@ class _HomePageState extends State<HomePage> {
                                               String value =
                                                   meaningDefinitionsMap.values
                                                       .elementAt(index)
-                                                      .toString();
+                                                      .toString()
+                                                      .substring(
+                                                          1,
+                                                          meaningDefinitionsMap
+                                                                  .values
+                                                                  .elementAt(
+                                                                      index)
+                                                                  .toString()
+                                                                  .length -
+                                                              1)
+                                                      .replaceAll('.,', ';');
                                               return ListTile(
                                                 title: Text(
                                                   '${value.toString()}',
