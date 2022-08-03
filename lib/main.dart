@@ -74,6 +74,8 @@ class _HomePageState extends State<HomePage> {
   String? pronounciationSourceUrl = '';
   String wordExample = '';
 
+  final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
+
   void clearAllOutput({bool alsoSearch = false, bool alsoWord = false}) {
     // FocusScope.of(context).unfocus();
     if (alsoSearch == true) {
@@ -212,7 +214,17 @@ class _HomePageState extends State<HomePage> {
                       onSubmitted: ((String wordToDefine) async {
                         clearAllOutput();
                         if (wordToDefine == '') {
+                          // empty word - do nothing
                           DoNothingAction();
+                        } else if (!validInputLetters.hasMatch(wordToDefine)) {
+                          // non letter detected
+                          Dialogs.showInputIssue(context);
+                          setState(() {
+                            // inputController.text = '';
+                            clearAllOutput(alsoSearch: true, alsoWord: true);
+                            debugPrint(
+                                'clear input word controller and clearAll');
+                          });
                         } else {
                           outputWordController.text =
                               wordToDefine.toLowerCase();
