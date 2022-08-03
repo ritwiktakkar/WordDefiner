@@ -246,17 +246,31 @@ class _HomePageState extends State<HomePage> {
                               // 2.1 - for audio
                               element.phonetics?.forEach((elementPhonetic) {
                                 debugPrint('enter 2');
-                                (((elementPhonetic.audio != '') ||
-                                        (elementPhonetic.audio != null))
-                                    ? (pronounciationAudioSource =
-                                        elementPhonetic.audio as String)
-                                    : DoNothingAction());
+                                if (elementPhonetic.audio == null ||
+                                    elementPhonetic.audio == '') {
+                                  DoNothingAction();
+                                } else {
+                                  pronounciationAudioSource =
+                                      elementPhonetic.audio as String;
+                                }
+                                // (((elementPhonetic.audio != '') ||
+                                //         (elementPhonetic.audio != null))
+                                //     ? (pronounciationAudioSource =
+                                //         elementPhonetic.audio as String)
+                                //     : DoNothingAction());
                                 // 2.2 - for audio source
-                                (((elementPhonetic.sourceUrl != '') ||
-                                        (elementPhonetic.sourceUrl != null))
-                                    ? (pronounciationSourceUrl =
-                                        elementPhonetic.sourceUrl as String)
-                                    : DoNothingAction());
+                                if (elementPhonetic.sourceUrl == null ||
+                                    elementPhonetic.sourceUrl == '') {
+                                  DoNothingAction();
+                                } else {
+                                  pronounciationSourceUrl =
+                                      elementPhonetic.sourceUrl as String;
+                                }
+                                // (((elementPhonetic.sourceUrl != '') ||
+                                //         (elementPhonetic.sourceUrl != null))
+                                //     ? (pronounciationSourceUrl =
+                                //         elementPhonetic.sourceUrl as String)
+                                //     : DoNothingAction());
                                 // 2.3 - find some phonetic if not already there since phonetics list also has some
                                 // debugPrint('1-${phonetic}');
                                 if (phonetic == '' &&
