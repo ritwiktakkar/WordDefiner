@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:iDefine/model/definition_model.dart';
 import 'dialogs.dart';
 import 'package:iDefine/services/get_definition.dart' as API;
 import 'package:flutter/services.dart';
@@ -69,12 +68,13 @@ class _HomePageState extends State<HomePage> {
   final audioPlayer = AudioPlayer();
 
   String wordToDefine = "";
-  String phonetic = '';
-  String pronounciationAudioSource = '';
-  String pronounciationSourceUrl = '';
+  String? phonetic = '';
+  String? pronounciationAudioSource = '';
+  String? pronounciationSourceUrl = '';
   String wordExample = '';
 
   void clearAllOutput({bool alsoWord = false}) {
+    // FocusScope.of(context).unfocus();
     if (alsoWord == true) {
       outputWordController.clear();
     }
@@ -226,13 +226,13 @@ class _HomePageState extends State<HomePage> {
                             // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
                             // 2.1 - for audio
                             element.phonetics?.forEach((elementPhonetic) {
-                              (((elementPhonetic.audio != '') &&
+                              (((elementPhonetic.audio != '') ||
                                       (elementPhonetic.audio != null))
                                   ? (pronounciationAudioSource =
                                       elementPhonetic.audio as String)
                                   : (pronounciationAudioSource = ''));
                               // 2.2 - for audio source
-                              (((elementPhonetic.sourceUrl != '') &&
+                              (((elementPhonetic.sourceUrl != '') ||
                                       (elementPhonetic.sourceUrl != null))
                                   ? (pronounciationSourceUrl =
                                       elementPhonetic.sourceUrl as String)
@@ -283,10 +283,10 @@ class _HomePageState extends State<HomePage> {
                           });
 
                           // assign phonetic to phonetic controller
-                          outputPhoneticController.text = phonetic;
+                          outputPhoneticController.text = phonetic!;
                           // assign pronounciationSourceController.text to pronounciationSourceUrl
                           pronounciationSourceController.text =
-                              pronounciationSourceUrl;
+                              pronounciationSourceUrl!;
                           // assign sourceUrls list to its text editing controller
                           sourceUrlsController.text = sourceUrls.join(', ');
                           // assign license lists to their respective text editing controllers
@@ -405,7 +405,7 @@ class _HomePageState extends State<HomePage> {
                                                   ),
                                                   onPressed: () {
                                                     audioPlayer.play(UrlSource(
-                                                        pronounciationAudioSource));
+                                                        pronounciationAudioSource!));
                                                   },
                                                 ),
                                               ],
@@ -570,21 +570,31 @@ class _HomePageState extends State<HomePage> {
                                                 message:
                                                     "Clear all output fields",
                                                 child: IconButton(
-                                                    onPressed: () {
-                                                      debugPrint(
-                                                          'pressed clear!');
-                                                      FocusScope.of(context)
-                                                          .unfocus();
-                                                      HapticFeedback
-                                                          .mediumImpact();
-                                                      clearAllOutput(
-                                                          alsoWord: true);
-                                                    },
                                                     icon: Icon(
                                                       CupertinoIcons.delete,
                                                       color: CupertinoColors
                                                           .lightBackgroundGray,
-                                                    ))),
+                                                    ),
+                                                    onPressed: () {
+                                                      FocusScope.of(context)
+                                                          .unfocus();
+                                                      clearAllOutput(
+                                                          alsoWord: true);
+                                                    }
+                                                    // clearAllOutput(
+                                                    //     alsoWord: true),
+
+                                                    // {
+                                                    //   debugPrint(
+                                                    //       'pressed clear!');
+                                                    //   // FocusScope.of(context)
+                                                    //   //     .unfocus();
+                                                    //   HapticFeedback
+                                                    //       .mediumImpact();
+                                                    //   clearAllOutput(
+                                                    //       alsoWord: true);
+                                                    // },
+                                                    )),
                                           ),
                                         ),
                                       ],
