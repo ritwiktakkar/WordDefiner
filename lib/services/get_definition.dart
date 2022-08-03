@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-// import 'package:iDefine/model/definition_model_old.dart';
-import 'package:iDefine/model/definition_model.dart';
+// import 'package:WordDefiner/model/definition_model_old.dart';
+import 'package:WordDefiner/model/definition_model.dart';
 import 'dart:convert';
 
-// import 'package:iDefine/model/definition_model_old.dart';
+// import 'package:WordDefiner/model/definition_model_old.dart';
 
 var postURL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 

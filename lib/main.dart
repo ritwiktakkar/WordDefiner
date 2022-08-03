@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
-import 'package:iDefine/services/get_definition.dart' as API;
+import 'package:WordDefiner/services/get_definition.dart' as API;
 import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
   final meaningDefinitionController = TextEditingController();
   // final meaningSynonymsController = TextEditingController();
   // final meaningAntonymsController = TextEditingController();
-  final meaningExampleController = TextEditingController();
+  // final meaningExampleController = TextEditingController();
   final licenseNameController = TextEditingController();
   final licenseUrlsController = TextEditingController();
   final sourceUrlsController = TextEditingController();
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
     meaningDefinitionController.clear();
     // meaningSynonymsController.clear();
     // meaningAntonymsController.clear();
-    meaningExampleController.clear();
+    // meaningExampleController.clear();
     licenseNameController.clear();
     licenseUrlsController.clear();
     sourceUrlsController.clear();
@@ -159,7 +159,7 @@ class _HomePageState extends State<HomePage> {
     meaningDefinitionController.dispose();
     // meaningSynonymsController.dispose();
     // meaningAntonymsController.dispose();
-    meaningExampleController.dispose();
+    // meaningExampleController.dispose();
     licenseNameController.dispose();
     licenseUrlsController.dispose();
     sourceUrlsController.dispose();
@@ -208,11 +208,9 @@ class _HomePageState extends State<HomePage> {
                             (await API.getDefinition(wordToDefine));
                         if (definitionsList.isNotFound == true) {
                           debugPrint('404 word not found');
-                          // clearAllOutput();
                           Dialogs.showNoDefinitions(context);
                         } else if (definitionsList.isNull == true) {
                           debugPrint('!caught exception!');
-                          // clearAllOutput();
                           Dialogs.showNetworkIssues(context);
                         } else {
                           // traverse through list of definitions and assign to controllers so user can see
@@ -255,8 +253,6 @@ class _HomePageState extends State<HomePage> {
                                 });
                                 meaningDefinitionsMap[elementMeaning
                                     .partOfSpeech] = meaningDefinitionsList_1;
-                                // debugPrint(
-                                //     'meaningDefinitionsList_1: ${meaningDefinitionsList_1}; meaningDefinitionsMap: ${meaningDefinitionsMap}');
                                 meaningDefinitionsList_1 = [];
                               }
                             });
@@ -305,19 +301,14 @@ class _HomePageState extends State<HomePage> {
                       thumbColor: CupertinoColors.systemGrey,
                       thickness: 4,
                       radius: Radius.circular(5),
-                      // thumbVisibility: true,
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
                             Column(
-                              // first half widgets columns
-                              // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: <Widget>[
                                 Column(
                                   children: [
                                     Row(
-                                      // mainAxisAlignment:
-                                      // MainAxisAlignment.center,
                                       children: [
                                         Container(
                                           width: screenWidth * .3,
@@ -345,8 +336,6 @@ class _HomePageState extends State<HomePage> {
                                       thickness: 2,
                                     ),
                                     Row(
-                                      // mainAxisAlignment:
-                                      //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .3,
@@ -357,9 +346,6 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ),
                                         Container(
-                                          // padding: EdgeInsets.only(
-                                          //   left: screenWidth * 0.03,
-                                          // ),
                                           width: screenWidth * .7,
                                           child: AutoSizeText(
                                             outputPhoneticController.text,
@@ -377,8 +363,6 @@ class _HomePageState extends State<HomePage> {
                                       thickness: 2,
                                     ),
                                     Row(
-                                      // mainAxisAlignment:
-                                      //     MainAxisAlignment.spaceAround,
                                       children: [
                                         Container(
                                           width: screenWidth * .6,
@@ -401,9 +385,9 @@ class _HomePageState extends State<HomePage> {
                                                         .speaker_2_fill,
                                                     color: CupertinoColors
                                                         .activeBlue,
-                                                    // size: screenHeight * 0.05,
                                                   ),
                                                   onPressed: () {
+                                                    audioPlayer.setVolume(1);
                                                     audioPlayer.play(UrlSource(
                                                         pronounciationAudioSource!));
                                                   },
@@ -419,8 +403,6 @@ class _HomePageState extends State<HomePage> {
                                           pronounciationSourceController.text !=
                                               '',
                                       child: Row(
-                                        // mainAxisAlignment:
-                                        //     MainAxisAlignment.center,
                                         children: [
                                           Flexible(
                                             child: Text(
@@ -580,21 +562,7 @@ class _HomePageState extends State<HomePage> {
                                                           .unfocus();
                                                       clearAllOutput(
                                                           alsoWord: true);
-                                                    }
-                                                    // clearAllOutput(
-                                                    //     alsoWord: true),
-
-                                                    // {
-                                                    //   debugPrint(
-                                                    //       'pressed clear!');
-                                                    //   // FocusScope.of(context)
-                                                    //   //     .unfocus();
-                                                    //   HapticFeedback
-                                                    //       .mediumImpact();
-                                                    //   clearAllOutput(
-                                                    //       alsoWord: true);
-                                                    // },
-                                                    )),
+                                                    })),
                                           ),
                                         ),
                                       ],

@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/iDefine.iml" filepath="$PROJECT_DIR$/iDefine.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/iDefine_android.iml" filepath="$PROJECT_DIR$/android/iDefine_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WordDefiner.iml" filepath="$PROJECT_DIR$/WordDefiner.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/WordDefiner_android.iml" filepath="$PROJECT_DIR$/android/WordDefiner_android.iml" />
     </modules>
   </component>
 </project>
