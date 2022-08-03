@@ -206,91 +206,96 @@ class _HomePageState extends State<HomePage> {
                       controller: inputController,
                       onSubmitted: ((String wordToDefine) async {
                         clearAllOutput();
-                        outputWordController.text = wordToDefine.toLowerCase();
-                        final definitionsList =
-                            (await API.getDefinition(wordToDefine));
-                        if (definitionsList.isNotFound == true) {
-                          debugPrint('404 word not found');
-                          Dialogs.showNoDefinitions(context);
-                        } else if (definitionsList.isNull == true) {
-                          debugPrint('!caught exception!');
-                          Dialogs.showNetworkIssues(context);
+                        if (wordToDefine == '') {
+                          DoNothingAction();
                         } else {
-                          // traverse through list of definitions and assign to controllers so user can see
-                          definitionsList.definitionElements
-                              ?.forEach((element) {
-                            // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                            (((element.phonetic != '') &&
-                                    (element.phonetic != null))
-                                ? (phonetic = element.phonetic as String)
-                                : (phonetic = ''));
-                            // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
-                            // 2.1 - for audio
-                            element.phonetics?.forEach((elementPhonetic) {
-                              (((elementPhonetic.audio != '') ||
-                                      (elementPhonetic.audio != null))
-                                  ? (pronounciationAudioSource =
-                                      elementPhonetic.audio as String)
-                                  : (pronounciationAudioSource = ''));
-                              // 2.2 - for audio source
-                              (((elementPhonetic.sourceUrl != '') ||
-                                      (elementPhonetic.sourceUrl != null))
-                                  ? (pronounciationSourceUrl =
-                                      elementPhonetic.sourceUrl as String)
-                                  : (pronounciationSourceUrl = ''));
-                            });
-                            // 3 - for meanings (look through each field in meanings)
-                            element.meanings?.forEach((elementMeaning) {
-                              // 3.1 - add part of speech to list
-                              meaningPartOfSpeechList
-                                  .add(elementMeaning.partOfSpeech as String);
-                              // 3.2 - add definitions list to their list
-                              for (int i = 0;
-                                  i < meaningPartOfSpeechList.length;
-                                  i++) {
-                                elementMeaning.definitions
-                                    ?.forEach((elementMeaningDefinitions) {
-                                  meaningDefinitionsList_1.add(
-                                      elementMeaningDefinitions.definition
-                                          as String);
-                                });
-                                meaningDefinitionsMap[elementMeaning
-                                    .partOfSpeech] = meaningDefinitionsList_1;
-                                meaningDefinitionsList_1 = [];
-                              }
-                            });
-                            // 4 - for license
-                            // 4.1 -  check if license name in licenseNames already
-                            (licenseNames.contains(element.license?.name)
-                                ? (debugPrint(
-                                    '${element.license?.name} already in licenseNames'))
-                                : (licenseNames
-                                    .add(element.license?.name as String)));
-                            // 4.2 - check if license url in licenseUrls already
-                            (licenseUrls.contains(element.license?.url)
-                                ? (debugPrint(
-                                    '${element.license?.url} already in licenseUrls'))
-                                : (licenseUrls
-                                    .add(element.license?.url as String)));
-                            // 5 - for source urls (check if license name in licenseNames already)
-                            element.sourceUrls?.forEach((elementSourceUrl) {
-                              (sourceUrls.contains(elementSourceUrl)
+                          outputWordController.text =
+                              wordToDefine.toLowerCase();
+                          final definitionsList =
+                              (await API.getDefinition(wordToDefine));
+                          if (definitionsList.isNotFound == true) {
+                            debugPrint('404 word not found');
+                            Dialogs.showNoDefinitions(context);
+                          } else if (definitionsList.isNull == true) {
+                            debugPrint('!caught exception!');
+                            Dialogs.showNetworkIssues(context);
+                          } else {
+                            // traverse through list of definitions and assign to controllers so user can see
+                            definitionsList.definitionElements
+                                ?.forEach((element) {
+                              // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
+                              (((element.phonetic != '') &&
+                                      (element.phonetic != null))
+                                  ? (phonetic = element.phonetic as String)
+                                  : (phonetic = ''));
+                              // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                              // 2.1 - for audio
+                              element.phonetics?.forEach((elementPhonetic) {
+                                (((elementPhonetic.audio != '') ||
+                                        (elementPhonetic.audio != null))
+                                    ? (pronounciationAudioSource =
+                                        elementPhonetic.audio as String)
+                                    : (pronounciationAudioSource = ''));
+                                // 2.2 - for audio source
+                                (((elementPhonetic.sourceUrl != '') ||
+                                        (elementPhonetic.sourceUrl != null))
+                                    ? (pronounciationSourceUrl =
+                                        elementPhonetic.sourceUrl as String)
+                                    : (pronounciationSourceUrl = ''));
+                              });
+                              // 3 - for meanings (look through each field in meanings)
+                              element.meanings?.forEach((elementMeaning) {
+                                // 3.1 - add part of speech to list
+                                meaningPartOfSpeechList
+                                    .add(elementMeaning.partOfSpeech as String);
+                                // 3.2 - add definitions list to their list
+                                for (int i = 0;
+                                    i < meaningPartOfSpeechList.length;
+                                    i++) {
+                                  elementMeaning.definitions
+                                      ?.forEach((elementMeaningDefinitions) {
+                                    meaningDefinitionsList_1.add(
+                                        elementMeaningDefinitions.definition
+                                            as String);
+                                  });
+                                  meaningDefinitionsMap[elementMeaning
+                                      .partOfSpeech] = meaningDefinitionsList_1;
+                                  meaningDefinitionsList_1 = [];
+                                }
+                              });
+                              // 4 - for license
+                              // 4.1 -  check if license name in licenseNames already
+                              (licenseNames.contains(element.license?.name)
                                   ? (debugPrint(
-                                      '${elementSourceUrl} already in sourceUrls'))
-                                  : (sourceUrls.add(elementSourceUrl)));
+                                      '${element.license?.name} already in licenseNames'))
+                                  : (licenseNames
+                                      .add(element.license?.name as String)));
+                              // 4.2 - check if license url in licenseUrls already
+                              (licenseUrls.contains(element.license?.url)
+                                  ? (debugPrint(
+                                      '${element.license?.url} already in licenseUrls'))
+                                  : (licenseUrls
+                                      .add(element.license?.url as String)));
+                              // 5 - for source urls (check if license name in licenseNames already)
+                              element.sourceUrls?.forEach((elementSourceUrl) {
+                                (sourceUrls.contains(elementSourceUrl)
+                                    ? (debugPrint(
+                                        '${elementSourceUrl} already in sourceUrls'))
+                                    : (sourceUrls.add(elementSourceUrl)));
+                              });
                             });
-                          });
-
-                          // assign phonetic to phonetic controller
-                          outputPhoneticController.text = phonetic!;
-                          // assign pronounciationSourceController.text to pronounciationSourceUrl
-                          pronounciationSourceController.text =
-                              pronounciationSourceUrl!;
-                          // assign sourceUrls list to its text editing controller
-                          sourceUrlsController.text = sourceUrls.join(', ');
-                          // assign license lists to their respective text editing controllers
-                          licenseNameController.text = licenseNames.join(', ');
-                          licenseUrlsController.text = licenseUrls.join(', ');
+                            // assign phonetic to phonetic controller
+                            outputPhoneticController.text = phonetic!;
+                            // assign pronounciationSourceController.text to pronounciationSourceUrl
+                            pronounciationSourceController.text =
+                                pronounciationSourceUrl!;
+                            // assign sourceUrls list to its text editing controller
+                            sourceUrlsController.text = sourceUrls.join(', ');
+                            // assign license lists to their respective text editing controllers
+                            licenseNameController.text =
+                                licenseNames.join(', ');
+                            licenseUrlsController.text = licenseUrls.join(', ');
+                          }
                         }
                       }),
                       style: TextStyle(
@@ -324,7 +329,9 @@ class _HomePageState extends State<HomePage> {
                                         Container(
                                           width: screenWidth * .7,
                                           child: AutoSizeText(
-                                            outputWordController.text,
+                                            (wordToDefine != '')
+                                                ? outputWordController.text
+                                                : '',
                                             style: word,
                                             textAlign: TextAlign.center,
                                             maxLines: 1,
