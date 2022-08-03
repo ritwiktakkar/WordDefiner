@@ -13,7 +13,7 @@ class Dialogs {
             'No Definitions Found',
           ),
           content: Text(
-            "No definitions found for the word you were looking for.",
+            "No definitions found for the word you were looking for on the Dictionary API server.",
           ),
           actions: <Widget>[
             TextButton(

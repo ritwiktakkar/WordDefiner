@@ -228,27 +228,51 @@ class _HomePageState extends State<HomePage> {
                             definitionsList.definitionElements
                                 ?.forEach((element) {
                               // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                              (((element.phonetic != '') &&
-                                      (element.phonetic != null))
-                                  ? (phonetic = element.phonetic as String)
-                                  : (phonetic = ''));
+                              debugPrint('enter 1');
+                              // below don't work if there is no phonetic field
+                              // (((element.phonetic != '') ||
+                              //         (element.phonetic != null))
+                              //     ? (phonetic = element.phonetic as String)
+                              //     : DoNothingAction());
+                              if (element.phonetic == null) {
+                                DoNothingAction(); // try to get in 2.3
+                              } else {
+                                phonetic = element.phonetic;
+                              }
+                              debugPrint('phonetic: ${phonetic}');
+                              // assign phonetic to phonetic controller in 2.3 because that's last place to do it
+                              debugPrint('exit 1');
                               // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
                               // 2.1 - for audio
                               element.phonetics?.forEach((elementPhonetic) {
+                                debugPrint('enter 2');
                                 (((elementPhonetic.audio != '') ||
                                         (elementPhonetic.audio != null))
                                     ? (pronounciationAudioSource =
                                         elementPhonetic.audio as String)
-                                    : (pronounciationAudioSource = ''));
+                                    : DoNothingAction());
                                 // 2.2 - for audio source
                                 (((elementPhonetic.sourceUrl != '') ||
                                         (elementPhonetic.sourceUrl != null))
                                     ? (pronounciationSourceUrl =
                                         elementPhonetic.sourceUrl as String)
-                                    : (pronounciationSourceUrl = ''));
+                                    : DoNothingAction());
+                                // 2.3 - find some phonetic if not already there since phonetics list also has some
+                                // debugPrint('1-${phonetic}');
+                                if (phonetic == '' &&
+                                    elementPhonetic.text != null) {
+                                  phonetic = elementPhonetic.text as String;
+                                }
+                                // debugPrint('2-${phonetic}');
+                                outputPhoneticController.text = phonetic!;
+                                // assign pronounciationSourceController.text to pronounciationSourceUrl
+                                pronounciationSourceController.text =
+                                    pronounciationSourceUrl!;
+                                debugPrint('exit 2');
                               });
                               // 3 - for meanings (look through each field in meanings)
                               element.meanings?.forEach((elementMeaning) {
+                                debugPrint('enter 3');
                                 // 3.1 - add part of speech to list
                                 meaningPartOfSpeechList
                                     .add(elementMeaning.partOfSpeech as String);
@@ -267,7 +291,9 @@ class _HomePageState extends State<HomePage> {
                                   meaningDefinitionsList_1 = [];
                                 }
                               });
+                              debugPrint('exit 3');
                               // 4 - for license
+                              debugPrint('enter 4');
                               // 4.1 -  check if license name in licenseNames already
                               (licenseNames.contains(element.license?.name)
                                   ? DoNothingAction()
@@ -278,24 +304,23 @@ class _HomePageState extends State<HomePage> {
                                   ? DoNothingAction()
                                   : (licenseUrls
                                       .add(element.license?.url as String)));
+                              // assign license lists to their respective text editing controllers
+                              licenseNameController.text =
+                                  licenseNames.join(', ');
+                              licenseUrlsController.text =
+                                  licenseUrls.join(', ');
+                              debugPrint('exit 4');
                               // 5 - for source urls (check if license name in licenseNames already)
                               element.sourceUrls?.forEach((elementSourceUrl) {
+                                debugPrint('enter 5');
                                 (sourceUrls.contains(elementSourceUrl)
                                     ? DoNothingAction()
                                     : (sourceUrls.add(elementSourceUrl)));
                               });
+                              // assign sourceUrls list to its text editing controller
+                              sourceUrlsController.text = sourceUrls.join(', ');
                             });
-                            // assign phonetic to phonetic controller
-                            outputPhoneticController.text = phonetic!;
-                            // assign pronounciationSourceController.text to pronounciationSourceUrl
-                            pronounciationSourceController.text =
-                                pronounciationSourceUrl!;
-                            // assign sourceUrls list to its text editing controller
-                            sourceUrlsController.text = sourceUrls.join(', ');
-                            // assign license lists to their respective text editing controllers
-                            licenseNameController.text =
-                                licenseNames.join(', ');
-                            licenseUrlsController.text = licenseUrls.join(', ');
+                            debugPrint('exit 5');
                           }
                         }
                       }),
@@ -330,7 +355,6 @@ class _HomePageState extends State<HomePage> {
                                         ? outputWordController.text
                                         : '',
                                     style: word,
-                                    // textAlign: TextAlign.center,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -408,7 +432,6 @@ class _HomePageState extends State<HomePage> {
                               visible:
                                   pronounciationSourceController.text != '',
                               child: Row(
-                                // mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Flexible(
                                     child: Text(
@@ -550,11 +573,6 @@ class _HomePageState extends State<HomePage> {
                                                   .lightBackgroundGray,
                                             ),
                                             onPressed: () {
-                                              // FocusScope.of(context)
-                                              //     .unfocus();
-                                              // clearAllOutput(
-                                              //     alsoSearch: true,
-                                              //     alsoWord: true);
                                               setState(() {
                                                 clearAllOutput(
                                                     alsoSearch: true,
