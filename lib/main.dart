@@ -123,6 +123,13 @@ class _HomePageState extends State<HomePage> {
     fontSize: 17,
   );
 
+  TextStyle bodyItalic = TextStyle(
+    color: CupertinoColors.white,
+    fontWeight: FontWeight.normal,
+    fontStyle: FontStyle.italic,
+    fontSize: 17,
+  );
+
   TextStyle synonymsAntonyms = TextStyle(
     color: CupertinoColors.extraLightBackgroundGray,
     fontWeight: FontWeight.w300,
@@ -248,8 +255,8 @@ class _HomePageState extends State<HomePage> {
                                 });
                                 meaningDefinitionsMap[elementMeaning
                                     .partOfSpeech] = meaningDefinitionsList_1;
-                                debugPrint(
-                                    'meaningDefinitionsList_1: ${meaningDefinitionsList_1}; meaningDefinitionsMap: ${meaningDefinitionsMap}');
+                                // debugPrint(
+                                //     'meaningDefinitionsList_1: ${meaningDefinitionsList_1}; meaningDefinitionsMap: ${meaningDefinitionsMap}');
                                 meaningDefinitionsList_1 = [];
                               }
                             });
@@ -274,14 +281,7 @@ class _HomePageState extends State<HomePage> {
                                   : (sourceUrls.add(elementSourceUrl)));
                             });
                           });
-                          // debug printing for meanings
-                          // debugPrint('Debugging meanings...');
-                          // debugPrint(
-                          //     'meaningPartOfSpeechList: ${meaningPartOfSpeechList.toString()}');
-                          // debugPrint(
-                          //     'meaningDefinitionsList_1: ${meaningDefinitionsList_1.toString()}');
-                          // debugPrint(
-                          //     'meaningDefinitionsList: ${meaningDefinitionsList.toString()}');
+
                           // assign phonetic to phonetic controller
                           outputPhoneticController.text = phonetic;
                           // assign pronounciationSourceController.text to pronounciationSourceUrl
@@ -436,75 +436,39 @@ class _HomePageState extends State<HomePage> {
                                       color: Colors.grey[800],
                                       thickness: 2,
                                     ),
-                                    Row(
-                                      // mainAxisAlignment:
-                                      //     MainAxisAlignment.spaceAround,
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          width: screenWidth * .25,
-                                          child: AutoSizeText(
-                                            "Meanings",
-                                            style: sectionTitle,
-                                            maxLines: 1,
-                                          ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "Meanings",
+                                              style: sectionTitle,
+                                            ),
+                                          ],
                                         ),
                                         Visibility(
                                           visible:
                                               meaningDefinitionsMap.isNotEmpty,
-                                          child: Container(
-                                            // padding: EdgeInsets.only(
-                                            //   left: screenWidth * 0.03,
-                                            // ),
-                                            width: screenWidth * .3,
-                                            child: Column(
-                                              children: [
-                                                AutoSizeText(
-                                                  'Part of Speech',
-                                                  maxLines: 2,
-                                                  style: body,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                                ListView.builder(
-                                                    physics:
-                                                        NeverScrollableScrollPhysics(),
-                                                    padding: EdgeInsets.all(0),
-                                                    shrinkWrap: true,
-                                                    itemCount:
+                                          child: Column(
+                                            children: [
+                                              ListView.builder(
+                                                  physics:
+                                                      NeverScrollableScrollPhysics(),
+                                                  padding: EdgeInsets.all(0),
+                                                  shrinkWrap: true,
+                                                  itemCount:
+                                                      meaningDefinitionsMap
+                                                          .keys.length,
+                                                  itemBuilder:
+                                                      (BuildContext context,
+                                                          int index) {
+                                                    String key =
                                                         meaningDefinitionsMap
-                                                            .keys.length,
-                                                    itemBuilder:
-                                                        (BuildContext context,
-                                                            int index) {
-                                                      String key =
-                                                          meaningDefinitionsMap
-                                                              .keys
-                                                              .elementAt(index);
-                                                      return ListTile(
-                                                        title: AutoSizeText(
-                                                          '${key}',
-                                                          style: body,
-                                                          maxLines: 1,
-                                                        ),
-                                                      );
-                                                    }),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: screenWidth * .45,
-                                          child: ListView.builder(
-                                              physics:
-                                                  NeverScrollableScrollPhysics(),
-                                              padding: EdgeInsets.all(0),
-                                              shrinkWrap: true,
-                                              itemCount: meaningDefinitionsMap
-                                                  .keys.length,
-                                              itemBuilder:
-                                                  (BuildContext context,
-                                                      int index) {
-                                                String value =
-                                                    meaningDefinitionsMap
+                                                            .keys
+                                                            .elementAt(index);
+                                                    String value = meaningDefinitionsMap
                                                         .values
                                                         .elementAt(index)
                                                         .toString()
@@ -518,13 +482,35 @@ class _HomePageState extends State<HomePage> {
                                                                     .length -
                                                                 1)
                                                         .replaceAll('.,', ';');
-                                                return ListTile(
-                                                  title: Text(
-                                                    '${value.toString()}',
-                                                    style: body,
-                                                  ),
-                                                );
-                                              }),
+                                                    return Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceEvenly,
+                                                      children: [
+                                                        ListTile(
+                                                          title: RichText(
+                                                              text: TextSpan(
+                                                                  text: '',
+                                                                  style: body,
+                                                                  children: [
+                                                                TextSpan(
+                                                                  text:
+                                                                      '${key}\n',
+                                                                  style:
+                                                                      bodyItalic,
+                                                                ),
+                                                                TextSpan(
+                                                                  text:
+                                                                      '${value.toString()}',
+                                                                  style: body,
+                                                                ),
+                                                              ])),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }),
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -559,8 +545,6 @@ class _HomePageState extends State<HomePage> {
                                             ],
                                           ),
                                           Row(
-                                            // mainAxisAlignment:
-                                            //     MainAxisAlignment.spaceAround,
                                             children: [
                                               Flexible(
                                                 child: Text(
@@ -568,10 +552,6 @@ class _HomePageState extends State<HomePage> {
                                                   style: corporate,
                                                 ),
                                               ),
-                                              // Text(
-                                              //   sourceUrlsController.text,
-                                              //   style: corporate,
-                                              // ),
                                             ],
                                           ),
                                         ],
@@ -585,10 +565,7 @@ class _HomePageState extends State<HomePage> {
                                           child: Container(
                                             padding: EdgeInsets.only(
                                               top: 8,
-                                              // right: screenWidth * 0.8,
                                             ),
-                                            // width: screenWidth * 0.2,
-                                            // height: screenHeight * 0.08,
                                             child: Tooltip(
                                                 message:
                                                     "Clear all output fields",
