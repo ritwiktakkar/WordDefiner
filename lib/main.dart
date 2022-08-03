@@ -193,6 +193,10 @@ class _HomePageState extends State<HomePage> {
         body: Column(
           children: [
             Container(
+              padding: EdgeInsets.only(
+                left: 8,
+                right: 8,
+              ),
               height: screenHeight * 0.95,
               child: Column(
                 children: [
@@ -266,21 +270,18 @@ class _HomePageState extends State<HomePage> {
                               // 4 - for license
                               // 4.1 -  check if license name in licenseNames already
                               (licenseNames.contains(element.license?.name)
-                                  ? (debugPrint(
-                                      '${element.license?.name} already in licenseNames'))
+                                  ? DoNothingAction()
                                   : (licenseNames
                                       .add(element.license?.name as String)));
                               // 4.2 - check if license url in licenseUrls already
                               (licenseUrls.contains(element.license?.url)
-                                  ? (debugPrint(
-                                      '${element.license?.url} already in licenseUrls'))
+                                  ? DoNothingAction()
                                   : (licenseUrls
                                       .add(element.license?.url as String)));
                               // 5 - for source urls (check if license name in licenseNames already)
                               element.sourceUrls?.forEach((elementSourceUrl) {
                                 (sourceUrls.contains(elementSourceUrl)
-                                    ? (debugPrint(
-                                        '${elementSourceUrl} already in sourceUrls'))
+                                    ? DoNothingAction()
                                     : (sourceUrls.add(elementSourceUrl)));
                               });
                             });
@@ -312,278 +313,255 @@ class _HomePageState extends State<HomePage> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: screenWidth * 0.3,
+                                  child: AutoSizeText(
+                                    "Word",
+                                    style: sectionTitle,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                Container(
+                                  width: screenWidth * 0.65,
+                                  child: AutoSizeText(
+                                    (outputWordController.text != '')
+                                        ? outputWordController.text
+                                        : '',
+                                    style: word,
+                                    // textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  alignment: Alignment.center,
+                                ),
+                              ],
+                            ),
+                            Divider(
+                              // divider between first and second half of widgets
+                              color: Colors.grey[800],
+                              thickness: 2,
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: screenWidth * .3,
+                                  child: AutoSizeText(
+                                    "Phonetic",
+                                    style: sectionTitle,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                Container(
+                                  width: screenWidth * 0.65,
+                                  // alignment: Alignment.center,
+                                  child: AutoSizeText(
+                                    outputPhoneticController.text,
+                                    style: subsectionTitle,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Divider(
+                              // divider between first and second half of widgets
+                              color: Colors.grey[800],
+                              thickness: 2,
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: screenWidth * .6,
+                                  child: AutoSizeText(
+                                    "Pronounciation",
+                                    style: sectionTitle,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                Visibility(
+                                  visible: (pronounciationAudioSource != ''),
+                                  child: Container(
+                                    // width: screenWidth * .4,
+                                    child: Row(
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            CupertinoIcons.speaker_2_fill,
+                                            color: CupertinoColors.activeBlue,
+                                          ),
+                                          onPressed: () {
+                                            audioPlayer.setVolume(1);
+                                            audioPlayer.play(UrlSource(
+                                                pronounciationAudioSource!));
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Visibility(
+                              visible:
+                                  pronounciationSourceController.text != '',
+                              child: Row(
+                                // mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                        pronounciationSourceController.text,
+                                        style: corporate),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Divider(
+                              // divider between first and second half of widgets
+                              color: Colors.grey[800],
+                              thickness: 2,
+                            ),
                             Column(
-                              children: <Widget>[
-                                Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: screenWidth * .3,
-                                          child: AutoSizeText(
-                                            "Word",
-                                            style: sectionTitle,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: screenWidth * .7,
-                                          child: AutoSizeText(
-                                            (wordToDefine != '')
-                                                ? outputWordController.text
-                                                : '',
-                                            style: word,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Divider(
-                                      // divider between first and second half of widgets
-                                      color: Colors.grey[800],
-                                      thickness: 2,
-                                    ),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: screenWidth * .3,
-                                          child: AutoSizeText(
-                                            "Phonetic",
-                                            style: sectionTitle,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: screenWidth * .7,
-                                          child: AutoSizeText(
-                                            outputPhoneticController.text,
-                                            style: subsectionTitle,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Divider(
-                                      // divider between first and second half of widgets
-                                      color: Colors.grey[800],
-                                      thickness: 2,
-                                    ),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: screenWidth * .6,
-                                          child: AutoSizeText(
-                                            "Pronounciation",
-                                            style: sectionTitle,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                        Visibility(
-                                          visible:
-                                              (pronounciationAudioSource != ''),
-                                          child: Container(
-                                            width: screenWidth * .4,
-                                            child: Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: Icon(
-                                                    CupertinoIcons
-                                                        .speaker_2_fill,
-                                                    color: CupertinoColors
-                                                        .activeBlue,
-                                                  ),
-                                                  onPressed: () {
-                                                    audioPlayer.setVolume(1);
-                                                    audioPlayer.play(UrlSource(
-                                                        pronounciationAudioSource!));
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Visibility(
-                                      visible:
-                                          pronounciationSourceController.text !=
-                                              '',
-                                      child: Row(
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                                pronounciationSourceController
-                                                    .text,
-                                                style: corporate),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    Divider(
-                                      // divider between first and second half of widgets
-                                      color: Colors.grey[800],
-                                      thickness: 2,
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "Meanings",
-                                              style: sectionTitle,
-                                            ),
-                                          ],
-                                        ),
-                                        Visibility(
-                                          visible:
-                                              meaningDefinitionsMap.isNotEmpty,
-                                          child: Column(
-                                            children: [
-                                              ListView.builder(
-                                                  physics:
-                                                      NeverScrollableScrollPhysics(),
-                                                  padding: EdgeInsets.all(0),
-                                                  shrinkWrap: true,
-                                                  itemCount:
-                                                      meaningDefinitionsMap
-                                                          .keys.length,
-                                                  itemBuilder:
-                                                      (BuildContext context,
-                                                          int index) {
-                                                    String key =
-                                                        meaningDefinitionsMap
-                                                            .keys
-                                                            .elementAt(index);
-                                                    String value = meaningDefinitionsMap
-                                                        .values
-                                                        .elementAt(index)
-                                                        .toString()
-                                                        .substring(
-                                                            1,
-                                                            meaningDefinitionsMap
-                                                                    .values
-                                                                    .elementAt(
-                                                                        index)
-                                                                    .toString()
-                                                                    .length -
-                                                                1)
-                                                        .replaceAll('.,', ';');
-                                                    return Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceEvenly,
-                                                      children: [
-                                                        ListTile(
-                                                          title: RichText(
-                                                              text: TextSpan(
-                                                                  text: '',
-                                                                  style: body,
-                                                                  children: [
-                                                                TextSpan(
-                                                                  text:
-                                                                      '${key}\n',
-                                                                  style:
-                                                                      bodyItalic,
-                                                                ),
-                                                                TextSpan(
-                                                                  text:
-                                                                      '${value.toString()}',
-                                                                  style: body,
-                                                                ),
-                                                              ])),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  }),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Visibility(
-                                      visible: (licenseNameController.text !=
-                                              '') |
-                                          (licenseUrlsController.text != ''),
-                                      child: Column(
-                                        children: [
-                                          Divider(
-                                            color: Colors.grey[800],
-                                            thickness: 2,
-                                          ),
-                                          Row(
-                                            children: [
-                                              Flexible(
-                                                child: Text(
-                                                  "License name: ${licenseNameController.text}",
-                                                  style: corporate,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Flexible(
-                                                child: Text(
-                                                  "License URLs: ${licenseUrlsController.text}",
-                                                  style: corporate,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Flexible(
-                                                child: Text(
-                                                  "Source URLs: ${sourceUrlsController.text}",
-                                                  style: corporate,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Visibility(
-                                          visible:
-                                              outputWordController.text != '',
-                                          child: Container(
-                                            padding: EdgeInsets.only(
-                                              top: 8,
-                                            ),
-                                            child: Tooltip(
-                                                message:
-                                                    "Clear all output fields",
-                                                child: IconButton(
-                                                    icon: Icon(
-                                                      CupertinoIcons.delete,
-                                                      color: CupertinoColors
-                                                          .lightBackgroundGray,
-                                                    ),
-                                                    onPressed: () {
-                                                      // FocusScope.of(context)
-                                                      //     .unfocus();
-                                                      // clearAllOutput(
-                                                      //     alsoSearch: true,
-                                                      //     alsoWord: true);
-                                                      setState(() {
-                                                        clearAllOutput(
-                                                            alsoSearch: true,
-                                                            alsoWord: true);
-                                                      });
-                                                    })),
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      "Meanings",
+                                      style: sectionTitle,
                                     ),
                                   ],
+                                ),
+                                Visibility(
+                                  visible: meaningDefinitionsMap.isNotEmpty,
+                                  child: Column(
+                                    children: [
+                                      ListView.builder(
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          padding: EdgeInsets.all(0),
+                                          shrinkWrap: true,
+                                          itemCount:
+                                              meaningDefinitionsMap.keys.length,
+                                          itemBuilder: (BuildContext context,
+                                              int index) {
+                                            String key = meaningDefinitionsMap
+                                                .keys
+                                                .elementAt(index);
+                                            String value = meaningDefinitionsMap
+                                                .values
+                                                .elementAt(index)
+                                                .toString()
+                                                .substring(
+                                                    1,
+                                                    meaningDefinitionsMap.values
+                                                            .elementAt(index)
+                                                            .toString()
+                                                            .length -
+                                                        1)
+                                                .replaceAll('.,', ';');
+                                            return Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                ListTile(
+                                                  title: RichText(
+                                                      text: TextSpan(
+                                                          text: '',
+                                                          style: body,
+                                                          children: [
+                                                        TextSpan(
+                                                          text: '${key}\n',
+                                                          style: bodyItalic,
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${value.toString()}',
+                                                          style: body,
+                                                        ),
+                                                      ])),
+                                                ),
+                                              ],
+                                            );
+                                          }),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Visibility(
+                              visible: (licenseNameController.text != '') |
+                                  (licenseUrlsController.text != ''),
+                              child: Column(
+                                children: [
+                                  Divider(
+                                    color: Colors.grey[800],
+                                    thickness: 2,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          "License name: ${licenseNameController.text}",
+                                          style: corporate,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          "License URLs: ${licenseUrlsController.text}",
+                                          style: corporate,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          "Source URLs: ${sourceUrlsController.text}",
+                                          style: corporate,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Visibility(
+                                  visible: outputWordController.text != '',
+                                  child: Container(
+                                    padding: EdgeInsets.only(
+                                      top: 8,
+                                    ),
+                                    child: Tooltip(
+                                        message: "Clear all output fields",
+                                        child: IconButton(
+                                            icon: Icon(
+                                              CupertinoIcons.delete,
+                                              color: CupertinoColors
+                                                  .lightBackgroundGray,
+                                            ),
+                                            onPressed: () {
+                                              // FocusScope.of(context)
+                                              //     .unfocus();
+                                              // clearAllOutput(
+                                              //     alsoSearch: true,
+                                              //     alsoWord: true);
+                                              setState(() {
+                                                clearAllOutput(
+                                                    alsoSearch: true,
+                                                    alsoWord: true);
+                                              });
+                                            })),
+                                  ),
                                 ),
                               ],
                             ),
@@ -595,25 +573,28 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Definitions from Dictionary API: dictionaryapi.dev/",
-                  style: corporate,
-                ),
-                SizedBox(
-                  width: screenWidth * 0.05,
-                ),
-                Tooltip(
-                    message:
-                        'The developer of the API used by this app (not me) provides it for free. Please consider donating by visiting the website below to help keep the server running, and mention this app\'s name when you do so.',
-                    child: Icon(
-                      CupertinoIcons.info,
-                      color: CupertinoColors.inactiveGray,
-                      size: 20,
-                    )),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(top: 6.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Definitions from Dictionary API: dictionaryapi.dev/",
+                    style: corporate,
+                  ),
+                  SizedBox(
+                    width: screenWidth * 0.05,
+                  ),
+                  Tooltip(
+                      message:
+                          'The developer of the API used by this app (not me) provides it for free. Please consider donating by visiting the website below to help keep the server running, and mention this app\'s name when you do so.',
+                      child: Icon(
+                        CupertinoIcons.info,
+                        color: CupertinoColors.inactiveGray,
+                        size: 20,
+                      )),
+                ],
+              ),
             )
           ],
         ),
