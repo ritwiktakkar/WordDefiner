@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> {
   TextStyle word = TextStyle(
     color: CupertinoColors.white,
     fontWeight: FontWeight.bold,
-    fontSize: 35,
+    fontSize: 30,
   );
 
   TextStyle body = TextStyle(
@@ -205,7 +205,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(
-                      top: screenHeight * 0.05,
+                      top: screenHeight * 0.06,
                       bottom: 20,
                     ),
                     child: CupertinoSearchTextField(
@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                               } else {
                                 phonetic = element.phonetic;
                               }
-                              debugPrint('phonetic: ${phonetic}');
+                              // debugPrint('phonetic: ${phonetic}');
                               // assign phonetic to phonetic controller in 2.3 because that's last place to do it
                               debugPrint('exit 1');
                               // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
@@ -377,15 +377,15 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 Container(
                                   width: screenWidth * 0.65,
-                                  child: AutoSizeText(
+                                  child: SelectableText(
                                     (outputWordController.text != '')
                                         ? outputWordController.text
                                         : '',
                                     style: word,
                                     maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    // overflow: TextOverflow.ellipsis,
                                   ),
-                                  alignment: Alignment.center,
+                                  // alignment: Alignment.center,
                                 ),
                               ],
                             ),
@@ -407,12 +407,12 @@ class _HomePageState extends State<HomePage> {
                                 Container(
                                   width: screenWidth * 0.65,
                                   // alignment: Alignment.center,
-                                  child: AutoSizeText(
+                                  child: SelectableText(
                                     outputPhoneticController.text,
                                     style: subsectionTitle,
-                                    textAlign: TextAlign.center,
+                                    // textAlign: TextAlign.center,
                                     maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    // overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -425,9 +425,9 @@ class _HomePageState extends State<HomePage> {
                             Row(
                               children: [
                                 Container(
-                                  width: screenWidth * .6,
+                                  width: screenWidth * .3,
                                   child: AutoSizeText(
-                                    "Pronounciation",
+                                    "Listen",
                                     style: sectionTitle,
                                     maxLines: 1,
                                   ),
@@ -435,7 +435,7 @@ class _HomePageState extends State<HomePage> {
                                 Visibility(
                                   visible: (pronounciationAudioSource != ''),
                                   child: Container(
-                                    // width: screenWidth * .4,
+                                    width: screenWidth * .65,
                                     child: Row(
                                       children: [
                                         IconButton(
@@ -458,15 +458,13 @@ class _HomePageState extends State<HomePage> {
                             Visibility(
                               visible:
                                   pronounciationSourceController.text != '',
-                              child: Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                        pronounciationSourceController.text,
-                                        style: corporate),
-                                  )
-                                ],
-                              ),
+                              child: Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: SelectableText(
+                                    '${pronounciationSourceController.text}',
+                                    style: corporate,
+                                    maxLines: 1,
+                                  )),
                             ),
                             Divider(
                               // divider between first and second half of widgets
@@ -517,8 +515,8 @@ class _HomePageState extends State<HomePage> {
                                                   MainAxisAlignment.spaceEvenly,
                                               children: [
                                                 ListTile(
-                                                  title: RichText(
-                                                      text: TextSpan(
+                                                  title: SelectableText.rich(
+                                                      TextSpan(
                                                           text: '',
                                                           style: body,
                                                           children: [
