@@ -548,35 +548,29 @@ class _HomePageState extends State<HomePage> {
                                     color: Colors.grey[800],
                                     thickness: 2,
                                   ),
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          "License name: ${licenseNameController.text}",
-                                          style: corporate,
-                                        ),
-                                      ),
-                                    ],
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: SelectableText(
+                                      "License name: ${licenseNameController.text}",
+                                      style: corporate,
+                                      maxLines: 1,
+                                    ),
                                   ),
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          "License URLs: ${licenseUrlsController.text}",
-                                          style: corporate,
-                                        ),
-                                      ),
-                                    ],
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: SelectableText(
+                                      "License URLs: ${licenseUrlsController.text}",
+                                      style: corporate,
+                                      maxLines: 1,
+                                    ),
                                   ),
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          "Source URLs: ${sourceUrlsController.text}",
-                                          style: corporate,
-                                        ),
-                                      ),
-                                    ],
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: SelectableText(
+                                      "Source URLs: ${sourceUrlsController.text}",
+                                      style: corporate,
+                                      maxLines: 1,
+                                    ),
                                   ),
                                 ],
                               ),
