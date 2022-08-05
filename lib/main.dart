@@ -376,6 +376,9 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 Container(
+                                  padding: EdgeInsets.only(
+                                    left: 12,
+                                  ),
                                   width: screenWidth * 0.65,
                                   child: AutoSizeText(
                                     (outputWordController.text != '')
@@ -405,6 +408,9 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 Container(
+                                  padding: EdgeInsets.only(
+                                    left: 12,
+                                  ),
                                   width: screenWidth * 0.65,
                                   // alignment: Alignment.center,
                                   child: AutoSizeText(
@@ -600,6 +606,7 @@ class _HomePageState extends State<HomePage> {
                                                   .lightBackgroundGray,
                                             ),
                                             onPressed: () {
+                                              HapticFeedback.lightImpact();
                                               setState(() {
                                                 clearAllOutput(
                                                     alsoSearch: true,
@@ -632,7 +639,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Tooltip(
                       message:
-                          'The developer of the API used by this app (not me) provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name when you do so.',
+                          'The developer of the API used by this app provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name if you do so.',
                       child: Icon(
                         CupertinoIcons.info,
                         color: CupertinoColors.inactiveGray,
