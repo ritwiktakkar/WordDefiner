@@ -230,125 +230,129 @@ class _HomePageState extends State<HomePage> {
                               wordToDefine.toLowerCase();
                           final definitionsList =
                               (await API.getDefinition(wordToDefine));
-                          if (definitionsList.isNotFound == true) {
-                            debugPrint('404 word not found');
-                            Dialogs.showNoDefinitions(context);
-                          } else if (definitionsList.isNull == true) {
-                            debugPrint('!caught exception!');
-                            Dialogs.showNetworkIssues(context);
-                          } else {
-                            // traverse through list of definitions and assign to controllers so user can see
-                            definitionsList.definitionElements
-                                ?.forEach((element) {
-                              // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                              debugPrint('enter 1');
-                              // below don't work if there is no phonetic field
-                              // (((element.phonetic != '') ||
-                              //         (element.phonetic != null))
-                              //     ? (phonetic = element.phonetic as String)
-                              //     : DoNothingAction());
-                              if (element.phonetic == null) {
-                                DoNothingAction(); // try to get in 2.3
-                              } else {
-                                phonetic = element.phonetic;
-                              }
-                              // debugPrint('phonetic: ${phonetic}');
-                              // assign phonetic to phonetic controller in 2.3 because that's last place to do it
-                              debugPrint('exit 1');
-                              // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
-                              // 2.1 - for audio
-                              element.phonetics?.forEach((elementPhonetic) {
-                                debugPrint('enter 2');
-                                if (elementPhonetic.audio == null ||
-                                    elementPhonetic.audio == '') {
-                                  DoNothingAction();
-                                } else {
-                                  pronounciationAudioSource =
-                                      elementPhonetic.audio as String;
-                                }
-                                // (((elementPhonetic.audio != '') ||
-                                //         (elementPhonetic.audio != null))
-                                //     ? (pronounciationAudioSource =
-                                //         elementPhonetic.audio as String)
+                          setState(() {
+                            if (definitionsList.isNotFound == true) {
+                              debugPrint('404 word not found');
+                              Dialogs.showNoDefinitions(context);
+                            } else if (definitionsList.isNull == true) {
+                              debugPrint('!caught exception!');
+                              Dialogs.showNetworkIssues(context);
+                            } else {
+                              // traverse through list of definitions and assign to controllers so user can see
+                              definitionsList.definitionElements
+                                  ?.forEach((element) {
+                                // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
+                                debugPrint('enter 1');
+                                // below don't work if there is no phonetic field
+                                // (((element.phonetic != '') ||
+                                //         (element.phonetic != null))
+                                //     ? (phonetic = element.phonetic as String)
                                 //     : DoNothingAction());
-                                // 2.2 - for audio source
-                                if (elementPhonetic.sourceUrl == null ||
-                                    elementPhonetic.sourceUrl == '') {
-                                  DoNothingAction();
+                                if (element.phonetic == null) {
+                                  DoNothingAction(); // try to get in 2.3
                                 } else {
-                                  pronounciationSourceUrl =
-                                      elementPhonetic.sourceUrl as String;
+                                  phonetic = element.phonetic;
                                 }
-                                // (((elementPhonetic.sourceUrl != '') ||
-                                //         (elementPhonetic.sourceUrl != null))
-                                //     ? (pronounciationSourceUrl =
-                                //         elementPhonetic.sourceUrl as String)
-                                //     : DoNothingAction());
-                                // 2.3 - find some phonetic if not already there since phonetics list also has some
-                                // debugPrint('1-${phonetic}');
-                                if (phonetic == '' &&
-                                    elementPhonetic.text != null) {
-                                  phonetic = elementPhonetic.text as String;
-                                }
-                                // debugPrint('2-${phonetic}');
-                                outputPhoneticController.text = phonetic!;
-                                // assign pronounciationSourceController.text to pronounciationSourceUrl
-                                pronounciationSourceController.text =
-                                    pronounciationSourceUrl!;
-                                debugPrint('exit 2');
-                              });
-                              // 3 - for meanings (look through each field in meanings)
-                              element.meanings?.forEach((elementMeaning) {
-                                debugPrint('enter 3');
-                                // 3.1 - add part of speech to list
-                                meaningPartOfSpeechList
-                                    .add(elementMeaning.partOfSpeech as String);
-                                // 3.2 - add definitions list to their list
-                                for (int i = 0;
-                                    i < meaningPartOfSpeechList.length;
-                                    i++) {
-                                  elementMeaning.definitions
-                                      ?.forEach((elementMeaningDefinitions) {
-                                    meaningDefinitionsList_1.add(
-                                        elementMeaningDefinitions.definition
-                                            as String);
-                                  });
-                                  meaningDefinitionsMap[elementMeaning
-                                      .partOfSpeech] = meaningDefinitionsList_1;
-                                  meaningDefinitionsList_1 = [];
-                                }
-                              });
-                              debugPrint('exit 3');
-                              // 4 - for license
-                              debugPrint('enter 4');
-                              // 4.1 -  check if license name in licenseNames already
-                              (licenseNames.contains(element.license?.name)
-                                  ? DoNothingAction()
-                                  : (licenseNames
-                                      .add(element.license?.name as String)));
-                              // 4.2 - check if license url in licenseUrls already
-                              (licenseUrls.contains(element.license?.url)
-                                  ? DoNothingAction()
-                                  : (licenseUrls
-                                      .add(element.license?.url as String)));
-                              // assign license lists to their respective text editing controllers
-                              licenseNameController.text =
-                                  licenseNames.join(', ');
-                              licenseUrlsController.text =
-                                  licenseUrls.join(', ');
-                              debugPrint('exit 4');
-                              // 5 - for source urls (check if license name in licenseNames already)
-                              element.sourceUrls?.forEach((elementSourceUrl) {
-                                debugPrint('enter 5');
-                                (sourceUrls.contains(elementSourceUrl)
+                                // debugPrint('phonetic: ${phonetic}');
+                                // assign phonetic to phonetic controller in 2.3 because that's last place to do it
+                                debugPrint('exit 1');
+                                // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                                // 2.1 - for audio
+                                element.phonetics?.forEach((elementPhonetic) {
+                                  debugPrint('enter 2');
+                                  if (elementPhonetic.audio == null ||
+                                      elementPhonetic.audio == '') {
+                                    DoNothingAction();
+                                  } else {
+                                    pronounciationAudioSource =
+                                        elementPhonetic.audio as String;
+                                  }
+                                  // (((elementPhonetic.audio != '') ||
+                                  //         (elementPhonetic.audio != null))
+                                  //     ? (pronounciationAudioSource =
+                                  //         elementPhonetic.audio as String)
+                                  //     : DoNothingAction());
+                                  // 2.2 - for audio source
+                                  if (elementPhonetic.sourceUrl == null ||
+                                      elementPhonetic.sourceUrl == '') {
+                                    DoNothingAction();
+                                  } else {
+                                    pronounciationSourceUrl =
+                                        elementPhonetic.sourceUrl as String;
+                                  }
+                                  // (((elementPhonetic.sourceUrl != '') ||
+                                  //         (elementPhonetic.sourceUrl != null))
+                                  //     ? (pronounciationSourceUrl =
+                                  //         elementPhonetic.sourceUrl as String)
+                                  //     : DoNothingAction());
+                                  // 2.3 - find some phonetic if not already there since phonetics list also has some
+                                  // debugPrint('1-${phonetic}');
+                                  if (phonetic == '' &&
+                                      elementPhonetic.text != null) {
+                                    phonetic = elementPhonetic.text as String;
+                                  }
+                                  // debugPrint('2-${phonetic}');
+                                  outputPhoneticController.text = phonetic!;
+                                  // assign pronounciationSourceController.text to pronounciationSourceUrl
+                                  pronounciationSourceController.text =
+                                      pronounciationSourceUrl!;
+                                  debugPrint('exit 2');
+                                });
+                                // 3 - for meanings (look through each field in meanings)
+                                element.meanings?.forEach((elementMeaning) {
+                                  debugPrint('enter 3');
+                                  // 3.1 - add part of speech to list
+                                  meaningPartOfSpeechList.add(
+                                      elementMeaning.partOfSpeech as String);
+                                  // 3.2 - add definitions list to their list
+                                  for (int i = 0;
+                                      i < meaningPartOfSpeechList.length;
+                                      i++) {
+                                    elementMeaning.definitions
+                                        ?.forEach((elementMeaningDefinitions) {
+                                      meaningDefinitionsList_1.add(
+                                          elementMeaningDefinitions.definition
+                                              as String);
+                                    });
+                                    meaningDefinitionsMap[
+                                            elementMeaning.partOfSpeech] =
+                                        meaningDefinitionsList_1;
+                                    meaningDefinitionsList_1 = [];
+                                  }
+                                });
+                                debugPrint('exit 3');
+                                // 4 - for license
+                                debugPrint('enter 4');
+                                // 4.1 -  check if license name in licenseNames already
+                                (licenseNames.contains(element.license?.name)
                                     ? DoNothingAction()
-                                    : (sourceUrls.add(elementSourceUrl)));
+                                    : (licenseNames
+                                        .add(element.license?.name as String)));
+                                // 4.2 - check if license url in licenseUrls already
+                                (licenseUrls.contains(element.license?.url)
+                                    ? DoNothingAction()
+                                    : (licenseUrls
+                                        .add(element.license?.url as String)));
+                                // assign license lists to their respective text editing controllers
+                                licenseNameController.text =
+                                    licenseNames.join(', ');
+                                licenseUrlsController.text =
+                                    licenseUrls.join(', ');
+                                debugPrint('exit 4');
+                                // 5 - for source urls (check if license name in licenseNames already)
+                                element.sourceUrls?.forEach((elementSourceUrl) {
+                                  debugPrint('enter 5');
+                                  (sourceUrls.contains(elementSourceUrl)
+                                      ? DoNothingAction()
+                                      : (sourceUrls.add(elementSourceUrl)));
+                                });
+                                // assign sourceUrls list to its text editing controller
+                                sourceUrlsController.text =
+                                    sourceUrls.join(', ');
                               });
-                              // assign sourceUrls list to its text editing controller
-                              sourceUrlsController.text = sourceUrls.join(', ');
-                            });
-                            debugPrint('exit 5');
-                          }
+                              debugPrint('exit 5');
+                            }
+                          });
                         }
                       }),
                       style: TextStyle(
