@@ -22,6 +22,24 @@ class MyApp extends StatelessWidget {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    // to make volume loud on iOS: https://github.com/bluefireteam/audioplayers/issues/1194
+    final AudioContext audioContext = AudioContext(
+        iOS: AudioContextIOS(
+          defaultToSpeaker: true,
+          category: AVAudioSessionCategory.multiRoute,
+          options: [
+            AVAudioSessionOptions.defaultToSpeaker,
+            // AVAudioSessionOptions.mixWithOthers,
+          ],
+        ),
+        android: AudioContextAndroid(
+          audioFocus: AndroidAudioFocus.none,
+          usageType: AndroidUsageType.assistanceSonification,
+          contentType: AndroidContentType.sonification,
+          stayAwake: true,
+          isSpeakerphoneOn: true,
+        ));
+    AudioPlayer.global.setGlobalAudioContext(audioContext);
     return new MaterialApp(
       debugShowCheckedModeBanner: false, // hide debug banner from top left
       theme:
