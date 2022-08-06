@@ -633,26 +633,30 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ],
                                 ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 4.0),
-                                      child: Text(
-                                        "Definitions from Dictionary API: dictionaryapi.dev/",
-                                        style: corporate,
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 4.0,
+                                        ),
+                                        child: Text(
+                                          "Definitions from Dictionary API: dictionaryapi.dev/",
+                                          style: corporate,
+                                        ),
                                       ),
-                                    ),
-                                    Tooltip(
-                                        message:
-                                            'The developer of the API used by this app provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name if you do so.',
-                                        child: Icon(
-                                          CupertinoIcons.info,
-                                          color: CupertinoColors.inactiveGray,
-                                          size: 16,
-                                        ))
-                                  ],
+                                      Tooltip(
+                                          message:
+                                              'The developer of the API used by this app provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name if you do so.',
+                                          child: Icon(
+                                            CupertinoIcons.info,
+                                            color: CupertinoColors.inactiveGray,
+                                            size: 16,
+                                          ))
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
