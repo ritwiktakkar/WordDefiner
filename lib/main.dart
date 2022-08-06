@@ -19,9 +19,9 @@ class MyApp extends StatelessWidget {
         statusBarBrightness: Brightness.dark,
       ),
     );
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.portraitUp,
+    // ]);
     // to make volume loud on iOS: https://github.com/bluefireteam/audioplayers/issues/1194
     final AudioContext audioContext = AudioContext(
         iOS: AudioContextIOS(
@@ -603,31 +603,56 @@ class _HomePageState extends State<HomePage> {
                                 ],
                               ),
                             ),
-                            Row(
+                            Column(
                               children: [
-                                Visibility(
-                                  visible: outputWordController.text != '',
-                                  child: Container(
-                                    padding: EdgeInsets.only(
-                                      top: 8,
+                                Row(
+                                  children: [
+                                    Visibility(
+                                      visible: outputWordController.text != '',
+                                      child: Container(
+                                        padding: EdgeInsets.only(
+                                          top: 8,
+                                        ),
+                                        child: Tooltip(
+                                            message: "Clear all output fields",
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  CupertinoIcons.delete,
+                                                  color: CupertinoColors
+                                                      .lightBackgroundGray,
+                                                ),
+                                                onPressed: () {
+                                                  HapticFeedback.lightImpact();
+                                                  setState(() {
+                                                    clearAllOutput(
+                                                        alsoSearch: true,
+                                                        alsoWord: true);
+                                                  });
+                                                })),
+                                      ),
                                     ),
-                                    child: Tooltip(
-                                        message: "Clear all output fields",
-                                        child: IconButton(
-                                            icon: Icon(
-                                              CupertinoIcons.delete,
-                                              color: CupertinoColors
-                                                  .lightBackgroundGray,
-                                            ),
-                                            onPressed: () {
-                                              HapticFeedback.lightImpact();
-                                              setState(() {
-                                                clearAllOutput(
-                                                    alsoSearch: true,
-                                                    alsoWord: true);
-                                              });
-                                            })),
-                                  ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 4.0),
+                                      child: Text(
+                                        "Definitions from Dictionary API: dictionaryapi.dev/",
+                                        style: corporate,
+                                      ),
+                                    ),
+                                    Tooltip(
+                                        message:
+                                            'The developer of the API used by this app provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name if you do so.',
+                                        child: Icon(
+                                          CupertinoIcons.info,
+                                          color: CupertinoColors.inactiveGray,
+                                          size: 16,
+                                        ))
+                                  ],
                                 ),
                               ],
                             ),
@@ -639,29 +664,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 6.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Definitions from Dictionary API: dictionaryapi.dev/",
-                    style: corporate,
-                  ),
-                  SizedBox(
-                    width: screenWidth * 0.05,
-                  ),
-                  Tooltip(
-                      message:
-                          'The developer of the API used by this app provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name if you do so.',
-                      child: Icon(
-                        CupertinoIcons.info,
-                        color: CupertinoColors.inactiveGray,
-                        size: 20,
-                      )),
-                ],
-              ),
-            )
           ],
         ),
       ),
