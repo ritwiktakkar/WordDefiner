@@ -215,8 +215,8 @@ class _HomePageState extends State<HomePage> {
           children: [
             Container(
               padding: EdgeInsets.only(
-                left: 8,
-                right: 8,
+                left: screenWidth * 0.04,
+                right: screenWidth * 0.04,
               ),
               height: screenHeight * 0.95,
               child: Column(
@@ -401,7 +401,7 @@ class _HomePageState extends State<HomePage> {
                                   padding: EdgeInsets.only(
                                     left: 12,
                                   ),
-                                  width: screenWidth * 0.65,
+                                  width: screenWidth * 0.62,
                                   child: SelectableText(
                                     (outputWordController.text != '')
                                         ? outputWordController.text
@@ -433,7 +433,7 @@ class _HomePageState extends State<HomePage> {
                                   padding: EdgeInsets.only(
                                     left: 12,
                                   ),
-                                  width: screenWidth * 0.65,
+                                  width: screenWidth * 0.62,
                                   // alignment: Alignment.center,
                                   child: SelectableText(
                                     outputPhoneticController.text,
@@ -463,7 +463,7 @@ class _HomePageState extends State<HomePage> {
                                 Visibility(
                                   visible: (pronounciationAudioSource != ''),
                                   child: Container(
-                                    width: screenWidth * .65,
+                                    width: screenWidth * .62,
                                     child: Row(
                                       children: [
                                         IconButton(
