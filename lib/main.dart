@@ -60,6 +60,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Create a text controller and use it to retrieve the current value of the TextField.
   final inputController = TextEditingController();
+  var inputFocusNode = FocusNode();
   final outputWordController = TextEditingController();
   final outputPhoneticController = TextEditingController();
   final pronounciationSourceController = TextEditingController();
@@ -227,6 +228,7 @@ class _HomePageState extends State<HomePage> {
                       bottom: 20,
                     ),
                     child: CupertinoSearchTextField(
+                      focusNode: inputFocusNode,
                       placeholder: 'Look up a word',
                       controller: inputController,
                       onSubmitted: ((String wordToDefine) async {
@@ -639,6 +641,10 @@ class _HomePageState extends State<HomePage> {
                                                         alsoSearch: true,
                                                         alsoWord: true);
                                                   });
+                                                  // shift focus back to input textfield
+                                                  FocusScope.of(context)
+                                                      .requestFocus(
+                                                          inputFocusNode);
                                                 })),
                                       ),
                                     ),
