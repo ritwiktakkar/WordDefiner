@@ -403,23 +403,22 @@ class _HomePageState extends State<HomePage> {
                                   width: screenWidth * 0.62,
                                   padding: EdgeInsets.only(
                                     left: 12,
-                                    bottom: 8,
+                                    // bottom: 8,
                                   ),
-                                  child: RawScrollbar(
-                                    crossAxisMargin: 0,
-                                    mainAxisMargin: 0,
-                                    scrollbarOrientation:
-                                        ScrollbarOrientation.top,
-                                    // thumbColor: CupertinoColors.systemGrey,
-                                    thickness: 4,
-                                    radius: Radius.circular(5),
+                                  child: Scrollbar(
+                                    // crossAxisMargin:
+                                    //     (MediaQuery.of(context).orientation ==
+                                    //             Orientation.landscape)
+                                    //         ? -(screenHeight) * 0.02
+                                    //         : -(screenHeight) * 0.01,
+                                    // mainAxisMargin: 100,
+                                    // isAlwaysShown: true,
                                     child: SelectableText(
                                       (outputWordController.text != '')
                                           ? outputWordController.text
                                           : '',
                                       style: word,
                                       maxLines: 1,
-                                      // overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   // alignment: Alignment.center,
