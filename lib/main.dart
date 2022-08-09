@@ -149,9 +149,9 @@ class _HomePageState extends State<HomePage> {
 
   TextStyle bodyItalic = TextStyle(
     color: CupertinoColors.white,
-    fontWeight: FontWeight.normal,
-    fontStyle: FontStyle.italic,
-    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 18,
   );
 
   TextStyle synonymsAntonyms = TextStyle(
@@ -398,17 +398,27 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 Container(
+                                  width: screenWidth * 0.62,
                                   padding: EdgeInsets.only(
                                     left: 12,
+                                    bottom: 8,
                                   ),
-                                  width: screenWidth * 0.62,
-                                  child: SelectableText(
-                                    (outputWordController.text != '')
-                                        ? outputWordController.text
-                                        : '',
-                                    style: word,
-                                    maxLines: 1,
-                                    // overflow: TextOverflow.ellipsis,
+                                  child: RawScrollbar(
+                                    crossAxisMargin: 0,
+                                    mainAxisMargin: 0,
+                                    scrollbarOrientation:
+                                        ScrollbarOrientation.top,
+                                    // thumbColor: CupertinoColors.systemGrey,
+                                    thickness: 4,
+                                    radius: Radius.circular(5),
+                                    child: SelectableText(
+                                      (outputWordController.text != '')
+                                          ? outputWordController.text
+                                          : '',
+                                      style: word,
+                                      maxLines: 1,
+                                      // overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   // alignment: Alignment.center,
                                 ),
@@ -537,27 +547,28 @@ class _HomePageState extends State<HomePage> {
                                                             .toString()
                                                             .length -
                                                         1)
-                                                .replaceAll('.,', ';');
+                                                .replaceAll('.,', '\n•');
                                             return Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceEvenly,
                                               children: [
                                                 ListTile(
                                                   title: SelectableText.rich(
-                                                      TextSpan(
-                                                          text: '',
-                                                          style: body,
-                                                          children: [
-                                                        TextSpan(
-                                                          text: '${key}\n',
-                                                          style: bodyItalic,
-                                                        ),
-                                                        TextSpan(
-                                                          text:
-                                                              '${value.toString()}',
-                                                          style: body,
-                                                        ),
-                                                      ])),
+                                                    TextSpan(
+                                                        text: '',
+                                                        style: body,
+                                                        children: [
+                                                          TextSpan(
+                                                            text: '${key}\n',
+                                                            style: bodyItalic,
+                                                          ),
+                                                          TextSpan(
+                                                            text:
+                                                                '• ${value.toString()}',
+                                                            style: body,
+                                                          ),
+                                                        ]),
+                                                  ),
                                                 ),
                                               ],
                                             );
