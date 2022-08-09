@@ -1,4 +1,4 @@
-package com.ricky-apps.WordDefiner
+package com.nocturnaldevlab.WordDefiner
 
 import io.flutter.embedding.android.FlutterActivity
 
