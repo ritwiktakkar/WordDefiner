@@ -246,18 +246,22 @@ class _HomePageState extends State<HomePage> {
                                 'clear input word controller and clearAll');
                           });
                         } else {
-                          outputWordController.text =
-                              wordToDefine.toLowerCase();
                           final definitionsList =
                               (await API.getDefinition(wordToDefine));
                           setState(() {
                             if (definitionsList.isNotFound == true) {
                               debugPrint('404 word not found');
-                              Dialogs.showNoDefinitions(context);
+                              Dialogs.showNoDefinitions(context, wordToDefine);
+                              clearAllOutput(alsoSearch: true, alsoWord: true);
+                              // shift focus back to input textfield
+                              FocusScope.of(context)
+                                  .requestFocus(inputFocusNode);
                             } else if (definitionsList.isNull == true) {
                               debugPrint('!caught exception!');
                               Dialogs.showNetworkIssues(context);
                             } else {
+                              outputWordController.text =
+                                  wordToDefine.toLowerCase();
                               // traverse through list of definitions and assign to controllers so user can see
                               definitionsList.definitionElements
                                   ?.forEach((element) {
@@ -394,7 +398,9 @@ class _HomePageState extends State<HomePage> {
                                 Container(
                                   width: screenWidth * 0.3,
                                   child: AutoSizeText(
-                                    "Word",
+                                    (outputWordController.text != '')
+                                        ? "Word:"
+                                        : "Word",
                                     style: sectionTitle,
                                     maxLines: 1,
                                   ),
@@ -435,7 +441,9 @@ class _HomePageState extends State<HomePage> {
                                 Container(
                                   width: screenWidth * .3,
                                   child: AutoSizeText(
-                                    "Phonetic",
+                                    (phonetic != null && phonetic != '')
+                                        ? "Phonetic:"
+                                        : "Phonetic",
                                     style: sectionTitle,
                                     maxLines: 1,
                                   ),
@@ -466,7 +474,9 @@ class _HomePageState extends State<HomePage> {
                                 Container(
                                   width: screenWidth * .3,
                                   child: AutoSizeText(
-                                    "Listen",
+                                    (pronounciationAudioSource != '')
+                                        ? "Listen:"
+                                        : "Listen",
                                     style: sectionTitle,
                                     maxLines: 1,
                                   ),
@@ -477,16 +487,20 @@ class _HomePageState extends State<HomePage> {
                                     width: screenWidth * .62,
                                     child: Row(
                                       children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            CupertinoIcons.speaker_2_fill,
-                                            color: CupertinoColors.activeBlue,
+                                        Tooltip(
+                                          message:
+                                              'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
+                                          child: IconButton(
+                                            icon: Icon(
+                                              CupertinoIcons.speaker_2_fill,
+                                              color: CupertinoColors.activeBlue,
+                                            ),
+                                            onPressed: () {
+                                              audioPlayer.setVolume(1);
+                                              audioPlayer.play(UrlSource(
+                                                  pronounciationAudioSource!));
+                                            },
                                           ),
-                                          onPressed: () {
-                                            audioPlayer.setVolume(1);
-                                            audioPlayer.play(UrlSource(
-                                                pronounciationAudioSource!));
-                                          },
                                         ),
                                       ],
                                     ),
@@ -516,7 +530,9 @@ class _HomePageState extends State<HomePage> {
                                 Row(
                                   children: [
                                     Text(
-                                      "Meanings",
+                                      (meaningDefinitionsMap.isNotEmpty)
+                                          ? "Meanings:"
+                                          : "Meanings",
                                       style: sectionTitle,
                                     ),
                                   ],
@@ -618,15 +634,16 @@ class _HomePageState extends State<HomePage> {
                             Column(
                               children: [
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Visibility(
-                                      visible: outputWordController.text != '',
+                                      visible: meaningDefinitionsMap.isNotEmpty,
                                       child: Container(
                                         padding: EdgeInsets.only(
                                           top: 8,
                                         ),
                                         child: Tooltip(
-                                            message: "Clear all output fields",
+                                            message: "Clear all output fields.",
                                             child: IconButton(
                                                 icon: Icon(
                                                   CupertinoIcons.delete,
@@ -658,17 +675,17 @@ class _HomePageState extends State<HomePage> {
                                           right: 4.0,
                                         ),
                                         child: Text(
-                                          "Definitions from Dictionary API: dictionaryapi.dev/",
+                                          "Results from Dictionary API",
                                           style: corporate,
                                         ),
                                       ),
                                       Tooltip(
                                           message:
-                                              'The developer of the API used by this app provides it for free. Please consider donating by visiting the website below to help keep their server running, and mention this app\'s name if you do so.',
+                                              'WordDefiner uses the free Dictionary API to fetch results. Please consider donating to the API provider by visiting dictionaryapi.dev to help keep their server running, and mention WordDefiner if you do so.',
                                           child: Icon(
                                             CupertinoIcons.info,
                                             color: CupertinoColors.inactiveGray,
-                                            size: 16,
+                                            size: 14,
                                           ))
                                     ],
                                   ),

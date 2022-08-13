@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 class Dialogs {
   // this dialog pops up when there are no definitions for the word provided
-  static Future<void> showNoDefinitions(BuildContext context) async {
+  static Future<void> showNoDefinitions(
+      BuildContext context, String word) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -13,7 +14,7 @@ class Dialogs {
             'No Definitions Found',
           ),
           content: Text(
-            "No definitions found for the word you were looking for on the Dictionary API server. Try to check the spelling? 🤔",
+            "No definitions found for \"${word.trim()}\" on the Dictionary API server. Recheck the spelling? 🤔",
           ),
           actions: <Widget>[
             TextButton(
