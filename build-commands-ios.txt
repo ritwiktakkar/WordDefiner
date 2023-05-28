@@ -1,3 +1,0 @@
-flutter clean
-
-flutter build ipa --obfuscate --split-debug-info=symbols/
