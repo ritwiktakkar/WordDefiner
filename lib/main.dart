@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
 import 'package:WordDefiner/services/get_definition.dart' as API;
@@ -33,7 +32,7 @@ class MyApp extends StatelessWidget {
           ],
         ),
         android: AudioContextAndroid(
-          audioFocus: AndroidAudioFocus.none,
+          audioFocus: AndroidAudioFocus.gainTransient,
           usageType: AndroidUsageType.assistanceSonification,
           contentType: AndroidContentType.sonification,
           stayAwake: true,
@@ -130,45 +129,52 @@ class _HomePageState extends State<HomePage> {
     sourceUrls.clear();
   }
 
+  void clearSearch() {
+    HapticFeedback.lightImpact();
+    inputController.clear();
+    // shift focus back to input textfield
+    FocusScope.of(context).requestFocus(inputFocusNode);
+  }
+
   TextStyle sectionTitle = TextStyle(
-    color: CupertinoColors.white,
+    color: Colors.white,
     fontWeight: FontWeight.bold,
     fontSize: 25,
   );
 
   TextStyle word = TextStyle(
-    color: CupertinoColors.white,
+    color: Colors.white,
     fontWeight: FontWeight.bold,
     fontSize: 30,
   );
 
   TextStyle body = TextStyle(
-    color: CupertinoColors.white,
+    color: Colors.white,
     fontWeight: FontWeight.normal,
     fontSize: 17,
   );
 
   TextStyle bodyItalic = TextStyle(
-    color: CupertinoColors.white,
+    color: Colors.white,
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
     fontSize: 18,
   );
 
   TextStyle synonymsAntonyms = TextStyle(
-    color: CupertinoColors.extraLightBackgroundGray,
+    color: Colors.grey[300],
     fontWeight: FontWeight.w300,
     fontSize: 17,
   );
 
   TextStyle subsectionTitle = TextStyle(
-    color: CupertinoColors.white,
+    color: Colors.white,
     fontWeight: FontWeight.w500,
     fontSize: 20,
   );
 
   TextStyle corporate = TextStyle(
-    color: CupertinoColors.systemGrey,
+    color: Colors.grey,
     fontSize: 10,
   );
 
@@ -219,7 +225,7 @@ class _HomePageState extends State<HomePage> {
                 left: screenWidth * 0.04,
                 right: screenWidth * 0.04,
               ),
-              height: screenHeight * 0.95,
+              height: screenHeight * 0.98,
               child: Column(
                 children: [
                   Padding(
@@ -227,9 +233,18 @@ class _HomePageState extends State<HomePage> {
                       top: screenHeight * 0.06,
                       bottom: 20,
                     ),
-                    child: CupertinoSearchTextField(
+                    child: TextField(
                       focusNode: inputFocusNode,
-                      placeholder: 'Look up a word',
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search),
+                        suffixIcon: inputController.text != ''
+                            ? IconButton(
+                                icon: Icon(Icons.clear), onPressed: clearSearch)
+                            : null,
+                        border: OutlineInputBorder(),
+                        hintText: 'Look up a word',
+                      ),
+                      // placeholder: 'Look up a word',
                       controller: inputController,
                       onSubmitted: ((String wordToDefine) async {
                         clearAllOutput();
@@ -380,14 +395,14 @@ class _HomePageState extends State<HomePage> {
                         }
                       }),
                       style: TextStyle(
-                        color: CupertinoColors.white,
+                        color: Colors.white,
                       ),
-                      itemColor: CupertinoColors.inactiveGray,
+                      // itemColor: Colors.grey,
                     ),
                   ),
                   Expanded(
                     child: RawScrollbar(
-                      thumbColor: CupertinoColors.systemGrey,
+                      thumbColor: Colors.grey,
                       thickness: 4,
                       radius: Radius.circular(5),
                       child: SingleChildScrollView(
@@ -492,8 +507,9 @@ class _HomePageState extends State<HomePage> {
                                               'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
                                           child: IconButton(
                                             icon: Icon(
-                                              CupertinoIcons.speaker_2_fill,
-                                              color: CupertinoColors.activeBlue,
+                                              Icons.music_note,
+                                              color: Colors.blue,
+                                              size: 30,
                                             ),
                                             onPressed: () {
                                               audioPlayer.setVolume(1);
@@ -646,9 +662,8 @@ class _HomePageState extends State<HomePage> {
                                             message: "Clear all output fields.",
                                             child: IconButton(
                                                 icon: Icon(
-                                                  CupertinoIcons.delete,
-                                                  color: CupertinoColors
-                                                      .lightBackgroundGray,
+                                                  Icons.delete,
+                                                  color: Colors.grey[200],
                                                 ),
                                                 onPressed: () {
                                                   HapticFeedback.lightImpact();
@@ -683,8 +698,8 @@ class _HomePageState extends State<HomePage> {
                                           message:
                                               'WordDefiner uses the free Dictionary API to fetch results. Please consider donating to the API provider by visiting dictionaryapi.dev to help keep their server running, and mention WordDefiner if you do so.',
                                           child: Icon(
-                                            CupertinoIcons.info,
-                                            color: CupertinoColors.inactiveGray,
+                                            Icons.info_outline_rounded,
+                                            color: Colors.grey,
                                             size: 14,
                                           ))
                                     ],
