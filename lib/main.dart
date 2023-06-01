@@ -507,7 +507,7 @@ class _HomePageState extends State<HomePage> {
                                               'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
                                           child: IconButton(
                                             icon: Icon(
-                                              Icons.music_note,
+                                              Icons.hearing,
                                               color: Colors.blue,
                                               size: 30,
                                             ),
@@ -684,13 +684,14 @@ class _HomePageState extends State<HomePage> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.only(
                                           right: 4.0,
                                         ),
                                         child: Text(
-                                          "Results from Dictionary API",
+                                          "Definitions from Dictionary API",
                                           style: corporate,
                                         ),
                                       ),
@@ -700,7 +701,7 @@ class _HomePageState extends State<HomePage> {
                                           child: Icon(
                                             Icons.info_outline_rounded,
                                             color: Colors.grey,
-                                            size: 14,
+                                            size: 12,
                                           ))
                                     ],
                                   ),
