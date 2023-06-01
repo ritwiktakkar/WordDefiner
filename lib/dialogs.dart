@@ -13,7 +13,7 @@ class Dialogs {
             'No Definitions Found',
           ),
           content: Text(
-            "No definitions found for \"${word.trim()}\" on the Dictionary API server. Recheck the spelling? 🤔",
+            "No definitions found for \“${word.trim()}\” on the Dictionary API server. If the word exists as spelled, then the word is not in this dictionary.",
           ),
           actions: <Widget>[
             TextButton(
@@ -41,7 +41,7 @@ class Dialogs {
             'Network Issue',
           ),
           content: Text(
-            "A network issue exists either in the server or on your device. Please check your network settings and try again. 🧐",
+            "A network issue exists either in the server or on your device. Please check your network settings and try again.",
           ),
           actions: <Widget>[
             TextButton(
@@ -69,7 +69,7 @@ class Dialogs {
             'Input Issue',
           ),
           content: Text(
-            "Please limit your search term to consist of letters from the English alphabet. Also, there should be no number, emoji or punctuation mark. 🥵",
+            "Please limit your search term to consist of letters from the English alphabet. Also, there should be no number, emoji or punctuation marks in the search bar.",
           ),
           actions: <Widget>[
             TextButton(
