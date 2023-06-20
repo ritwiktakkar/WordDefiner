@@ -139,11 +139,11 @@ class _HomePageState extends State<HomePage> {
   TextStyle sectionTitle = TextStyle(
     color: Colors.white,
     fontWeight: FontWeight.bold,
-    fontSize: 25,
+    fontSize: 20,
   );
 
   TextStyle word = TextStyle(
-    color: Colors.white,
+    color: Colors.blue[400],
     fontWeight: FontWeight.bold,
     fontSize: 30,
   );
@@ -151,13 +151,12 @@ class _HomePageState extends State<HomePage> {
   TextStyle body = TextStyle(
     color: Colors.white,
     fontWeight: FontWeight.normal,
-    fontSize: 17,
+    fontSize: 18,
   );
 
   TextStyle bodyItalic = TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w600,
-    fontStyle: FontStyle.normal,
+    color: Colors.blue[200],
+    fontStyle: FontStyle.italic,
     fontSize: 18,
   );
 
@@ -225,13 +224,13 @@ class _HomePageState extends State<HomePage> {
                 left: screenWidth * 0.04,
                 right: screenWidth * 0.04,
               ),
-              height: screenHeight * 0.98,
+              height: screenHeight * 0.96,
               child: Column(
                 children: [
                   Padding(
                     padding: EdgeInsets.only(
                       top: screenHeight * 0.06,
-                      bottom: 20,
+                      bottom: screenHeight * 0.015,
                     ),
                     child: TextField(
                       focusNode: inputFocusNode,
@@ -244,7 +243,6 @@ class _HomePageState extends State<HomePage> {
                         border: OutlineInputBorder(),
                         hintText: 'Look up a word',
                       ),
-                      // placeholder: 'Look up a word',
                       controller: inputController,
                       onSubmitted: ((String wordToDefine) async {
                         clearAllOutput();
@@ -255,7 +253,6 @@ class _HomePageState extends State<HomePage> {
                           // non letter detected
                           Dialogs.showInputIssue(context);
                           setState(() {
-                            // inputController.text = '';
                             clearAllOutput(alsoSearch: true, alsoWord: true);
                             debugPrint(
                                 'clear input word controller and clearAll');
@@ -276,23 +273,17 @@ class _HomePageState extends State<HomePage> {
                               Dialogs.showNetworkIssues(context);
                             } else {
                               outputWordController.text =
-                                  wordToDefine.toLowerCase();
+                                  "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
                               // traverse through list of definitions and assign to controllers so user can see
                               definitionsList.definitionElements
                                   ?.forEach((element) {
                                 // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
                                 debugPrint('enter 1');
-                                // below don't work if there is no phonetic field
-                                // (((element.phonetic != '') ||
-                                //         (element.phonetic != null))
-                                //     ? (phonetic = element.phonetic as String)
-                                //     : DoNothingAction());
                                 if (element.phonetic == null) {
-                                  DoNothingAction(); // try to get in 2.3
+                                  DoNothingAction();
                                 } else {
                                   phonetic = element.phonetic;
                                 }
-                                // debugPrint('phonetic: ${phonetic}');
                                 // assign phonetic to phonetic controller in 2.3 because that's last place to do it
                                 debugPrint('exit 1');
                                 // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
@@ -306,11 +297,6 @@ class _HomePageState extends State<HomePage> {
                                     pronounciationAudioSource =
                                         elementPhonetic.audio as String;
                                   }
-                                  // (((elementPhonetic.audio != '') ||
-                                  //         (elementPhonetic.audio != null))
-                                  //     ? (pronounciationAudioSource =
-                                  //         elementPhonetic.audio as String)
-                                  //     : DoNothingAction());
                                   // 2.2 - for audio source
                                   if (elementPhonetic.sourceUrl == null ||
                                       elementPhonetic.sourceUrl == '') {
@@ -319,18 +305,12 @@ class _HomePageState extends State<HomePage> {
                                     pronounciationSourceUrl =
                                         elementPhonetic.sourceUrl as String;
                                   }
-                                  // (((elementPhonetic.sourceUrl != '') ||
-                                  //         (elementPhonetic.sourceUrl != null))
-                                  //     ? (pronounciationSourceUrl =
-                                  //         elementPhonetic.sourceUrl as String)
-                                  //     : DoNothingAction());
                                   // 2.3 - find some phonetic if not already there since phonetics list also has some
                                   // debugPrint('1-${phonetic}');
                                   if (phonetic == '' &&
                                       elementPhonetic.text != null) {
                                     phonetic = elementPhonetic.text as String;
                                   }
-                                  // debugPrint('2-${phonetic}');
                                   outputPhoneticController.text = phonetic!;
                                   // assign pronounciationSourceController.text to pronounciationSourceUrl
                                   pronounciationSourceController.text =
@@ -397,7 +377,6 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(
                         color: Colors.white,
                       ),
-                      // itemColor: Colors.grey,
                     ),
                   ),
                   Expanded(
@@ -407,49 +386,23 @@ class _HomePageState extends State<HomePage> {
                       radius: Radius.circular(5),
                       child: SingleChildScrollView(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: screenWidth * 0.3,
-                                  child: AutoSizeText(
-                                    (outputWordController.text != '')
-                                        ? "Word:"
-                                        : "Word",
-                                    style: sectionTitle,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                Container(
-                                  width: screenWidth * 0.62,
-                                  padding: EdgeInsets.only(
-                                    left: 12,
-                                    // bottom: 8,
-                                  ),
-                                  child: Scrollbar(
-                                    // crossAxisMargin:
-                                    //     (MediaQuery.of(context).orientation ==
-                                    //             Orientation.landscape)
-                                    //         ? -(screenHeight) * 0.02
-                                    //         : -(screenHeight) * 0.01,
-                                    // mainAxisMargin: 100,
-                                    // isAlwaysShown: true,
-                                    child: SelectableText(
-                                      (outputWordController.text != '')
-                                          ? outputWordController.text
-                                          : '',
-                                      style: word,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                  // alignment: Alignment.center,
-                                ),
-                              ],
+                            Visibility(
+                              visible: outputWordController.text.isNotEmpty,
+                              child: SelectableText(
+                                outputWordController.text,
+                                style: word,
+                                maxLines: 1,
+                              ),
                             ),
-                            Divider(
-                              // divider between first and second half of widgets
-                              color: Colors.grey[800],
-                              thickness: 2,
+                            Visibility(
+                              visible: outputWordController.text.isNotEmpty,
+                              child: Divider(
+                                // divider between first and second half of widgets
+                                color: Colors.grey[800],
+                                thickness: 2,
+                              ),
                             ),
                             Row(
                               children: [
@@ -468,13 +421,10 @@ class _HomePageState extends State<HomePage> {
                                     left: 12,
                                   ),
                                   width: screenWidth * 0.62,
-                                  // alignment: Alignment.center,
                                   child: SelectableText(
                                     outputPhoneticController.text,
                                     style: subsectionTitle,
-                                    // textAlign: TextAlign.center,
                                     maxLines: 1,
-                                    // overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -490,8 +440,8 @@ class _HomePageState extends State<HomePage> {
                                   width: screenWidth * .3,
                                   child: AutoSizeText(
                                     (pronounciationAudioSource != '')
-                                        ? "Listen:"
-                                        : "Listen",
+                                        ? "Hear:"
+                                        : "Hear",
                                     style: sectionTitle,
                                     maxLines: 1,
                                   ),
@@ -508,7 +458,7 @@ class _HomePageState extends State<HomePage> {
                                           child: IconButton(
                                             icon: Icon(
                                               Icons.hearing,
-                                              color: Colors.blue,
+                                              color: Colors.blue[300],
                                               size: 30,
                                             ),
                                             onPressed: () {
@@ -547,8 +497,8 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Text(
                                       (meaningDefinitionsMap.isNotEmpty)
-                                          ? "Meanings:"
-                                          : "Meanings",
+                                          ? "Definitions:"
+                                          : "Definitions",
                                       style: sectionTitle,
                                     ),
                                   ],
@@ -582,27 +532,48 @@ class _HomePageState extends State<HomePage> {
                                                         1)
                                                 .replaceAll('.,', '\n•');
                                             return Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
+                                              // mainAxisAlignment:
+                                              //     MainAxisAlignment.en,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                ListTile(
-                                                  title: SelectableText.rich(
-                                                    TextSpan(
-                                                        text: '',
-                                                        style: body,
-                                                        children: [
-                                                          TextSpan(
-                                                            text: '${key}\n',
-                                                            style: bodyItalic,
-                                                          ),
-                                                          TextSpan(
-                                                            text:
-                                                                '• ${value.toString()}',
-                                                            style: body,
-                                                          ),
-                                                        ]),
+                                                // part of speech
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8),
+                                                  child: Text(
+                                                    '${key}',
+                                                    style: bodyItalic,
                                                   ),
                                                 ),
+                                                // definitions for that part of speech
+                                                Padding(
+                                                  padding:
+                                                      EdgeInsets.only(left: 20),
+                                                  child: Text(
+                                                    "• ${value.toString()}",
+                                                    style: body,
+                                                  ),
+                                                )
+                                                // ListTile(
+                                                //   title: SelectableText.rich(
+                                                //     TextSpan(
+                                                //         // text: '',
+                                                //         // style: body,
+                                                //         children: [
+                                                //           TextSpan(
+                                                //             text: '${key}\n',
+                                                //             style: bodyItalic,
+                                                //           ),
+                                                //           TextSpan(
+                                                //             text:
+                                                //                 '• ${value.toString()}',
+                                                //             style: body,
+                                                //           ),
+                                                //         ]),
+                                                //   ),
+                                                // ),
                                               ],
                                             );
                                           }),
@@ -697,7 +668,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       Tooltip(
                                           message:
-                                              'WordDefiner uses the free Dictionary API to fetch results. Please consider donating to the API provider by visiting dictionaryapi.dev to help keep their server running, and mention WordDefiner if you do so.',
+                                              'By using this app you agree to exempt WordDefiner from any responsibility regarding the contents shown herein. You may wish to donate to the API provider at dictionaryapi.dev',
                                           child: Icon(
                                             Icons.info_outline_rounded,
                                             color: Colors.grey,
