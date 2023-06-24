@@ -24,7 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.4
-  auto_size_text: ^3.0.0
+  # auto_size_text: ^3.0.0
   audioplayers: ^1.0.1
   # path_provider: 2.0.3
 

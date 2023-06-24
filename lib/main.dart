@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dialogs.dart';
 import 'package:WordDefiner/services/get_definition.dart' as API;
 import 'package:flutter/services.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 void main() {
@@ -145,7 +144,7 @@ class _HomePageState extends State<HomePage> {
   TextStyle word = TextStyle(
     color: Colors.blue[400],
     fontWeight: FontWeight.bold,
-    fontSize: 30,
+    fontSize: 35,
   );
 
   TextStyle body = TextStyle(
@@ -249,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                               icon: Icon(
                                 Icons.hearing,
                                 color: Colors.blue[300],
-                                size: 20,
+                                size: 25,
                               ),
                               onPressed: () {
                                 audioPlayer.setVolume(1);
@@ -260,13 +259,6 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ],
-                    ),
-                    Visibility(
-                      visible: pronounciationAudioSource != '',
-                      child: Text(
-                        'Audio: ${pronounciationSourceController.text}',
-                        style: corporate,
-                      ),
                     ),
                   ],
                 ),
@@ -286,10 +278,8 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Container(
                       width: screenWidth * .3,
-                      child: AutoSizeText(
-                        (phonetic != null && phonetic != '')
-                            ? "Phonetic:"
-                            : "Phonetic",
+                      child: Text(
+                        "Phonetic",
                         style: sectionTitle,
                         maxLines: 1,
                       ),
@@ -320,9 +310,7 @@ class _HomePageState extends State<HomePage> {
               Visibility(
                 visible: meaningDefinitionsMap.isNotEmpty,
                 child: Text(
-                  (meaningDefinitionsMap.isNotEmpty)
-                      ? "Definitions:"
-                      : "Definitions",
+                  "Definitions",
                   style: sectionTitle,
                 ),
               ),
@@ -381,6 +369,13 @@ class _HomePageState extends State<HomePage> {
                             padding: const EdgeInsets.only(top: 8.0),
                             child: ListBody(
                               children: [
+                                Visibility(
+                                  visible: pronounciationAudioSource != '',
+                                  child: Text(
+                                    'Audio: ${pronounciationSourceController.text}',
+                                    style: corporate,
+                                  ),
+                                ),
                                 SelectableText(
                                   "License name: ${licenseNameController.text}",
                                   style: corporate,
