@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dialogs.dart';
 import 'package:WordDefiner/services/get_definition.dart' as API;
 import 'package:flutter/services.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 void main() {
@@ -94,7 +93,7 @@ class _HomePageState extends State<HomePage> {
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
-  void clearAllOutput({bool alsoSearch = false, bool alsoWord = false}) {
+  void clearAllOutput({bool alsoSearch = true, bool alsoWord = true}) {
     // FocusScope.of(context).unfocus();
     if (alsoSearch == true) {
       inputController.clear();
@@ -139,25 +138,24 @@ class _HomePageState extends State<HomePage> {
   TextStyle sectionTitle = TextStyle(
     color: Colors.white,
     fontWeight: FontWeight.bold,
-    fontSize: 25,
+    fontSize: 20,
   );
 
   TextStyle word = TextStyle(
-    color: Colors.white,
+    color: Colors.blue[400],
     fontWeight: FontWeight.bold,
-    fontSize: 30,
+    fontSize: 35,
   );
 
   TextStyle body = TextStyle(
     color: Colors.white,
     fontWeight: FontWeight.normal,
-    fontSize: 17,
+    fontSize: 18,
   );
 
   TextStyle bodyItalic = TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w600,
-    fontStyle: FontStyle.normal,
+    color: Colors.blue[200],
+    fontStyle: FontStyle.italic,
     fontSize: 18,
   );
 
@@ -175,7 +173,7 @@ class _HomePageState extends State<HomePage> {
 
   TextStyle corporate = TextStyle(
     color: Colors.grey,
-    fontSize: 10,
+    fontSize: 8,
   );
 
   @override
@@ -216,507 +214,384 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         backgroundColor: Colors.black, // make background color black
-        body: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.only(
-                left: screenWidth * 0.04,
-                right: screenWidth * 0.04,
+        body: Container(
+          padding: EdgeInsets.only(
+            left: screenWidth * 0.04,
+            right: screenWidth * 0.04,
+            top: screenHeight * 0.05,
+          ),
+          height: screenHeight * 0.96,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // outputWord shown only if definition found on server
+              Visibility(
+                visible: outputWordController.text.isNotEmpty,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          outputWordController.text,
+                          style: word,
+                          maxLines: 1,
+                        ),
+                        Visibility(
+                          visible: pronounciationAudioSource != '',
+                          child: Tooltip(
+                            message:
+                                'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.hearing,
+                                color: Colors.blue[300],
+                                size: 25,
+                              ),
+                              onPressed: () {
+                                audioPlayer.setVolume(1);
+                                audioPlayer.play(
+                                    UrlSource(pronounciationAudioSource!));
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              height: screenHeight * 0.98,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: screenHeight * 0.06,
-                      bottom: 20,
-                    ),
-                    child: TextField(
-                      focusNode: inputFocusNode,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.search),
-                        suffixIcon: inputController.text != ''
-                            ? IconButton(
-                                icon: Icon(Icons.clear), onPressed: clearSearch)
-                            : null,
-                        border: OutlineInputBorder(),
-                        hintText: 'Look up a word',
+              // divider between outputWord and phonetic
+              Visibility(
+                visible: outputWordController.text.isNotEmpty,
+                child: Divider(
+                  color: Colors.grey[800],
+                  thickness: 2,
+                ),
+              ),
+              // phonetic
+              Visibility(
+                visible: outputPhoneticController.text.isNotEmpty,
+                child: Row(
+                  children: [
+                    Container(
+                      width: screenWidth * .3,
+                      child: Text(
+                        "Phonetic",
+                        style: sectionTitle,
+                        maxLines: 1,
                       ),
-                      // placeholder: 'Look up a word',
-                      controller: inputController,
-                      onSubmitted: ((String wordToDefine) async {
-                        clearAllOutput();
-                        if (wordToDefine == '') {
-                          // empty word - do nothing
-                          DoNothingAction();
-                        } else if (!validInputLetters.hasMatch(wordToDefine)) {
-                          // non letter detected
-                          Dialogs.showInputIssue(context);
-                          setState(() {
-                            // inputController.text = '';
-                            clearAllOutput(alsoSearch: true, alsoWord: true);
-                            debugPrint(
-                                'clear input word controller and clearAll');
-                          });
-                        } else {
-                          final definitionsList =
-                              (await API.getDefinition(wordToDefine));
-                          setState(() {
-                            if (definitionsList.isNotFound == true) {
-                              debugPrint('404 word not found');
-                              Dialogs.showNoDefinitions(context, wordToDefine);
-                              clearAllOutput(alsoSearch: true, alsoWord: true);
-                              // shift focus back to input textfield
-                              FocusScope.of(context)
-                                  .requestFocus(inputFocusNode);
-                            } else if (definitionsList.isNull == true) {
-                              debugPrint('!caught exception!');
-                              Dialogs.showNetworkIssues(context);
-                            } else {
-                              outputWordController.text =
-                                  wordToDefine.toLowerCase();
-                              // traverse through list of definitions and assign to controllers so user can see
-                              definitionsList.definitionElements
-                                  ?.forEach((element) {
-                                // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                                debugPrint('enter 1');
-                                // below don't work if there is no phonetic field
-                                // (((element.phonetic != '') ||
-                                //         (element.phonetic != null))
-                                //     ? (phonetic = element.phonetic as String)
-                                //     : DoNothingAction());
-                                if (element.phonetic == null) {
-                                  DoNothingAction(); // try to get in 2.3
-                                } else {
-                                  phonetic = element.phonetic;
-                                }
-                                // debugPrint('phonetic: ${phonetic}');
-                                // assign phonetic to phonetic controller in 2.3 because that's last place to do it
-                                debugPrint('exit 1');
-                                // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
-                                // 2.1 - for audio
-                                element.phonetics?.forEach((elementPhonetic) {
-                                  debugPrint('enter 2');
-                                  if (elementPhonetic.audio == null ||
-                                      elementPhonetic.audio == '') {
-                                    DoNothingAction();
-                                  } else {
-                                    pronounciationAudioSource =
-                                        elementPhonetic.audio as String;
-                                  }
-                                  // (((elementPhonetic.audio != '') ||
-                                  //         (elementPhonetic.audio != null))
-                                  //     ? (pronounciationAudioSource =
-                                  //         elementPhonetic.audio as String)
-                                  //     : DoNothingAction());
-                                  // 2.2 - for audio source
-                                  if (elementPhonetic.sourceUrl == null ||
-                                      elementPhonetic.sourceUrl == '') {
-                                    DoNothingAction();
-                                  } else {
-                                    pronounciationSourceUrl =
-                                        elementPhonetic.sourceUrl as String;
-                                  }
-                                  // (((elementPhonetic.sourceUrl != '') ||
-                                  //         (elementPhonetic.sourceUrl != null))
-                                  //     ? (pronounciationSourceUrl =
-                                  //         elementPhonetic.sourceUrl as String)
-                                  //     : DoNothingAction());
-                                  // 2.3 - find some phonetic if not already there since phonetics list also has some
-                                  // debugPrint('1-${phonetic}');
-                                  if (phonetic == '' &&
-                                      elementPhonetic.text != null) {
-                                    phonetic = elementPhonetic.text as String;
-                                  }
-                                  // debugPrint('2-${phonetic}');
-                                  outputPhoneticController.text = phonetic!;
-                                  // assign pronounciationSourceController.text to pronounciationSourceUrl
-                                  pronounciationSourceController.text =
-                                      pronounciationSourceUrl!;
-                                  debugPrint('exit 2');
-                                });
-                                // 3 - for meanings (look through each field in meanings)
-                                element.meanings?.forEach((elementMeaning) {
-                                  debugPrint('enter 3');
-                                  // 3.1 - add part of speech to list
-                                  meaningPartOfSpeechList.add(
-                                      elementMeaning.partOfSpeech as String);
-                                  // 3.2 - add definitions list to their list
-                                  for (int i = 0;
-                                      i < meaningPartOfSpeechList.length;
-                                      i++) {
-                                    elementMeaning.definitions
-                                        ?.forEach((elementMeaningDefinitions) {
-                                      meaningDefinitionsList_1.add(
-                                          elementMeaningDefinitions.definition
-                                              as String);
-                                    });
-                                    meaningDefinitionsMap[
-                                            elementMeaning.partOfSpeech] =
-                                        meaningDefinitionsList_1;
-                                    meaningDefinitionsList_1 = [];
-                                  }
-                                });
-                                debugPrint('exit 3');
-                                // 4 - for license
-                                debugPrint('enter 4');
-                                // 4.1 -  check if license name in licenseNames already
-                                (licenseNames.contains(element.license?.name)
-                                    ? DoNothingAction()
-                                    : (licenseNames
-                                        .add(element.license?.name as String)));
-                                // 4.2 - check if license url in licenseUrls already
-                                (licenseUrls.contains(element.license?.url)
-                                    ? DoNothingAction()
-                                    : (licenseUrls
-                                        .add(element.license?.url as String)));
-                                // assign license lists to their respective text editing controllers
-                                licenseNameController.text =
-                                    licenseNames.join(', ');
-                                licenseUrlsController.text =
-                                    licenseUrls.join(', ');
-                                debugPrint('exit 4');
-                                // 5 - for source urls (check if license name in licenseNames already)
-                                element.sourceUrls?.forEach((elementSourceUrl) {
-                                  debugPrint('enter 5');
-                                  (sourceUrls.contains(elementSourceUrl)
-                                      ? DoNothingAction()
-                                      : (sourceUrls.add(elementSourceUrl)));
-                                });
-                                // assign sourceUrls list to its text editing controller
-                                sourceUrlsController.text =
-                                    sourceUrls.join(', ');
-                              });
-                              debugPrint('exit 5');
-                            }
-                          });
-                        }
-                      }),
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                      // itemColor: Colors.grey,
                     ),
-                  ),
-                  Expanded(
-                    child: RawScrollbar(
-                      thumbColor: Colors.grey,
-                      thickness: 4,
-                      radius: Radius.circular(5),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: screenWidth * 0.3,
-                                  child: AutoSizeText(
-                                    (outputWordController.text != '')
-                                        ? "Word:"
-                                        : "Word",
-                                    style: sectionTitle,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                Container(
-                                  width: screenWidth * 0.62,
-                                  padding: EdgeInsets.only(
-                                    left: 12,
-                                    // bottom: 8,
-                                  ),
-                                  child: Scrollbar(
-                                    // crossAxisMargin:
-                                    //     (MediaQuery.of(context).orientation ==
-                                    //             Orientation.landscape)
-                                    //         ? -(screenHeight) * 0.02
-                                    //         : -(screenHeight) * 0.01,
-                                    // mainAxisMargin: 100,
-                                    // isAlwaysShown: true,
-                                    child: SelectableText(
-                                      (outputWordController.text != '')
-                                          ? outputWordController.text
-                                          : '',
-                                      style: word,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                  // alignment: Alignment.center,
-                                ),
-                              ],
-                            ),
-                            Divider(
-                              // divider between first and second half of widgets
-                              color: Colors.grey[800],
-                              thickness: 2,
-                            ),
-                            Row(
-                              children: [
-                                Container(
-                                  width: screenWidth * .3,
-                                  child: AutoSizeText(
-                                    (phonetic != null && phonetic != '')
-                                        ? "Phonetic:"
-                                        : "Phonetic",
-                                    style: sectionTitle,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    left: 12,
-                                  ),
-                                  width: screenWidth * 0.62,
-                                  // alignment: Alignment.center,
-                                  child: SelectableText(
-                                    outputPhoneticController.text,
-                                    style: subsectionTitle,
-                                    // textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    // overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Divider(
-                              // divider between first and second half of widgets
-                              color: Colors.grey[800],
-                              thickness: 2,
-                            ),
-                            Row(
-                              children: [
-                                Container(
-                                  width: screenWidth * .3,
-                                  child: AutoSizeText(
-                                    (pronounciationAudioSource != '')
-                                        ? "Listen:"
-                                        : "Listen",
-                                    style: sectionTitle,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: (pronounciationAudioSource != ''),
-                                  child: Container(
-                                    width: screenWidth * .62,
-                                    child: Row(
-                                      children: [
-                                        Tooltip(
-                                          message:
-                                              'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
-                                          child: IconButton(
-                                            icon: Icon(
-                                              Icons.hearing,
-                                              color: Colors.blue,
-                                              size: 30,
-                                            ),
-                                            onPressed: () {
-                                              audioPlayer.setVolume(1);
-                                              audioPlayer.play(UrlSource(
-                                                  pronounciationAudioSource!));
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Visibility(
-                              visible:
-                                  pronounciationSourceController.text != '',
-                              child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  child: SelectableText(
-                                    '${pronounciationSourceController.text}',
-                                    style: corporate,
-                                    maxLines: 1,
-                                  )),
-                            ),
-                            Divider(
-                              // divider between first and second half of widgets
-                              color: Colors.grey[800],
-                              thickness: 2,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      (meaningDefinitionsMap.isNotEmpty)
-                                          ? "Meanings:"
-                                          : "Meanings",
-                                      style: sectionTitle,
-                                    ),
-                                  ],
-                                ),
-                                Visibility(
-                                  visible: meaningDefinitionsMap.isNotEmpty,
-                                  child: Column(
-                                    children: [
-                                      ListView.builder(
-                                          physics:
-                                              NeverScrollableScrollPhysics(),
-                                          padding: EdgeInsets.all(0),
-                                          shrinkWrap: true,
-                                          itemCount:
-                                              meaningDefinitionsMap.keys.length,
-                                          itemBuilder: (BuildContext context,
-                                              int index) {
-                                            String key = meaningDefinitionsMap
-                                                .keys
-                                                .elementAt(index);
-                                            String value = meaningDefinitionsMap
-                                                .values
+                    Container(
+                      padding: EdgeInsets.only(
+                        left: 12,
+                      ),
+                      width: screenWidth * 0.62,
+                      child: SelectableText(
+                        outputPhoneticController.text,
+                        style: subsectionTitle,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // divider between phonetic and definitions
+              Visibility(
+                visible: outputPhoneticController.text.isNotEmpty,
+                child: Divider(
+                  color: Colors.grey[800],
+                  thickness: 2,
+                ),
+              ),
+              // definitions
+              Visibility(
+                visible: meaningDefinitionsMap.isNotEmpty,
+                child: Text(
+                  "Definitions",
+                  style: sectionTitle,
+                ),
+              ),
+              Expanded(
+                child: RawScrollbar(
+                  thumbColor: Colors.grey,
+                  thickness: 4,
+                  radius: Radius.circular(5),
+                  child: SingleChildScrollView(
+                    child: Visibility(
+                      visible: meaningDefinitionsMap.isNotEmpty,
+                      child: Column(
+                        children: [
+                          ListView.builder(
+                              physics: NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.all(0),
+                              shrinkWrap: true,
+                              itemCount: meaningDefinitionsMap.keys.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                String key =
+                                    meaningDefinitionsMap.keys.elementAt(index);
+                                String value = meaningDefinitionsMap.values
+                                    .elementAt(index)
+                                    .toString()
+                                    .substring(
+                                        1,
+                                        meaningDefinitionsMap.values
                                                 .elementAt(index)
                                                 .toString()
-                                                .substring(
-                                                    1,
-                                                    meaningDefinitionsMap.values
-                                                            .elementAt(index)
-                                                            .toString()
-                                                            .length -
-                                                        1)
-                                                .replaceAll('.,', '\n•');
-                                            return Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                ListTile(
-                                                  title: SelectableText.rich(
-                                                    TextSpan(
-                                                        text: '',
-                                                        style: body,
-                                                        children: [
-                                                          TextSpan(
-                                                            text: '${key}\n',
-                                                            style: bodyItalic,
-                                                          ),
-                                                          TextSpan(
-                                                            text:
-                                                                '• ${value.toString()}',
-                                                            style: body,
-                                                          ),
-                                                        ]),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          }),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Visibility(
-                              visible: (licenseNameController.text != '') |
-                                  (licenseUrlsController.text != ''),
-                              child: Column(
-                                children: [
-                                  Divider(
-                                    color: Colors.grey[800],
-                                    thickness: 2,
-                                  ),
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: SelectableText(
-                                      "License name: ${licenseNameController.text}",
-                                      style: corporate,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: SelectableText(
-                                      "License URLs: ${licenseUrlsController.text}",
-                                      style: corporate,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: SelectableText(
-                                      "Source URLs: ${sourceUrlsController.text}",
-                                      style: corporate,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                .length -
+                                            1)
+                                    .replaceAll('.,', '\n•');
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Visibility(
-                                      visible: meaningDefinitionsMap.isNotEmpty,
-                                      child: Container(
-                                        padding: EdgeInsets.only(
-                                          top: 8,
-                                        ),
-                                        child: Tooltip(
-                                            message: "Clear all output fields.",
-                                            child: IconButton(
-                                                icon: Icon(
-                                                  Icons.delete,
-                                                  color: Colors.grey[200],
-                                                ),
-                                                onPressed: () {
-                                                  HapticFeedback.lightImpact();
-                                                  setState(() {
-                                                    clearAllOutput(
-                                                        alsoSearch: true,
-                                                        alsoWord: true);
-                                                  });
-                                                  // shift focus back to input textfield
-                                                  FocusScope.of(context)
-                                                      .requestFocus(
-                                                          inputFocusNode);
-                                                })),
+                                    // part of speech
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Text(
+                                        '${key}',
+                                        style: bodyItalic,
                                       ),
                                     ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 4.0,
-                                        ),
-                                        child: Text(
-                                          "Definitions from Dictionary API",
-                                          style: corporate,
-                                        ),
+                                    // definitions for that part of speech
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 20),
+                                      child: Text(
+                                        "• ${value.toString()}",
+                                        style: body,
                                       ),
-                                      Tooltip(
-                                          message:
-                                              'WordDefiner uses the free Dictionary API to fetch results. Please consider donating to the API provider by visiting dictionaryapi.dev to help keep their server running, and mention WordDefiner if you do so.',
-                                          child: Icon(
-                                            Icons.info_outline_rounded,
-                                            color: Colors.grey,
-                                            size: 12,
-                                          ))
-                                    ],
+                                    )
+                                  ],
+                                );
+                              }),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: ListBody(
+                              children: [
+                                Visibility(
+                                  visible: pronounciationAudioSource != '',
+                                  child: Text(
+                                    'Audio: ${pronounciationSourceController.text}',
+                                    style: corporate,
                                   ),
+                                ),
+                                SelectableText(
+                                  "License name: ${licenseNameController.text}",
+                                  style: corporate,
+                                  maxLines: 1,
+                                ),
+                                SelectableText(
+                                  "License URLs: ${licenseUrlsController.text}",
+                                  style: corporate,
+                                  maxLines: 1,
+                                ),
+                                SelectableText(
+                                  "Source URLs: ${sourceUrlsController.text}",
+                                  style: corporate,
+                                  maxLines: 1,
                                 ),
                               ],
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Bottom toolbar containing disclaimer and textField for lookup
+              Row(
+                children: [
+                  Tooltip(
+                    message:
+                        'By using this app you agree to exempt WordDefiner from any responsibility regarding the contents shown herein. You may wish to donate to the API provider at dictionaryapi.dev',
+                    child: Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.grey,
+                      size: 15,
+                    ),
+                  ),
+                  Container(
+                    width: screenWidth * 0.75,
+                    child: SizedBox(
+                      height: 40,
+                      child: TextField(
+                        focusNode: inputFocusNode,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.search,
+                            size: 20,
+                          ),
+                          // border: OutlineInputBorder(),
+                          hintText: 'Look up a word',
+                        ),
+                        controller: inputController,
+                        onSubmitted: ((String wordToDefine) async {
+                          clearAllOutput();
+                          if (wordToDefine == '') {
+                            // empty word - do nothing
+                            DoNothingAction();
+                          } else if (!validInputLetters
+                              .hasMatch(wordToDefine)) {
+                            // non letter detected
+                            Dialogs.showInputIssue(context);
+                            setState(() {
+                              clearAllOutput(alsoSearch: true, alsoWord: true);
+                              debugPrint(
+                                  'clear input word controller and clearAll');
+                            });
+                          } else {
+                            final definitionsList =
+                                (await API.getDefinition(wordToDefine));
+                            setState(() {
+                              if (definitionsList.isNotFound == true) {
+                                debugPrint('404 word not found');
+                                Dialogs.showNoDefinitions(
+                                    context, wordToDefine);
+                                clearAllOutput(
+                                    alsoSearch: true, alsoWord: true);
+                                // shift focus back to input textfield
+                                FocusScope.of(context)
+                                    .requestFocus(inputFocusNode);
+                              } else if (definitionsList.isNull == true) {
+                                debugPrint('!caught exception!');
+                                Dialogs.showNetworkIssues(context);
+                              } else {
+                                outputWordController.text =
+                                    "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
+                                // traverse through list of definitions and assign to controllers so user can see
+                                definitionsList.definitionElements
+                                    ?.forEach((element) {
+                                  // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
+                                  debugPrint('enter 1');
+                                  if (element.phonetic == null) {
+                                    DoNothingAction();
+                                  } else {
+                                    phonetic = element.phonetic;
+                                  }
+                                  // assign phonetic to phonetic controller in 2.3 because that's last place to do it
+                                  debugPrint('exit 1');
+                                  // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                                  // 2.1 - for audio
+                                  element.phonetics?.forEach((elementPhonetic) {
+                                    debugPrint('enter 2');
+                                    if (elementPhonetic.audio == null ||
+                                        elementPhonetic.audio == '') {
+                                      DoNothingAction();
+                                    } else {
+                                      pronounciationAudioSource =
+                                          elementPhonetic.audio as String;
+                                    }
+                                    // 2.2 - for audio source
+                                    if (elementPhonetic.sourceUrl == null ||
+                                        elementPhonetic.sourceUrl == '') {
+                                      DoNothingAction();
+                                    } else {
+                                      pronounciationSourceUrl =
+                                          elementPhonetic.sourceUrl as String;
+                                    }
+                                    // 2.3 - find some phonetic if not already there since phonetics list also has some
+                                    // debugPrint('1-${phonetic}');
+                                    if (phonetic == '' &&
+                                        elementPhonetic.text != null) {
+                                      phonetic = elementPhonetic.text as String;
+                                    }
+                                    outputPhoneticController.text = phonetic!;
+                                    // assign pronounciationSourceController.text to pronounciationSourceUrl
+                                    pronounciationSourceController.text =
+                                        pronounciationSourceUrl!;
+                                    debugPrint('exit 2');
+                                  });
+                                  // 3 - for meanings (look through each field in meanings)
+                                  element.meanings?.forEach((elementMeaning) {
+                                    debugPrint('enter 3');
+                                    // 3.1 - add part of speech to list
+                                    meaningPartOfSpeechList.add(
+                                        elementMeaning.partOfSpeech as String);
+                                    // 3.2 - add definitions list to their list
+                                    for (int i = 0;
+                                        i < meaningPartOfSpeechList.length;
+                                        i++) {
+                                      elementMeaning.definitions?.forEach(
+                                          (elementMeaningDefinitions) {
+                                        meaningDefinitionsList_1.add(
+                                            elementMeaningDefinitions.definition
+                                                as String);
+                                      });
+                                      meaningDefinitionsMap[
+                                              elementMeaning.partOfSpeech] =
+                                          meaningDefinitionsList_1;
+                                      meaningDefinitionsList_1 = [];
+                                    }
+                                  });
+                                  debugPrint('exit 3');
+                                  // 4 - for license
+                                  debugPrint('enter 4');
+                                  // 4.1 -  check if license name in licenseNames already
+                                  (licenseNames.contains(element.license?.name)
+                                      ? DoNothingAction()
+                                      : (licenseNames.add(
+                                          element.license?.name as String)));
+                                  // 4.2 - check if license url in licenseUrls already
+                                  (licenseUrls.contains(element.license?.url)
+                                      ? DoNothingAction()
+                                      : (licenseUrls.add(
+                                          element.license?.url as String)));
+                                  // assign license lists to their respective text editing controllers
+                                  licenseNameController.text =
+                                      licenseNames.join(', ');
+                                  licenseUrlsController.text =
+                                      licenseUrls.join(', ');
+                                  debugPrint('exit 4');
+                                  // 5 - for source urls (check if license name in licenseNames already)
+                                  element.sourceUrls
+                                      ?.forEach((elementSourceUrl) {
+                                    debugPrint('enter 5');
+                                    (sourceUrls.contains(elementSourceUrl)
+                                        ? DoNothingAction()
+                                        : (sourceUrls.add(elementSourceUrl)));
+                                  });
+                                  // assign sourceUrls list to its text editing controller
+                                  sourceUrlsController.text =
+                                      sourceUrls.join(', ');
+                                });
+                                debugPrint('exit 5');
+                              }
+                            });
+                          }
+                        }),
+                        style: TextStyle(
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
+                  // clear all icon that appears if definitions are present
+                  Visibility(
+                    visible: meaningDefinitionsMap.isNotEmpty,
+                    child: Tooltip(
+                        message: "Clear all output fields",
+                        child: IconButton(
+                            icon: Icon(
+                              Icons.delete,
+                              color: Colors.grey[200],
+                            ),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              setState(() {
+                                clearAllOutput(
+                                    alsoSearch: true, alsoWord: true);
+                              });
+                              // shift focus back to input textfield
+                              FocusScope.of(context)
+                                  .requestFocus(inputFocusNode);
+                            })),
+                  ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
