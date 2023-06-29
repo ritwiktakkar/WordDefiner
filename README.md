@@ -9,10 +9,10 @@ WordDefiner is an open-source online English dictionary app for Android and iOS.
 
 <div align="center">
     <a href="https://apps.apple.com/app/worddefiner-english-dictionary/id1637774027">
-    <img alt="appstorebutton" src="ListingMaterials\app_store_256x256.png?raw=true">
+    <img alt="appstorebutton" src="GitHubListingMaterials\app_store_256x256.png?raw=true">
     </a>
     <a href="https://play.google.com/store/apps/details?id=com.nocturnaldevlab.WordDefiner">
-    <img alt="playstorebutton" src="ListingMaterials\play_store_256x256.png?raw=true">
+    <img alt="playstorebutton" src="GitHubListingMaterials\play_store_256x256.png?raw=true">
     </a>
 </div>
 
