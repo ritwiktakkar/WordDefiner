@@ -40,3 +40,4 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+lib/Analytics/constants.dart
