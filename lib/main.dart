@@ -263,6 +263,15 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+              Visibility(
+                visible: outputWordController.text.isEmpty,
+                child: TextField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                      hintText: "Definition will appear here",
+                      border: InputBorder.none),
+                ),
+              ),
               // divider between outputWord and phonetic
               Visibility(
                 visible: outputWordController.text.isNotEmpty,
