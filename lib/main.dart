@@ -268,7 +268,7 @@ class _HomePageState extends State<HomePage> {
                 child: TextField(
                   readOnly: true,
                   decoration: InputDecoration(
-                      hintText: "Definition will appear here",
+                      hintText: "Definitions will appear here",
                       border: InputBorder.none),
                 ),
               ),
@@ -411,16 +411,8 @@ class _HomePageState extends State<HomePage> {
               ),
               // Bottom toolbar containing disclaimer and textField for lookup
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Tooltip(
-                    message:
-                        'By using this app you agree to exempt WordDefiner from any responsibility regarding the contents shown herein. You may wish to donate to the API provider at dictionaryapi.dev',
-                    child: Icon(
-                      Icons.info_outline_rounded,
-                      color: Colors.grey,
-                      size: 15,
-                    ),
-                  ),
                   Container(
                     width: screenWidth * 0.75,
                     child: SizedBox(
@@ -432,15 +424,15 @@ class _HomePageState extends State<HomePage> {
                             Icons.search,
                             size: 20,
                           ),
-                          // border: OutlineInputBorder(),
                           hintText: 'Look up a word',
                         ),
                         controller: inputController,
                         onSubmitted: ((String wordToDefine) async {
-                          clearAllOutput();
+                          wordToDefine = wordToDefine.trim();
                           if (wordToDefine == '') {
                             // empty word - do nothing
                             DoNothingAction();
+                            inputController.clear();
                           } else if (!validInputLetters
                               .hasMatch(wordToDefine)) {
                             // non letter detected
@@ -451,6 +443,7 @@ class _HomePageState extends State<HomePage> {
                                   'clear input word controller and clearAll');
                             });
                           } else {
+                            // clearAllOutput();
                             final definitionsList =
                                 (await API.getDefinition(wordToDefine));
                             setState(() {
@@ -574,6 +567,15 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white,
                         ),
                       ),
+                    ),
+                  ),
+                  Tooltip(
+                    message:
+                        'By using this app you agree to exempt it from any responsibility regarding the contents shown herein. Definitions are provided by dictionaryapi.dev',
+                    child: Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.grey,
+                      size: 15,
                     ),
                   ),
                   // clear all icon that appears if definitions are present
