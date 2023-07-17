@@ -1,6 +1,8 @@
 // Async function which gets device details for analytics
 import 'dart:io';
 
+import 'package:package_info_plus/package_info_plus.dart';
+
 import 'package:WordDefiner/Analytics/device_form.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +12,13 @@ Future<DeviceForm> deviceDetails() async {
   String deviceName = '';
   String deviceVersion = '';
   String identifier = '';
+  String appVersion = '';
 
   final DeviceInfoPlugin deviceInfoPlugin = new DeviceInfoPlugin();
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
   try {
+    appVersion = packageInfo.version;
     if (Platform.isAndroid) {
       var build = await deviceInfoPlugin.androidInfo;
 
@@ -31,8 +37,5 @@ Future<DeviceForm> deviceDetails() async {
   } on PlatformException {
     debugPrint('Failed to get platform version');
   }
-  debugPrint('Device Name: $deviceName\n'
-      'Device Version: $deviceVersion\n'
-      'Device Identifier: $identifier');
-  return DeviceForm(deviceName, deviceVersion, identifier);
+  return DeviceForm(deviceName, deviceVersion, identifier, appVersion);
 }

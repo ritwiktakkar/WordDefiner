@@ -12,6 +12,7 @@ class AnalyticsForm {
         'isFound': definitionForm.isFound,
         'deviceName': deviceForm.deviceName,
         'deviceVersion': deviceForm.deviceVersion,
-        'identifier': deviceForm.identifier
+        'identifier': deviceForm.identifier,
+        'appVersion': deviceForm.appVersion,
       };
 }
