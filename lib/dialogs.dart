@@ -113,7 +113,7 @@ class Dialogs {
               'Invalid Input',
             ),
             content: Text(
-              "Please limit your search term to consist of letters from the English alphabet, i.e., discard any number, emoji or punctuation mark.",
+              "Please limit your search term to consist of letters from the English alphabet and without spaces, i.e., discard any number, emoji or punctuation mark.",
             ),
             actions: <Widget>[
               TextButton(
@@ -132,7 +132,7 @@ class Dialogs {
             'Invalid Input',
           ),
           content: Text(
-            "Please limit your search term to consist of letters from the English alphabet, i.e., discard any number, emoji or punctuation mark.",
+            "Please limit your search term to consist of letters from the English alphabet and without spaces, i.e., discard any number, emoji or punctuation mark.",
           ),
           actions: <Widget>[
             TextButton(
