@@ -136,20 +136,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   TextStyle sectionTitle = TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.bold,
-    fontSize: 20,
+    color: Colors.grey[300],
+    fontWeight: FontWeight.w300,
+    fontSize: 18,
   );
 
   TextStyle word = TextStyle(
     color: Colors.blue[400],
-    fontWeight: FontWeight.bold,
-    fontSize: 35,
+    fontWeight: FontWeight.w500,
+    fontSize: 30,
   );
 
   TextStyle body = TextStyle(
     color: Colors.white,
-    fontWeight: FontWeight.normal,
     fontSize: 18,
   );
 
@@ -166,9 +165,9 @@ class _HomePageState extends State<HomePage> {
   );
 
   TextStyle subsectionTitle = TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w500,
-    fontSize: 20,
+    color: Colors.grey[200],
+    fontWeight: FontWeight.w300,
+    fontSize: 18,
   );
 
   TextStyle corporate = TextStyle(
@@ -220,7 +219,7 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.only(
             left: screenWidth * 0.04,
             right: screenWidth * 0.04,
-            top: screenHeight * 0.05,
+            top: screenHeight * 0.06,
           ),
           height: screenHeight * 0.96,
           child: Column(
@@ -233,28 +232,35 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          outputWordController.text,
-                          style: word,
-                          maxLines: 1,
+                        Container(
+                          width: screenWidth * .75,
+                          child: SelectableText(
+                            outputWordController.text,
+                            style: word,
+                            maxLines: 1,
+                          ),
                         ),
-                        Visibility(
-                          visible: pronounciationAudioSource != '',
-                          child: Tooltip(
-                            message:
-                                'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.hearing,
-                                color: Colors.blue[300],
-                                size: 25,
+                        Container(
+                          width: screenWidth * .15,
+                          child: Visibility(
+                            visible: pronounciationAudioSource != '',
+                            child: Tooltip(
+                              message:
+                                  'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.hearing,
+                                  color: Colors.blue[300],
+                                  size: 24,
+                                ),
+                                onPressed: () {
+                                  audioPlayer.setVolume(1);
+                                  audioPlayer.play(
+                                      UrlSource(pronounciationAudioSource!));
+                                },
                               ),
-                              onPressed: () {
-                                audioPlayer.setVolume(1);
-                                audioPlayer.play(
-                                    UrlSource(pronounciationAudioSource!));
-                              },
                             ),
                           ),
                         ),
@@ -294,9 +300,6 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.only(
-                        left: 12,
-                      ),
                       width: screenWidth * 0.62,
                       child: SelectableText(
                         outputPhoneticController.text,
@@ -430,23 +433,25 @@ class _HomePageState extends State<HomePage> {
                         onSubmitted: ((String wordToDefine) async {
                           wordToDefine = wordToDefine.trim();
                           if (wordToDefine == '') {
-                            // empty word - do nothing
+                            // CHECK 1: empty word - do nothing
                             DoNothingAction();
                             inputController.clear();
                           } else if (!validInputLetters
-                              .hasMatch(wordToDefine)) {
-                            // non letter detected
+                                  .hasMatch(wordToDefine) ||
+                              wordToDefine.characters.contains(' ')) {
+                            // CHECK 2: non letter or space detected
                             Dialogs.showInputIssue(context);
                             setState(() {
                               clearAllOutput(alsoSearch: true, alsoWord: true);
-                              debugPrint(
-                                  'clear input word controller and clearAll');
                             });
                           } else {
-                            // clearAllOutput();
+                            setState(() {
+                              clearAllOutput(alsoSearch: true, alsoWord: true);
+                            });
                             final definitionsList =
                                 (await API.getDefinition(wordToDefine));
                             setState(() {
+                              debugPrint("wordToDefine: ${wordToDefine}");
                               if (definitionsList.isNotFound == true) {
                                 debugPrint('404 word not found');
                                 Dialogs.showNoDefinitions(

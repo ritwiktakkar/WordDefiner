@@ -31,10 +31,10 @@ Future<DefinitionElementList> getDefinition(String wordToDefine) async {
       // update definitionForm and analyticsForm with result isFound
       definitionForm = DefinitionForm(query, 'True');
       analyticsForm = AnalyticsForm(definitionForm, deviceForm);
-      debugPrint(
-          "analyticsForm (got definition): ${analyticsForm.toJson().toString()}");
+      // debugPrint(
+      //     "analyticsForm (got definition): ${analyticsForm.toJson().toString()}");
       submitAnalytics(analyticsForm, (String response) {
-        debugPrint(response);
+        // debugPrint(response);
       });
       return definitionList;
     } else if (response.statusCode == 404) {
