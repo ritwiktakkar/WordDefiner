@@ -266,7 +266,7 @@ class _HomePageState extends State<HomePage> {
                                       Icons.hearing,
                                       color: Colors.yellow[200],
                                     ),
-                                    iconSize: 24,
+                                    iconSize: 22,
                                     onPressed: () {
                                       audioPlayer.setVolume(1);
                                       audioPlayer.play(UrlSource(
@@ -314,15 +314,14 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
               Visibility(
                 visible: outputWordController.text.isEmpty,
                 child: TextField(
                   readOnly: true,
                   decoration: InputDecoration(
-                      hintText: "Definitions will appear here",
+                      hintText: (wordToDefine.isNotEmpty)
+                          ? "Definitions will appear here for: ${wordToDefine}"
+                          : "Definitions will appear here",
                       border: InputBorder.none),
                 ),
               ),
@@ -457,7 +456,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Tooltip(
                     message:
-                        'Using this app confirms that you agree with the privacy policy of WordDefiner, and to exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.\nDefinitions powered by dictionaryapi.dev\nWordDefiner English Dictionary, Version 2.6\n© 2022-2023 Nocturnal Dev Lab (RT)',
+                        'Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.\nDefinitions powered by dictionaryapi.dev\nWordDefiner English Dictionary, Version 2.7\n© 2022-2023 Nocturnal Dev Lab (RT)',
                     child: Icon(
                       Icons.info_outline_rounded,
                       color: Colors.grey[700],
@@ -480,6 +479,7 @@ class _HomePageState extends State<HomePage> {
                               setState(() {
                                 clearAllOutput(
                                     alsoSearch: true, alsoWord: true);
+                                wordToDefine = '';
                               });
                               // shift focus back to input textfield
                               FocusScope.of(context)
@@ -508,16 +508,18 @@ class _HomePageState extends State<HomePage> {
                           hintText: 'Look up a word',
                         ),
                         controller: inputController,
-                        onSubmitted: ((String wordToDefine) async {
-                          wordToDefine = wordToDefine.trim();
+                        onSubmitted: ((_) async {
+                          wordToDefine = _.trim();
                           if (wordToDefine == '') {
                             // CHECK 1: empty word - do nothing
+                            wordToDefine = '';
                             DoNothingAction();
                             inputController.clear();
                           } else if (!validInputLetters
                                   .hasMatch(wordToDefine) ||
                               wordToDefine.characters.contains(' ')) {
                             // CHECK 2: non letter or space detected
+                            wordToDefine = '';
                             Dialogs.showInputIssue(context);
                             setState(() {
                               clearAllOutput(alsoSearch: true, alsoWord: true);
@@ -526,150 +528,171 @@ class _HomePageState extends State<HomePage> {
                             setState(() {
                               clearAllOutput(alsoSearch: true, alsoWord: true);
                             });
-                            final definitionsList =
-                                (await API.getDefinition(wordToDefine));
-                            setState(() {
-                              if (definitionsList.isNotFound == true) {
-                                debugPrint('404 word not found');
-                                Dialogs.showNoDefinitions(
-                                    context, wordToDefine);
-                                clearAllOutput(
-                                    alsoSearch: true, alsoWord: true);
-                                // shift focus back to input textfield
-                                FocusScope.of(context)
-                                    .requestFocus(inputFocusNode);
-                              } else if (definitionsList.isNull == true) {
-                                debugPrint('!caught exception!');
-                                Dialogs.showNetworkIssues(context);
-                              } else {
-                                try {
-                                  outputWordController.text =
-                                      "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
-                                  // traverse through list of definitions and assign to controllers so user can see
-                                  definitionsList.definitionElements
-                                      ?.forEach((element) {
-                                    // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                                    debugPrint('enter 1');
-                                    if (element.phonetic == null) {
-                                      DoNothingAction();
-                                    } else {
-                                      phonetic = element.phonetic;
-                                    }
-                                    // assign phonetic to phonetic controller in 2.3 because that's last place to do it
-                                    debugPrint('exit 1');
-                                    // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
-                                    // 2.1 - for audio
-                                    element.phonetics
-                                        ?.forEach((elementPhonetic) {
-                                      debugPrint('enter 2');
-                                      if (elementPhonetic.audio == null ||
-                                          elementPhonetic.audio == '') {
-                                        DoNothingAction();
-                                      } else {
-                                        pronounciationAudioSource =
-                                            elementPhonetic.audio as String;
-                                      }
-                                      // 2.2 - for audio source
-                                      if (elementPhonetic.sourceUrl == null ||
-                                          elementPhonetic.sourceUrl == '') {
-                                        DoNothingAction();
-                                      } else {
-                                        pronounciationSourceUrl =
-                                            elementPhonetic.sourceUrl as String;
-                                      }
-                                      // 2.3 - find some phonetic if not already there since phonetics list also has some
-                                      // debugPrint('1-${phonetic}');
-                                      if (phonetic == '' &&
-                                          elementPhonetic.text != null) {
-                                        phonetic =
-                                            elementPhonetic.text as String;
-                                      }
-                                      outputPhoneticController.text = phonetic!;
-                                      // assign pronounciationSourceController.text to pronounciationSourceUrl
-                                      pronounciationSourceController.text =
-                                          pronounciationSourceUrl!;
-                                      debugPrint('exit 2');
-                                    });
-                                    // 3 - for meanings (look through each field in meanings)
-                                    element.meanings?.forEach((elementMeaning) {
-                                      debugPrint('enter 3');
-                                      // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
-                                      // 3.1 - add part of speech to list
-                                      meaningPartOfSpeechList.add(elementMeaning
-                                          .partOfSpeech as String);
-                                      // 3.2 - add definitions list to their list
-                                      for (int i = 0;
-                                          i < meaningPartOfSpeechList.length;
-                                          i++) {
-                                        elementMeaning.definitions?.forEach(
-                                            (elementMeaningDefinitions) {
-                                          meaningDefinitionsList_tmp.add(
-                                              elementMeaningDefinitions
-                                                  .definition as String);
-                                        });
-                                        meaningDefinitionsMap[
-                                                elementMeaning.partOfSpeech] =
-                                            meaningDefinitionsList_tmp;
-                                        meaningDefinitionsList_tmp = [];
-
-                                        elementMeaning.synonyms
-                                            ?.forEach((element) {
-                                          meaningSynonymsList_tmp.add(element);
-                                        });
-                                        meaningSynonymMap[
-                                                elementMeaning.partOfSpeech] =
-                                            meaningSynonymsList_tmp;
-                                        meaningSynonymsList_tmp = [];
-
-                                        elementMeaning.antonyms
-                                            ?.forEach((element) {
-                                          meaningAntonymsList_tmp.add(element);
-                                        });
-                                        meaningAntonymMap[
-                                                elementMeaning.partOfSpeech] =
-                                            meaningAntonymsList_tmp;
-                                        meaningAntonymsList_tmp = [];
-                                      }
-                                    });
-                                    debugPrint('exit 3');
-                                    // 4 - for license
-                                    debugPrint('enter 4');
-                                    // 4.1 -  check if license name in licenseNames already
-                                    (licenseNames
-                                            .contains(element.license?.name)
-                                        ? DoNothingAction()
-                                        : (licenseNames.add(
-                                            element.license?.name as String)));
-                                    // 4.2 - check if license url in licenseUrls already
-                                    (licenseUrls.contains(element.license?.url)
-                                        ? DoNothingAction()
-                                        : (licenseUrls.add(
-                                            element.license?.url as String)));
-                                    // assign license lists to their respective text editing controllers
-                                    licenseNameController.text =
-                                        licenseNames.join(', ');
-                                    licenseUrlsController.text =
-                                        licenseUrls.join(', ');
-                                    debugPrint('exit 4');
-                                    // 5 - for source urls (check if license name in licenseNames already)
-                                    element.sourceUrls
-                                        ?.forEach((elementSourceUrl) {
-                                      debugPrint('enter 5');
-                                      (sourceUrls.contains(elementSourceUrl)
-                                          ? DoNothingAction()
-                                          : (sourceUrls.add(elementSourceUrl)));
-                                    });
-                                    // assign sourceUrls list to its text editing controller
-                                    sourceUrlsController.text =
-                                        sourceUrls.join(', ');
-                                  });
-                                  debugPrint('exit 5');
-                                } on Exception catch (e) {
-                                  debugPrint('!caught exception! $e');
+                            try {
+                              final definitionsList =
+                                  (await API.getDefinition(wordToDefine));
+                              setState(() {
+                                if (definitionsList!.isNotFound == true) {
+                                  debugPrint('404 word not found');
+                                  Dialogs.showNoDefinitions(
+                                      context, wordToDefine);
+                                  wordToDefine = '';
+                                  clearAllOutput(
+                                      alsoSearch: true, alsoWord: true);
+                                  // shift focus back to input textfield
+                                  FocusScope.of(context)
+                                      .requestFocus(inputFocusNode);
+                                } else if (definitionsList.isNull == true) {
+                                  debugPrint('!caught exception!');
+                                  wordToDefine = '';
                                   Dialogs.showNetworkIssues(context);
+                                } else {
+                                  try {
+                                    outputWordController.text =
+                                        "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
+                                    // traverse through list of definitions and assign to controllers so user can see
+                                    definitionsList!.definitionElements
+                                        ?.forEach((element) {
+                                      // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
+                                      debugPrint('enter 1');
+                                      if (element.phonetic == null) {
+                                        DoNothingAction();
+                                      } else {
+                                        phonetic = element.phonetic;
+                                      }
+                                      // assign phonetic to phonetic controller in 2.3 because that's last place to do it
+                                      debugPrint('exit 1');
+                                      // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                                      // 2.1 - for audio
+                                      element.phonetics
+                                          ?.forEach((elementPhonetic) {
+                                        debugPrint('enter 2');
+                                        if (elementPhonetic.audio == null ||
+                                            elementPhonetic.audio == '') {
+                                          DoNothingAction();
+                                        } else {
+                                          pronounciationAudioSource =
+                                              elementPhonetic.audio as String;
+                                        }
+                                        // 2.2 - for audio source
+                                        if (elementPhonetic.sourceUrl == null ||
+                                            elementPhonetic.sourceUrl == '') {
+                                          DoNothingAction();
+                                        } else {
+                                          pronounciationSourceUrl =
+                                              elementPhonetic.sourceUrl
+                                                  as String;
+                                        }
+                                        // 2.3 - find some phonetic if not already there since phonetics list also has some
+                                        // debugPrint('1-${phonetic}');
+                                        if (phonetic == '' &&
+                                            elementPhonetic.text != null) {
+                                          phonetic =
+                                              elementPhonetic.text as String;
+                                        }
+                                        outputPhoneticController.text =
+                                            phonetic!;
+                                        // assign pronounciationSourceController.text to pronounciationSourceUrl
+                                        pronounciationSourceController.text =
+                                            pronounciationSourceUrl!;
+                                        debugPrint('exit 2');
+                                      });
+                                      // 3 - for meanings (look through each field in meanings)
+                                      element.meanings
+                                          ?.forEach((elementMeaning) {
+                                        debugPrint('enter 3');
+                                        // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
+                                        // 3.1 - add part of speech to list
+                                        meaningPartOfSpeechList.add(
+                                            elementMeaning.partOfSpeech
+                                                as String);
+                                        // 3.2 - add definitions list to their list
+                                        for (int i = 0;
+                                            i < meaningPartOfSpeechList.length;
+                                            i++) {
+                                          elementMeaning.definitions?.forEach(
+                                              (elementMeaningDefinitions) {
+                                            meaningDefinitionsList_tmp.add(
+                                                elementMeaningDefinitions
+                                                    .definition as String);
+                                          });
+                                          meaningDefinitionsMap[
+                                                  elementMeaning.partOfSpeech] =
+                                              meaningDefinitionsList_tmp;
+                                          meaningDefinitionsList_tmp = [];
+
+                                          elementMeaning.synonyms
+                                              ?.forEach((element) {
+                                            meaningSynonymsList_tmp
+                                                .add(element);
+                                          });
+                                          meaningSynonymMap[
+                                                  elementMeaning.partOfSpeech] =
+                                              meaningSynonymsList_tmp;
+                                          meaningSynonymsList_tmp = [];
+
+                                          elementMeaning.antonyms
+                                              ?.forEach((element) {
+                                            meaningAntonymsList_tmp
+                                                .add(element);
+                                          });
+                                          meaningAntonymMap[
+                                                  elementMeaning.partOfSpeech] =
+                                              meaningAntonymsList_tmp;
+                                          meaningAntonymsList_tmp = [];
+                                        }
+                                      });
+                                      debugPrint('exit 3');
+                                      // 4 - for license
+                                      debugPrint('enter 4');
+                                      // 4.1 -  check if license name in licenseNames already
+                                      (licenseNames
+                                              .contains(element.license?.name)
+                                          ? DoNothingAction()
+                                          : (licenseNames.add(element
+                                              .license?.name as String)));
+                                      // 4.2 - check if license url in licenseUrls already
+                                      (licenseUrls
+                                              .contains(element.license?.url)
+                                          ? DoNothingAction()
+                                          : (licenseUrls.add(
+                                              element.license?.url as String)));
+                                      // assign license lists to their respective text editing controllers
+                                      licenseNameController.text =
+                                          licenseNames.join(', ');
+                                      licenseUrlsController.text =
+                                          licenseUrls.join(', ');
+                                      debugPrint('exit 4');
+                                      // 5 - for source urls (check if license name in licenseNames already)
+                                      element.sourceUrls
+                                          ?.forEach((elementSourceUrl) {
+                                        debugPrint('enter 5');
+                                        (sourceUrls.contains(elementSourceUrl)
+                                            ? DoNothingAction()
+                                            : (sourceUrls
+                                                .add(elementSourceUrl)));
+                                      });
+                                      // assign sourceUrls list to its text editing controller
+                                      sourceUrlsController.text =
+                                          sourceUrls.join(', ');
+                                    });
+                                    debugPrint('exit 5');
+                                  } on Exception catch (e) {
+                                    debugPrint('!caught exception! $e');
+                                    setState(() {
+                                      wordToDefine = '';
+                                    });
+                                    Dialogs.showNetworkIssues(context);
+                                  }
                                 }
-                              }
-                            });
+                              });
+                            } on Exception catch (e) {
+                              debugPrint('!caught exception! $e');
+                              setState(() {
+                                wordToDefine = '';
+                              });
+                              Dialogs.showNetworkIssues(context);
+                            }
                           }
                         }),
                         style: TextStyle(
