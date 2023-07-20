@@ -129,12 +129,28 @@ class Meanings {
 
   Meanings.fromJson(Map<String, dynamic> json) {
     partOfSpeech = json['partOfSpeech'];
+
     if (json['definitions'] != null) {
       definitions = <Definitions>[];
       json['definitions'].forEach((v) {
         definitions!.add(new Definitions.fromJson(v));
       });
     }
+
+    if (json['synonyms'] != null) {
+      synonyms = <String>[];
+      json['synonyms'].forEach((v) {
+        synonyms!.add(v);
+      });
+    }
+
+    if (json['antonyms'] != null) {
+      antonyms = <String>[];
+      json['antonyms'].forEach((v) {
+        antonyms!.add(v);
+      });
+    }
+
     synonyms = json['synonyms'].cast<String>();
     antonyms = json['antonyms'].cast<String>();
   }
@@ -153,44 +169,22 @@ class Meanings {
 
 class Definitions {
   String? definition;
-  // List<String>? synonyms;
-  // List<String>? antonyms;
-  String? example;
+  // String? example;
 
   Definitions({
     this.definition,
-    // this.synonyms,
-    // this.antonyms,
-    this.example,
+    // this.example,
   });
 
   Definitions.fromJson(Map<String, dynamic> json) {
     definition = json['definition'];
-    // if (json['synonyms'] != null) {
-    //   synonyms = <String>[];
-    //   json['synonyms'].forEach((v) {
-    //     synonyms!.add(new String.fromJson(v));
-    //   });
-    // }
-    // if (json['antonyms'] != null) {
-    //   antonyms = <Null>[];
-    //   json['antonyms'].forEach((v) {
-    //     antonyms!.add(new Null.fromJson(v));
-    //   });
-    // }
-    example = json['example'];
+    // example = json['example'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['definition'] = this.definition;
-    // if (this.synonyms != null) {
-    //   data['synonyms'] = this.synonyms!.map((v) => v.toJson()).toList();
-    // }
-    // if (this.antonyms != null) {
-    //   data['antonyms'] = this.antonyms!.map((v) => v.toJson()).toList();
-    // }
-    data['example'] = this.example;
+    // data['example'] = this.example;
     return data;
   }
 }

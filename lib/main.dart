@@ -64,21 +64,24 @@ class _HomePageState extends State<HomePage> {
   final pronounciationSourceController = TextEditingController();
   final meaningPartOfSpeechController = TextEditingController();
   final meaningDefinitionController = TextEditingController();
-  // final meaningSynonymsController = TextEditingController();
-  // final meaningAntonymsController = TextEditingController();
-  // final meaningExampleController = TextEditingController();
+  final synonymController = TextEditingController();
+  final antonymController = TextEditingController();
   final licenseNameController = TextEditingController();
   final licenseUrlsController = TextEditingController();
   final sourceUrlsController = TextEditingController();
 
   List<String> meaningPartOfSpeechList = <String>[];
-  List<String> meaningDefinitionsList_1 = <String>[];
   List<String> meaningDefinitionsList_tmp = <String>[];
+  List<String> meaningSynonymsList = <String>[];
+  List<String> meaningSynonymsList_tmp = <String>[];
+  List<String> meaningAntonymsList = <String>[];
+  List<String> meaningAntonymsList_tmp = <String>[];
   List<List<String>> meaningDefinitionsList = [];
   var meaningDefinitionsMap = new Map();
   List<String> meaningSynonymList = <String>[];
+  var meaningSynonymMap = new Map();
   List<String> meaningAntonymList = <String>[];
-  List<String> meaningExampleList = <String>[];
+  var meaningAntonymMap = new Map();
   List<String> licenseNames = <String>[];
   List<String> licenseUrls = <String>[];
   List<String> sourceUrls = <String>[];
@@ -109,20 +112,18 @@ class _HomePageState extends State<HomePage> {
     audioPlayer.release();
     meaningPartOfSpeechController.clear();
     meaningDefinitionController.clear();
-    // meaningSynonymsController.clear();
-    // meaningAntonymsController.clear();
-    // meaningExampleController.clear();
+    synonymController.clear();
+    antonymController.clear();
     licenseNameController.clear();
     licenseUrlsController.clear();
     sourceUrlsController.clear();
     meaningPartOfSpeechList.clear();
-    meaningDefinitionsList_1.clear();
     meaningDefinitionsList_tmp.clear();
+
     meaningDefinitionsList.clear();
     meaningDefinitionsMap.clear();
     meaningSynonymList.clear();
     meaningAntonymList.clear();
-    meaningExampleList.clear();
     licenseNames.clear();
     licenseUrls.clear();
     sourceUrls.clear();
@@ -158,8 +159,14 @@ class _HomePageState extends State<HomePage> {
     fontSize: 18,
   );
 
-  TextStyle synonymsAntonyms = TextStyle(
-    color: Colors.grey[300],
+  TextStyle synonyms = TextStyle(
+    color: Colors.green[100],
+    fontWeight: FontWeight.w300,
+    fontSize: 17,
+  );
+
+  TextStyle antonyms = TextStyle(
+    color: Colors.red[100],
     fontWeight: FontWeight.w300,
     fontSize: 17,
   );
@@ -185,20 +192,21 @@ class _HomePageState extends State<HomePage> {
     audioPlayer.release();
     meaningPartOfSpeechController.dispose();
     meaningDefinitionController.dispose();
-    // meaningSynonymsController.dispose();
-    // meaningAntonymsController.dispose();
-    // meaningExampleController.dispose();
+    synonymController.dispose();
+    antonymController.dispose();
     licenseNameController.dispose();
     licenseUrlsController.dispose();
     sourceUrlsController.dispose();
     meaningPartOfSpeechList.clear();
-    meaningDefinitionsList_1.clear();
     meaningDefinitionsList_tmp.clear();
+
     meaningDefinitionsList.clear();
     meaningDefinitionsMap.clear();
     meaningSynonymList.clear();
+    meaningSynonymMap.clear();
     meaningAntonymList.clear();
-    meaningExampleList.clear();
+    meaningAntonymMap.clear();
+
     licenseNames.clear();
     licenseUrls.clear();
     sourceUrls.clear();
@@ -355,6 +363,12 @@ class _HomePageState extends State<HomePage> {
                                                 .length -
                                             1)
                                     .replaceAll('.,', '\n•');
+                                List<String>? meaningSynonymList =
+                                    meaningSynonymMap[meaningDefinitionsMap.keys
+                                        .elementAt(index)] as List<String>;
+                                List<String>? meaningAntonymList =
+                                    meaningAntonymMap[meaningDefinitionsMap.keys
+                                        .elementAt(index)] as List<String>;
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -368,12 +382,32 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     // definitions for that part of speech
                                     Padding(
-                                      padding: EdgeInsets.only(left: 20),
+                                      padding: EdgeInsets.only(left: 10),
                                       child: Text(
                                         "• ${value.toString()}",
                                         style: body,
                                       ),
-                                    )
+                                    ),
+                                    Visibility(
+                                      visible: meaningSynonymList.isNotEmpty,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(left: 30),
+                                        child: Text(
+                                          'Synonyms: ${meaningSynonymList.join(', ')}',
+                                          style: synonyms,
+                                        ),
+                                      ),
+                                    ),
+                                    Visibility(
+                                      visible: meaningAntonymList.isNotEmpty,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(left: 30),
+                                        child: Text(
+                                          'Antonyms: ${meaningAntonymList.join(', ')}',
+                                          style: antonyms,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 );
                               }),
@@ -513,6 +547,7 @@ class _HomePageState extends State<HomePage> {
                                   // 3 - for meanings (look through each field in meanings)
                                   element.meanings?.forEach((elementMeaning) {
                                     debugPrint('enter 3');
+                                    // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
                                     // 3.1 - add part of speech to list
                                     meaningPartOfSpeechList.add(
                                         elementMeaning.partOfSpeech as String);
@@ -522,14 +557,44 @@ class _HomePageState extends State<HomePage> {
                                         i++) {
                                       elementMeaning.definitions?.forEach(
                                           (elementMeaningDefinitions) {
-                                        meaningDefinitionsList_1.add(
+                                        meaningDefinitionsList_tmp.add(
                                             elementMeaningDefinitions.definition
                                                 as String);
                                       });
                                       meaningDefinitionsMap[
                                               elementMeaning.partOfSpeech] =
-                                          meaningDefinitionsList_1;
-                                      meaningDefinitionsList_1 = [];
+                                          meaningDefinitionsList_tmp;
+                                      meaningDefinitionsList_tmp = [];
+
+                                      elementMeaning.synonyms
+                                          ?.forEach((element) {
+                                        meaningSynonymsList_tmp.add(element);
+                                      });
+                                      meaningSynonymMap[
+                                              elementMeaning.partOfSpeech] =
+                                          meaningSynonymsList_tmp;
+                                      meaningSynonymsList_tmp = [];
+
+                                      elementMeaning.antonyms
+                                          ?.forEach((element) {
+                                        meaningAntonymsList_tmp.add(element);
+                                      });
+                                      meaningAntonymMap[
+                                              elementMeaning.partOfSpeech] =
+                                          meaningAntonymsList_tmp;
+                                      meaningAntonymsList_tmp = [];
+
+                                      // meaningSynonymMap[elementMeaning
+                                      //     .partOfSpeech] = meaningAntonymList;
+                                      // elementMeaning.synonyms
+                                      //     ?.forEach((element) {
+                                      //   meaningSynonymList.add(element);
+                                      // });
+
+                                      // elementMeaning.antonyms
+                                      //     ?.forEach((element) {
+                                      //   meaningAntonymList.add(element);
+                                      // });
                                     }
                                   });
                                   debugPrint('exit 3');
