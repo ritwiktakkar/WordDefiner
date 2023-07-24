@@ -65,7 +65,7 @@ class Dialogs {
               'Network Issue',
             ),
             content: Text(
-              "A network issue exists either in the server or on your device. Please check your network settings and try again.",
+              "A network issue exists either in the servers or on your device. Please check your network settings and try again.",
             ),
             actions: <Widget>[
               TextButton(
@@ -84,7 +84,7 @@ class Dialogs {
             'Network Issue',
           ),
           content: Text(
-            "A network issue exists either in the server or on your device. Please check your network settings and try again.",
+            "A network issue exists either in the servers or on your device. Please check your network settings and try again.",
           ),
           actions: <Widget>[
             TextButton(
@@ -113,7 +113,7 @@ class Dialogs {
               'Invalid Input',
             ),
             content: Text(
-              "Please limit your search term to consist of letters from the English alphabet and without spaces, i.e., discard any number, emoji or punctuation mark.",
+              "Please limit your search term to consist of letters from the English alphabet and without spaces, i.e., discard any number, emoji or punctuation mark. Additionally, please ensure that your search term is less than 50 characters.",
             ),
             actions: <Widget>[
               TextButton(
@@ -132,7 +132,7 @@ class Dialogs {
             'Invalid Input',
           ),
           content: Text(
-            "Please limit your search term to consist of letters from the English alphabet and without spaces, i.e., discard any number, emoji or punctuation mark.",
+            "Please limit your search term to consist of letters from the English alphabet and without spaces, i.e., discard any number, emoji or punctuation mark. Additionally, please ensure that your search term is less than 50 characters.",
           ),
           actions: <Widget>[
             TextButton(

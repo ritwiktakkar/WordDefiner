@@ -1,6 +1,9 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
-import 'package:WordDefiner/services/get_definition.dart' as API;
+import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
+import 'package:WordDefiner/services/datamuseAPI.dart' as DatamuseAPI;
+
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -69,6 +72,9 @@ class _HomePageState extends State<HomePage> {
   final licenseNameController = TextEditingController();
   final licenseUrlsController = TextEditingController();
   final sourceUrlsController = TextEditingController();
+  final stronglyAssociatedWordsController = TextEditingController();
+  final similarlySpelledWordsController = TextEditingController();
+  final similarSoundingWordsController = TextEditingController();
 
   List<String> meaningPartOfSpeechList = <String>[];
   List<String> meaningDefinitionsList_tmp = <String>[];
@@ -94,39 +100,50 @@ class _HomePageState extends State<HomePage> {
   String? pronounciationSourceUrl = '';
   String wordExample = '';
 
+  bool finding = false;
+
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
-  void clearAllOutput({bool alsoSearch = true, bool alsoWord = true}) {
-    // FocusScope.of(context).unfocus();
+  void clearOutput(
+      {bool alsoSearch = true,
+      bool alsoWord = true,
+      bool definitionsOnly = true,
+      bool similarWords = true}) {
     if (alsoSearch == true) {
       inputController.clear();
     }
     if (alsoWord == true) {
       outputWordController.clear();
     }
-    phonetic = '';
-    outputPhoneticController.clear();
-    pronounciationSourceController.clear();
-    pronounciationAudioSource = '';
-    pronounciationSourceUrl = '';
-    audioPlayer.release();
-    meaningPartOfSpeechController.clear();
-    meaningDefinitionController.clear();
-    synonymController.clear();
-    antonymController.clear();
-    licenseNameController.clear();
-    licenseUrlsController.clear();
-    sourceUrlsController.clear();
-    meaningPartOfSpeechList.clear();
-    meaningDefinitionsList_tmp.clear();
+    if (definitionsOnly == true) {
+      outputPhoneticController.clear();
+      pronounciationSourceController.clear();
+      pronounciationAudioSource = '';
+      pronounciationSourceUrl = '';
+      audioPlayer.release();
+      meaningPartOfSpeechController.clear();
+      meaningDefinitionController.clear();
+      synonymController.clear();
+      antonymController.clear();
+      licenseNameController.clear();
+      licenseUrlsController.clear();
+      sourceUrlsController.clear();
+      meaningPartOfSpeechList.clear();
+      meaningDefinitionsList_tmp.clear();
 
-    meaningDefinitionsList.clear();
-    meaningDefinitionsMap.clear();
-    meaningSynonymList.clear();
-    meaningAntonymList.clear();
-    licenseNames.clear();
-    licenseUrls.clear();
-    sourceUrls.clear();
+      meaningDefinitionsList.clear();
+      meaningDefinitionsMap.clear();
+      meaningSynonymList.clear();
+      meaningAntonymList.clear();
+      licenseNames.clear();
+      licenseUrls.clear();
+      sourceUrls.clear();
+    }
+    if (similarWords == true) {
+      stronglyAssociatedWordsController.clear();
+      similarlySpelledWordsController.clear();
+      similarSoundingWordsController.clear();
+    }
   }
 
   void clearSearch() {
@@ -137,25 +154,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   TextStyle sectionTitle = TextStyle(
-    color: Colors.grey[300],
-    fontWeight: FontWeight.w300,
+    color: Colors.grey[400],
+    fontWeight: FontWeight.w600,
     fontSize: 18,
   );
 
   TextStyle word = TextStyle(
-    color: Colors.blue[400],
+    color: Colors.white,
     fontWeight: FontWeight.bold,
     fontSize: 26,
   );
 
   TextStyle body = TextStyle(
-    fontWeight: FontWeight.w300,
+    fontWeight: FontWeight.w200,
     color: Colors.white,
     fontSize: 18,
   );
 
-  TextStyle bodyItalic = TextStyle(
-    color: Colors.blue[200],
+  TextStyle partOfSpeech = TextStyle(
+    color: Colors.blue[100],
     fontWeight: FontWeight.w300,
     fontSize: 18,
   );
@@ -198,6 +215,9 @@ class _HomePageState extends State<HomePage> {
     licenseNameController.dispose();
     licenseUrlsController.dispose();
     sourceUrlsController.dispose();
+    stronglyAssociatedWordsController.dispose();
+    similarlySpelledWordsController.dispose();
+    similarSoundingWordsController.dispose();
     meaningPartOfSpeechList.clear();
     meaningDefinitionsList_tmp.clear();
 
@@ -235,94 +255,137 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Visibility(
+                    visible: (finding &&
+                        outputWordController.text.isEmpty &&
+                        wordToDefine.isNotEmpty &&
+                        (stronglyAssociatedWordsController.text.isEmpty &&
+                            similarlySpelledWordsController.text.isEmpty &&
+                            similarSoundingWordsController.text.isEmpty)),
+                    child: Container(
+                      height: 125,
+                      child: TextField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                            hintText: (wordToDefine.characters.length > 0)
+                                ? "Looking up: “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}”"
+                                : "",
+                            hintMaxLines: 3,
+                            border: InputBorder.none),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: (!finding &&
+                        outputWordController.text.isEmpty &&
+                        wordToDefine.isEmpty &&
+                        (stronglyAssociatedWordsController.text.isEmpty &&
+                            similarlySpelledWordsController.text.isEmpty &&
+                            similarSoundingWordsController.text.isEmpty)),
+                    child: Container(
+                      height: 125,
+                      child: TextField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                            hintText: "Definitions will appear here",
+                            border: InputBorder.none),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: (!finding &&
+                        outputWordController.text.isEmpty &&
+                        wordToDefine.isNotEmpty &&
+                        (stronglyAssociatedWordsController.text.isNotEmpty ||
+                            similarlySpelledWordsController.text.isNotEmpty ||
+                            similarSoundingWordsController.text.isNotEmpty)),
+                    child: Container(
+                      height: 125,
+                      child: TextField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                            hintText: (wordToDefine.characters.length > 0)
+                                ? "No definitions found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” - but here are similar words"
+                                : "",
+                            hintMaxLines: 5,
+                            border: InputBorder.none),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: (!finding &&
+                        outputWordController.text.isEmpty &&
+                        wordToDefine.isNotEmpty &&
+                        stronglyAssociatedWordsController.text.isEmpty &&
+                        similarlySpelledWordsController.text.isEmpty &&
+                        similarSoundingWordsController.text.isEmpty),
+                    child: Container(
+                      height: 125,
+                      child: TextField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                            hintText: (wordToDefine.characters.length > 0)
+                                ? "No definitions or similar words found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}”"
+                                : "",
+                            hintMaxLines: 5,
+                            border: InputBorder.none),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               // outputWord shown only if definition found on server
               Visibility(
                 visible: outputWordController.text.isNotEmpty,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: screenWidth * .8,
-                          child: SelectableText(
-                            outputWordController.text,
-                            style: word,
-                            maxLines: 1,
+                    Container(
+                      height: 50,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: screenWidth * .8,
+                            child: SelectableText(
+                              outputWordController.text,
+                              style: word,
+                              maxLines: 1,
+                            ),
                           ),
-                        ),
-                        Container(
-                          width: screenWidth * .1,
-                          child: Column(
-                            children: [
-                              Visibility(
-                                visible: pronounciationAudioSource != '',
-                                child: Tooltip(
-                                  message:
-                                      'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
-                                  child: IconButton(
-                                    icon: Icon(
-                                      Icons.hearing,
-                                      color: Colors.yellow[200],
+                          Container(
+                            width: screenWidth * .1,
+                            child: Column(
+                              children: [
+                                Visibility(
+                                  visible: pronounciationAudioSource != '',
+                                  child: Tooltip(
+                                    message:
+                                        'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.hearing,
+                                        color: Colors.yellow[200],
+                                      ),
+                                      iconSize: 22,
+                                      onPressed: () {
+                                        audioPlayer.setVolume(1);
+                                        audioPlayer.play(UrlSource(
+                                            pronounciationAudioSource!));
+                                      },
                                     ),
-                                    iconSize: 22,
-                                    onPressed: () {
-                                      audioPlayer.setVolume(1);
-                                      audioPlayer.play(UrlSource(
-                                          pronounciationAudioSource!));
-                                    },
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Row(
-                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: screenWidth * .25,
-                          child: Visibility(
-                            visible: meaningDefinitionsMap.isNotEmpty,
-                            child: Text(
-                              "Definitions",
-                              style: sectionTitle,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: screenWidth * .65,
-                          child: Visibility(
-                            visible: outputPhoneticController.text.isNotEmpty,
-                            child: SelectableText(
-                              outputPhoneticController.text,
-                              style: TextStyle(
-                                color: Colors.yellow[200],
-                                fontWeight: FontWeight.w300,
-                                fontSize: 18,
-                              ),
-                              maxLines: 1,
-                              textAlign: TextAlign.end,
-                            ),
-                          ),
-                        )
-                      ],
-                    )
                   ],
-                ),
-              ),
-              Visibility(
-                visible: outputWordController.text.isEmpty,
-                child: TextField(
-                  readOnly: true,
-                  decoration: InputDecoration(
-                      hintText: (wordToDefine.isNotEmpty)
-                          ? "Definitions will appear here for: ${wordToDefine}"
-                          : "Definitions will appear here",
-                      border: InputBorder.none),
                 ),
               ),
               Expanded(
@@ -332,7 +395,40 @@ class _HomePageState extends State<HomePage> {
                   radius: Radius.circular(5),
                   child: SingleChildScrollView(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: screenWidth * .25,
+                              child: Visibility(
+                                visible: meaningDefinitionsMap.isNotEmpty,
+                                child: Text(
+                                  "Definitions",
+                                  style: sectionTitle,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: screenWidth * .65,
+                              child: Visibility(
+                                visible:
+                                    outputPhoneticController.text.isNotEmpty,
+                                child: SelectableText(
+                                  outputPhoneticController.text,
+                                  style: TextStyle(
+                                    color: Colors.yellow[200],
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 18,
+                                  ),
+                                  maxLines: 1,
+                                  textAlign: TextAlign.end,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                         Visibility(
                           visible: meaningDefinitionsMap.isNotEmpty,
                           child: Column(
@@ -370,13 +466,9 @@ class _HomePageState extends State<HomePage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         // part of speech
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8),
-                                          child: Text(
-                                            "${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
-                                            style: bodyItalic,
-                                          ),
+                                        Text(
+                                          "${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
+                                          style: partOfSpeech,
                                         ),
                                         // definitions for that part of speech
                                         Padding(
@@ -412,7 +504,7 @@ class _HomePageState extends State<HomePage> {
                                     );
                                   }),
                               Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
+                                padding: const EdgeInsets.only(top: 8.0),
                                 child: ListBody(
                                   children: [
                                     Visibility(
@@ -443,20 +535,129 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                         ),
+                        Visibility(
+                          visible: stronglyAssociatedWordsController
+                                  .text.isNotEmpty ||
+                              similarlySpelledWordsController.text.isNotEmpty ||
+                              similarSoundingWordsController.text.isNotEmpty,
+                          child: Divider(
+                            color: Colors.grey[700],
+                            thickness: 1,
+                          ),
+                        ),
+                        Visibility(
+                          visible:
+                              stronglyAssociatedWordsController.text.isNotEmpty,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    "Strongly associated words ",
+                                    style: sectionTitle,
+                                  ),
+                                  Tooltip(
+                                    message:
+                                        "Words that may be commonly used with or related to \"${outputWordController.text.toLowerCase()}\"",
+                                    child: Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 14,
+                                      color: Colors.grey[300],
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: SelectableText(
+                                  stronglyAssociatedWordsController.text,
+                                  style: body,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Visibility(
+                          visible:
+                              similarlySpelledWordsController.text.isNotEmpty,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    "Similarly spelled words ",
+                                    style: sectionTitle,
+                                  ),
+                                  Tooltip(
+                                    message:
+                                        "Note that some of these words may not be available in this dictionary.",
+                                    child: Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 14,
+                                      color: Colors.grey[300],
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: SelectableText(
+                                  similarlySpelledWordsController.text,
+                                  style: body,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Visibility(
+                          visible:
+                              similarSoundingWordsController.text.isNotEmpty,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    "Similar sounding words/sounds ",
+                                    style: sectionTitle,
+                                  ),
+                                  Tooltip(
+                                    message:
+                                        "Note that some of these words/sounds may not be available in this dictionary.",
+                                    child: Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 14,
+                                      color: Colors.grey[300],
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: SelectableText(
+                                  similarSoundingWordsController.text,
+                                  style: body,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
               SizedBox(
-                height: 5,
+                height: 10,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Tooltip(
                     message:
-                        'Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.\nDefinitions powered by dictionaryapi.dev\nWordDefiner English Dictionary, Version 2.7\n© 2022-2023 Nocturnal Dev Lab (RT)',
+                        'Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.\n• Definitions powered by dictionaryapi.dev\n• Strongly associated, similarly spelled, and similar sounding words powered by the Datamuse API\nWordDefiner English Dictionary, Version 3.0\n© 2022-2023 Nocturnal Dev Lab (RT)',
                     child: Icon(
                       Icons.info_outline_rounded,
                       color: Colors.grey[700],
@@ -469,16 +670,31 @@ class _HomePageState extends State<HomePage> {
                           iconSize: 26,
                           icon: Icon(
                             Icons.delete,
-                            color: (meaningDefinitionsMap.isNotEmpty)
+                            color: (meaningDefinitionsMap.isNotEmpty ||
+                                    stronglyAssociatedWordsController
+                                        .text.isNotEmpty ||
+                                    similarlySpelledWordsController
+                                        .text.isNotEmpty ||
+                                    similarSoundingWordsController
+                                        .text.isNotEmpty)
                                 ? Colors.grey[200]
                                 : Colors.grey[900],
                           ),
                           onPressed: () {
-                            if (meaningDefinitionsMap.isNotEmpty) {
+                            if (meaningDefinitionsMap.isNotEmpty ||
+                                stronglyAssociatedWordsController
+                                    .text.isNotEmpty ||
+                                similarlySpelledWordsController
+                                    .text.isNotEmpty ||
+                                similarSoundingWordsController
+                                    .text.isNotEmpty) {
                               HapticFeedback.lightImpact();
                               setState(() {
-                                clearAllOutput(
-                                    alsoSearch: true, alsoWord: true);
+                                clearOutput(
+                                    alsoSearch: true,
+                                    alsoWord: true,
+                                    definitionsOnly: true,
+                                    similarWords: true);
                                 wordToDefine = '';
                               });
                               // shift focus back to input textfield
@@ -512,186 +728,230 @@ class _HomePageState extends State<HomePage> {
                           wordToDefine = _.trim();
                           if (wordToDefine == '') {
                             // CHECK 1: empty word - do nothing
+                            finding = false;
                             wordToDefine = '';
                             DoNothingAction();
                             inputController.clear();
                           } else if (!validInputLetters
                                   .hasMatch(wordToDefine) ||
-                              wordToDefine.characters.contains(' ')) {
-                            // CHECK 2: non letter or space detected
-                            wordToDefine = '';
+                              wordToDefine.characters.contains(' ') ||
+                              wordToDefine.characters.length > 50) {
+                            // CHECK 2: non letter, just space detected, or query exceeds 50 characters - show error dialog
                             Dialogs.showInputIssue(context);
-                            setState(() {
-                              clearAllOutput(alsoSearch: true, alsoWord: true);
-                            });
                           } else {
-                            setState(() {
-                              clearAllOutput(alsoSearch: true, alsoWord: true);
-                            });
-                            try {
-                              final definitionsList =
-                                  (await API.getDefinition(wordToDefine));
-                              setState(() {
-                                if (definitionsList!.isNotFound == true) {
-                                  debugPrint('404 word not found');
-                                  Dialogs.showNoDefinitions(
-                                      context, wordToDefine);
-                                  wordToDefine = '';
-                                  clearAllOutput(
-                                      alsoSearch: true, alsoWord: true);
-                                  // shift focus back to input textfield
-                                  FocusScope.of(context)
-                                      .requestFocus(inputFocusNode);
-                                } else if (definitionsList.isNull == true) {
-                                  debugPrint('!caught exception!');
-                                  wordToDefine = '';
-                                  Dialogs.showNetworkIssues(context);
-                                } else {
-                                  try {
-                                    outputWordController.text =
-                                        "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
-                                    // traverse through list of definitions and assign to controllers so user can see
-                                    definitionsList!.definitionElements
-                                        ?.forEach((element) {
-                                      // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                                      debugPrint('enter 1');
-                                      if (element.phonetic == null) {
-                                        DoNothingAction();
-                                      } else {
-                                        phonetic = element.phonetic;
-                                      }
-                                      // assign phonetic to phonetic controller in 2.3 because that's last place to do it
-                                      debugPrint('exit 1');
-                                      // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
-                                      // 2.1 - for audio
-                                      element.phonetics
-                                          ?.forEach((elementPhonetic) {
-                                        debugPrint('enter 2');
-                                        if (elementPhonetic.audio == null ||
-                                            elementPhonetic.audio == '') {
-                                          DoNothingAction();
-                                        } else {
-                                          pronounciationAudioSource =
-                                              elementPhonetic.audio as String;
-                                        }
-                                        // 2.2 - for audio source
-                                        if (elementPhonetic.sourceUrl == null ||
-                                            elementPhonetic.sourceUrl == '') {
-                                          DoNothingAction();
-                                        } else {
-                                          pronounciationSourceUrl =
-                                              elementPhonetic.sourceUrl
-                                                  as String;
-                                        }
-                                        // 2.3 - find some phonetic if not already there since phonetics list also has some
-                                        // debugPrint('1-${phonetic}');
-                                        if (phonetic == '' &&
-                                            elementPhonetic.text != null) {
-                                          phonetic =
-                                              elementPhonetic.text as String;
-                                        }
-                                        outputPhoneticController.text =
-                                            phonetic!;
-                                        // assign pronounciationSourceController.text to pronounciationSourceUrl
-                                        pronounciationSourceController.text =
-                                            pronounciationSourceUrl!;
-                                        debugPrint('exit 2');
-                                      });
-                                      // 3 - for meanings (look through each field in meanings)
-                                      element.meanings
-                                          ?.forEach((elementMeaning) {
-                                        debugPrint('enter 3');
-                                        // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
-                                        // 3.1 - add part of speech to list
-                                        meaningPartOfSpeechList.add(
-                                            elementMeaning.partOfSpeech
-                                                as String);
-                                        // 3.2 - add definitions list to their list
-                                        for (int i = 0;
-                                            i < meaningPartOfSpeechList.length;
-                                            i++) {
-                                          elementMeaning.definitions?.forEach(
-                                              (elementMeaningDefinitions) {
-                                            meaningDefinitionsList_tmp.add(
-                                                elementMeaningDefinitions
-                                                    .definition as String);
-                                          });
-                                          meaningDefinitionsMap[
-                                                  elementMeaning.partOfSpeech] =
-                                              meaningDefinitionsList_tmp;
-                                          meaningDefinitionsList_tmp = [];
-
-                                          elementMeaning.synonyms
-                                              ?.forEach((element) {
-                                            meaningSynonymsList_tmp
-                                                .add(element);
-                                          });
-                                          meaningSynonymMap[
-                                                  elementMeaning.partOfSpeech] =
-                                              meaningSynonymsList_tmp;
-                                          meaningSynonymsList_tmp = [];
-
-                                          elementMeaning.antonyms
-                                              ?.forEach((element) {
-                                            meaningAntonymsList_tmp
-                                                .add(element);
-                                          });
-                                          meaningAntonymMap[
-                                                  elementMeaning.partOfSpeech] =
-                                              meaningAntonymsList_tmp;
-                                          meaningAntonymsList_tmp = [];
-                                        }
-                                      });
-                                      debugPrint('exit 3');
-                                      // 4 - for license
-                                      debugPrint('enter 4');
-                                      // 4.1 -  check if license name in licenseNames already
-                                      (licenseNames
-                                              .contains(element.license?.name)
-                                          ? DoNothingAction()
-                                          : (licenseNames.add(element
-                                              .license?.name as String)));
-                                      // 4.2 - check if license url in licenseUrls already
-                                      (licenseUrls
-                                              .contains(element.license?.url)
-                                          ? DoNothingAction()
-                                          : (licenseUrls.add(
-                                              element.license?.url as String)));
-                                      // assign license lists to their respective text editing controllers
-                                      licenseNameController.text =
-                                          licenseNames.join(', ');
-                                      licenseUrlsController.text =
-                                          licenseUrls.join(', ');
-                                      debugPrint('exit 4');
-                                      // 5 - for source urls (check if license name in licenseNames already)
-                                      element.sourceUrls
-                                          ?.forEach((elementSourceUrl) {
-                                        debugPrint('enter 5');
-                                        (sourceUrls.contains(elementSourceUrl)
-                                            ? DoNothingAction()
-                                            : (sourceUrls
-                                                .add(elementSourceUrl)));
-                                      });
-                                      // assign sourceUrls list to its text editing controller
-                                      sourceUrlsController.text =
-                                          sourceUrls.join(', ');
-                                    });
-                                    debugPrint('exit 5');
-                                  } on Exception catch (e) {
-                                    debugPrint('!caught exception! $e');
-                                    setState(() {
-                                      wordToDefine = '';
-                                    });
-                                    Dialogs.showNetworkIssues(context);
-                                  }
-                                }
-                              });
-                            } on Exception catch (e) {
-                              debugPrint('!caught exception! $e');
-                              setState(() {
-                                wordToDefine = '';
-                              });
+                            // CHECK 1: check if device has internet connection
+                            var result =
+                                await Connectivity().checkConnectivity();
+                            if (result == ConnectivityResult.none) {
+                              // Show no internet connection error dialog
                               Dialogs.showNetworkIssues(context);
+                            } else {
+                              setState(() {
+                                finding = true;
+                                clearOutput(
+                                    alsoSearch: true,
+                                    alsoWord: true,
+                                    definitionsOnly: true,
+                                    similarWords: true);
+                              });
+                              try {
+                                final definitionsList =
+                                    (await FreeDictionaryAPI.getDefinition(
+                                        wordToDefine));
+                                final stronglyAssociatedWords =
+                                    (await DatamuseAPI.getRelatedWords(
+                                        wordToDefine));
+                                final similarSpelledWords =
+                                    (await DatamuseAPI.getSimilarSpeltWords(
+                                        wordToDefine));
+                                final similarSoundingWords =
+                                    (await DatamuseAPI.getSimilarSoundingWords(
+                                        wordToDefine));
+                                stronglyAssociatedWordsController.text =
+                                    stronglyAssociatedWords
+                                        .toString()
+                                        .substring(
+                                            1,
+                                            stronglyAssociatedWords
+                                                    .toString()
+                                                    .length -
+                                                1);
+                                similarlySpelledWordsController.text =
+                                    similarSpelledWords.toString().substring(
+                                        1,
+                                        similarSpelledWords.toString().length -
+                                            1);
+                                similarSoundingWordsController.text =
+                                    similarSoundingWords.toString().substring(
+                                        1,
+                                        similarSoundingWords.toString().length -
+                                            1);
+                                setState(() {
+                                  finding = false;
+                                  if (definitionsList!.isNotFound == true) {
+                                    debugPrint('404 word not found');
+                                    // Dialogs.showNoDefinitions(
+                                    //     context, wordToDefine);
+                                    // wordToDefine = '';sdfsf
+                                    clearOutput(
+                                        alsoSearch: true,
+                                        alsoWord: true,
+                                        definitionsOnly: true,
+                                        similarWords: false);
+                                    // shift focus back to input textfield
+                                    FocusScope.of(context)
+                                        .requestFocus(inputFocusNode);
+                                  } else if (definitionsList.isNull == true) {
+                                    debugPrint('!caught exception!');
+                                    wordToDefine = '';
+                                    Dialogs.showNetworkIssues(context);
+                                  } else {
+                                    try {
+                                      outputWordController.text =
+                                          "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
+                                      // traverse through list of definitions and assign to controllers so user can see
+                                      definitionsList.definitionElements
+                                          ?.forEach((element) {
+                                        // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
+                                        debugPrint('enter 1');
+                                        if (element.phonetic == null) {
+                                          DoNothingAction();
+                                        } else {
+                                          phonetic = element.phonetic;
+                                        }
+                                        // assign phonetic to phonetic controller in 2.3 because that's last place to do it
+                                        debugPrint('exit 1');
+                                        // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                                        // 2.1 - for audio
+                                        element.phonetics
+                                            ?.forEach((elementPhonetic) {
+                                          debugPrint('enter 2');
+                                          if (elementPhonetic.audio == null ||
+                                              elementPhonetic.audio == '') {
+                                            DoNothingAction();
+                                          } else {
+                                            pronounciationAudioSource =
+                                                elementPhonetic.audio as String;
+                                          }
+                                          // 2.2 - for audio source
+                                          if (elementPhonetic.sourceUrl ==
+                                                  null ||
+                                              elementPhonetic.sourceUrl == '') {
+                                            DoNothingAction();
+                                          } else {
+                                            pronounciationSourceUrl =
+                                                elementPhonetic.sourceUrl
+                                                    as String;
+                                          }
+                                          // 2.3 - find some phonetic if not already there since phonetics list also has some
+                                          // debugPrint('1-${phonetic}');
+                                          if (phonetic == '' &&
+                                              elementPhonetic.text != null) {
+                                            phonetic =
+                                                elementPhonetic.text as String;
+                                          }
+                                          outputPhoneticController.text =
+                                              phonetic!;
+                                          // assign pronounciationSourceController.text to pronounciationSourceUrl
+                                          pronounciationSourceController.text =
+                                              pronounciationSourceUrl!;
+                                          debugPrint('exit 2');
+                                        });
+                                        // 3 - for meanings (look through each field in meanings)
+                                        element.meanings
+                                            ?.forEach((elementMeaning) {
+                                          debugPrint('enter 3');
+                                          // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
+                                          // 3.1 - add part of speech to list
+                                          meaningPartOfSpeechList.add(
+                                              elementMeaning.partOfSpeech
+                                                  as String);
+                                          // 3.2 - add definitions list to their list
+                                          for (int i = 0;
+                                              i <
+                                                  meaningPartOfSpeechList
+                                                      .length;
+                                              i++) {
+                                            elementMeaning.definitions?.forEach(
+                                                (elementMeaningDefinitions) {
+                                              meaningDefinitionsList_tmp.add(
+                                                  elementMeaningDefinitions
+                                                      .definition as String);
+                                            });
+                                            meaningDefinitionsMap[elementMeaning
+                                                    .partOfSpeech] =
+                                                meaningDefinitionsList_tmp;
+                                            meaningDefinitionsList_tmp = [];
+
+                                            elementMeaning.synonyms
+                                                ?.forEach((element) {
+                                              meaningSynonymsList_tmp
+                                                  .add(element);
+                                            });
+                                            meaningSynonymMap[elementMeaning
+                                                    .partOfSpeech] =
+                                                meaningSynonymsList_tmp;
+                                            meaningSynonymsList_tmp = [];
+
+                                            elementMeaning.antonyms
+                                                ?.forEach((element) {
+                                              meaningAntonymsList_tmp
+                                                  .add(element);
+                                            });
+                                            meaningAntonymMap[elementMeaning
+                                                    .partOfSpeech] =
+                                                meaningAntonymsList_tmp;
+                                            meaningAntonymsList_tmp = [];
+                                          }
+                                        });
+                                        debugPrint('exit 3');
+                                        // 4 - for license
+                                        debugPrint('enter 4');
+                                        // 4.1 -  check if license name in licenseNames already
+                                        (licenseNames
+                                                .contains(element.license?.name)
+                                            ? DoNothingAction()
+                                            : (licenseNames.add(element
+                                                .license?.name as String)));
+                                        // 4.2 - check if license url in licenseUrls already
+                                        (licenseUrls
+                                                .contains(element.license?.url)
+                                            ? DoNothingAction()
+                                            : (licenseUrls.add(element
+                                                .license?.url as String)));
+                                        // assign license lists to their respective text editing controllers
+                                        licenseNameController.text =
+                                            licenseNames.join(', ');
+                                        licenseUrlsController.text =
+                                            licenseUrls.join(', ');
+                                        debugPrint('exit 4');
+                                        // 5 - for source urls (check if license name in licenseNames already)
+                                        element.sourceUrls
+                                            ?.forEach((elementSourceUrl) {
+                                          debugPrint('enter 5');
+                                          (sourceUrls.contains(elementSourceUrl)
+                                              ? DoNothingAction()
+                                              : (sourceUrls
+                                                  .add(elementSourceUrl)));
+                                        });
+                                        // assign sourceUrls list to its text editing controller
+                                        sourceUrlsController.text =
+                                            sourceUrls.join(', ');
+                                      });
+                                      debugPrint('exit 5');
+                                    } on Exception catch (e) {
+                                      debugPrint('!caught exception! $e');
+                                      setState(() {
+                                        wordToDefine = '';
+                                      });
+                                      Dialogs.showNetworkIssues(context);
+                                    }
+                                  }
+                                });
+                              } on Exception catch (e) {
+                                debugPrint('!caught exception! $e');
+                                Dialogs.showNetworkIssues(context);
+                              }
                             }
                           }
                         }),
