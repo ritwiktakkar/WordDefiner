@@ -5,7 +5,6 @@ import 'package:WordDefiner/Analytics/definition_form.dart';
 import 'package:WordDefiner/Analytics/device_form.dart';
 import 'package:WordDefiner/services/get_device_details.dart';
 import 'package:WordDefiner/services/submit_analytics.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:WordDefiner/model/definition_model.dart';
 import 'dart:convert';
