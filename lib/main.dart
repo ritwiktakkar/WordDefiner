@@ -102,6 +102,10 @@ class _HomePageState extends State<HomePage> {
 
   bool finding = false;
 
+  int stronglyAssociatedWordsCount = 0;
+  int similarSoundingWordsCount = 0;
+  int similarSpeltWordsCount = 0;
+
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
   void clearOutput(
@@ -143,6 +147,10 @@ class _HomePageState extends State<HomePage> {
       stronglyAssociatedWordsController.clear();
       similarlySpelledWordsController.clear();
       similarSoundingWordsController.clear();
+
+      stronglyAssociatedWordsCount = 0;
+      similarSoundingWordsCount = 0;
+      similarSpeltWordsCount = 0;
     }
   }
 
@@ -166,26 +174,27 @@ class _HomePageState extends State<HomePage> {
   );
 
   TextStyle body = TextStyle(
-    fontWeight: FontWeight.w200,
-    color: Colors.white,
+    color: Colors.grey[200],
     fontSize: 18,
   );
 
   TextStyle partOfSpeech = TextStyle(
     color: Colors.blue[100],
-    fontWeight: FontWeight.w300,
     fontSize: 18,
   );
 
   TextStyle synonyms = TextStyle(
     color: Colors.green[100],
-    fontWeight: FontWeight.w300,
+    fontSize: 18,
+  );
+
+  TextStyle hint = TextStyle(
+    color: Colors.grey[400],
     fontSize: 18,
   );
 
   TextStyle antonyms = TextStyle(
     color: Colors.red[100],
-    fontWeight: FontWeight.w300,
     fontSize: 18,
   );
 
@@ -266,7 +275,7 @@ class _HomePageState extends State<HomePage> {
                             similarlySpelledWordsController.text.isEmpty &&
                             similarSoundingWordsController.text.isEmpty)),
                     child: Container(
-                      height: 125,
+                      height: 100,
                       child: TextField(
                         readOnly: true,
                         decoration: InputDecoration(
@@ -274,6 +283,7 @@ class _HomePageState extends State<HomePage> {
                                 ? "Looking up: “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}”"
                                 : "",
                             hintMaxLines: 3,
+                            hintStyle: hint,
                             border: InputBorder.none),
                       ),
                     ),
@@ -290,7 +300,10 @@ class _HomePageState extends State<HomePage> {
                       child: TextField(
                         readOnly: true,
                         decoration: InputDecoration(
-                            hintText: "Definitions will appear here",
+                            hintText:
+                                "Definitions and similar words will appear here",
+                            hintStyle: hint,
+                            hintMaxLines: 3,
                             border: InputBorder.none),
                       ),
                     ),
@@ -303,13 +316,14 @@ class _HomePageState extends State<HomePage> {
                             similarlySpelledWordsController.text.isNotEmpty ||
                             similarSoundingWordsController.text.isNotEmpty)),
                     child: Container(
-                      height: 125,
+                      height: 100,
                       child: TextField(
                         readOnly: true,
                         decoration: InputDecoration(
                             hintText: (wordToDefine.characters.length > 0)
                                 ? "No definitions found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” - but here are similar words"
                                 : "",
+                            hintStyle: hint,
                             hintMaxLines: 5,
                             border: InputBorder.none),
                       ),
@@ -323,7 +337,7 @@ class _HomePageState extends State<HomePage> {
                         similarlySpelledWordsController.text.isEmpty &&
                         similarSoundingWordsController.text.isEmpty),
                     child: Container(
-                      height: 125,
+                      height: 100,
                       child: TextField(
                         readOnly: true,
                         decoration: InputDecoration(
@@ -370,7 +384,7 @@ class _HomePageState extends State<HomePage> {
                                         Icons.hearing,
                                         color: Colors.yellow[200],
                                       ),
-                                      iconSize: 22,
+                                      iconSize: 24,
                                       onPressed: () {
                                         audioPlayer.setVolume(1);
                                         audioPlayer.play(UrlSource(
@@ -401,7 +415,7 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           children: [
                             Container(
-                              width: screenWidth * .25,
+                              width: screenWidth * .3,
                               child: Visibility(
                                 visible: meaningDefinitionsMap.isNotEmpty,
                                 child: Text(
@@ -411,7 +425,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Container(
-                              width: screenWidth * .65,
+                              width: screenWidth * .6,
                               child: Visibility(
                                 visible:
                                     outputPhoneticController.text.isNotEmpty,
@@ -432,6 +446,7 @@ class _HomePageState extends State<HomePage> {
                         Visibility(
                           visible: meaningDefinitionsMap.isNotEmpty,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ListView.builder(
                                   physics: NeverScrollableScrollPhysics(),
@@ -452,7 +467,7 @@ class _HomePageState extends State<HomePage> {
                                                     .toString()
                                                     .length -
                                                 1)
-                                        .replaceAll('.,', '\n•');
+                                        .replaceAll('.,', '\n—');
                                     List<String>? meaningSynonymList =
                                         meaningSynonymMap[meaningDefinitionsMap
                                             .keys
@@ -467,14 +482,14 @@ class _HomePageState extends State<HomePage> {
                                       children: [
                                         // part of speech
                                         Text(
-                                          "${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
+                                          "${index + 1}. ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
                                           style: partOfSpeech,
                                         ),
                                         // definitions for that part of speech
                                         Padding(
                                           padding: EdgeInsets.only(left: 10),
                                           child: Text(
-                                            "• ${value.toString()}",
+                                            "— ${value.toString()}",
                                             style: body,
                                           ),
                                         ),
@@ -504,7 +519,7 @@ class _HomePageState extends State<HomePage> {
                                     );
                                   }),
                               Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
+                                padding: const EdgeInsets.only(top: 4.0),
                                 child: ListBody(
                                   children: [
                                     Visibility(
@@ -554,7 +569,9 @@ class _HomePageState extends State<HomePage> {
                               Row(
                                 children: [
                                   Text(
-                                    "Strongly associated words ",
+                                    (stronglyAssociatedWordsCount > 1)
+                                        ? "${stronglyAssociatedWordsCount} strongly associated words "
+                                        : "${stronglyAssociatedWordsCount} strongly associated word ",
                                     style: sectionTitle,
                                   ),
                                   Tooltip(
@@ -587,7 +604,9 @@ class _HomePageState extends State<HomePage> {
                               Row(
                                 children: [
                                   Text(
-                                    "Similarly spelled words ",
+                                    (similarSpeltWordsCount > 1)
+                                        ? "${similarSpeltWordsCount} similarly spelled words "
+                                        : "${similarSpeltWordsCount} similarly spelled word ",
                                     style: sectionTitle,
                                   ),
                                   Tooltip(
@@ -620,7 +639,9 @@ class _HomePageState extends State<HomePage> {
                               Row(
                                 children: [
                                   Text(
-                                    "Similar sounding words/sounds ",
+                                    (similarSoundingWordsCount > 1)
+                                        ? "${similarSoundingWordsCount} similar sounding words/sounds "
+                                        : "${similarSoundingWordsCount} similar sounding word/sound ",
                                     style: sectionTitle,
                                   ),
                                   Tooltip(
@@ -657,7 +678,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Tooltip(
                     message:
-                        'Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.\n• Definitions powered by dictionaryapi.dev\n• Strongly associated, similarly spelled, and similar sounding words powered by the Datamuse API\nWordDefiner English Dictionary, Version 3.0\n© 2022-2023 Nocturnal Dev Lab (RT)',
+                        'Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.\n• Definitions powered by dictionaryapi.dev\n• Strongly associated, similarly spelled, and similar sounding words powered by the Datamuse API\nWordDefiner English Dictionary, Version 3.0.1\n© 2022-2023 Nocturnal Dev Lab (RT)',
                     child: Icon(
                       Icons.info_outline_rounded,
                       color: Colors.grey[700],
@@ -725,17 +746,17 @@ class _HomePageState extends State<HomePage> {
                         ),
                         controller: inputController,
                         onSubmitted: ((_) async {
-                          wordToDefine = _.trim();
-                          if (wordToDefine == '') {
+                          // wordToDefine = _.trim();
+                          _ = _.trim();
+                          if (_ == '') {
                             // CHECK 1: empty word - do nothing
                             finding = false;
-                            wordToDefine = '';
+                            // wordToDefine = '';
                             DoNothingAction();
                             inputController.clear();
-                          } else if (!validInputLetters
-                                  .hasMatch(wordToDefine) ||
-                              wordToDefine.characters.contains(' ') ||
-                              wordToDefine.characters.length > 50) {
+                          } else if (!validInputLetters.hasMatch(_) ||
+                              _.characters.contains(' ') ||
+                              _.characters.length > 50) {
                             // CHECK 2: non letter, just space detected, or query exceeds 50 characters - show error dialog
                             Dialogs.showInputIssue(context);
                           } else {
@@ -747,6 +768,7 @@ class _HomePageState extends State<HomePage> {
                               Dialogs.showNetworkIssues(context);
                             } else {
                               setState(() {
+                                wordToDefine = _;
                                 finding = true;
                                 clearOutput(
                                     alsoSearch: true,
@@ -758,15 +780,22 @@ class _HomePageState extends State<HomePage> {
                                 final definitionsList =
                                     (await FreeDictionaryAPI.getDefinition(
                                         wordToDefine));
+
                                 final stronglyAssociatedWords =
                                     (await DatamuseAPI.getRelatedWords(
                                         wordToDefine));
+                                stronglyAssociatedWordsCount =
+                                    stronglyAssociatedWords!.length;
                                 final similarSpelledWords =
                                     (await DatamuseAPI.getSimilarSpeltWords(
                                         wordToDefine));
+                                similarSpeltWordsCount =
+                                    similarSpelledWords!.length;
                                 final similarSoundingWords =
                                     (await DatamuseAPI.getSimilarSoundingWords(
                                         wordToDefine));
+                                similarSoundingWordsCount =
+                                    similarSoundingWords!.length;
                                 stronglyAssociatedWordsController.text =
                                     stronglyAssociatedWords
                                         .toString()
@@ -792,7 +821,7 @@ class _HomePageState extends State<HomePage> {
                                     debugPrint('404 word not found');
                                     // Dialogs.showNoDefinitions(
                                     //     context, wordToDefine);
-                                    // wordToDefine = '';sdfsf
+                                    // wordToDefine = '';
                                     clearOutput(
                                         alsoSearch: true,
                                         alsoWord: true,
