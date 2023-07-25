@@ -23,6 +23,9 @@ Future<List<String>?> getSimilarSpeltWords(String wordToDefine) async {
       final parsedJson = json.decode(response.body);
       var rest = parsedJson as List;
       for (var i = 0; i < rest.length; i++) {
+        if (rest[i]["word"] == wordToDefine) {
+          continue;
+        }
         String word = rest[i]["word"][0].toUpperCase() +
             rest[i]["word"].substring(1).toLowerCase();
         similarSpeltWords.add(word);
@@ -53,6 +56,9 @@ Future<List<String>?> getSimilarSoundingWords(String wordToDefine) async {
       final parsedJson = json.decode(response.body);
       var rest = parsedJson as List;
       for (var i = 0; i < rest.length; i++) {
+        if (rest[i]["word"] == wordToDefine) {
+          continue;
+        }
         String word = rest[i]["word"][0].toUpperCase() +
             rest[i]["word"].substring(1).toLowerCase();
         similarSoundingWords.add(word);
@@ -83,6 +89,9 @@ Future<List<String>?> getRelatedWords(String wordToDefine) async {
       final parsedJson = json.decode(response.body);
       var rest = parsedJson as List;
       for (var i = 0; i < rest.length; i++) {
+        if (rest[i]["word"] == wordToDefine) {
+          continue;
+        }
         String word = rest[i]["word"][0].toUpperCase() +
             rest[i]["word"].substring(1).toLowerCase();
         relatedWords.add(word);
