@@ -75,6 +75,7 @@ class _HomePageState extends State<HomePage> {
   final stronglyAssociatedWordsController = TextEditingController();
   final similarlySpelledWordsController = TextEditingController();
   final similarSoundingWordsController = TextEditingController();
+  final rhymingWordsController = TextEditingController();
 
   List<String> meaningPartOfSpeechList = <String>[];
   List<String> meaningDefinitionsList_tmp = <String>[];
@@ -105,6 +106,18 @@ class _HomePageState extends State<HomePage> {
   int stronglyAssociatedWordsCount = 0;
   int similarSoundingWordsCount = 0;
   int similarSpeltWordsCount = 0;
+  int rhymingWordsCount = 0;
+
+  static const String appInfo =
+      "Results powered by dictionaryapi.dev and the Datamuse API.\nWordDefiner English Dictionary (Version 3.1.0)\n© 2022-2023 Nocturnal Dev Lab (RT)";
+
+  static const String appDisclaimer =
+      "Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.";
+
+  bool _stronglyAssociatedTileExpanded = false;
+  bool _similarlySpeltTileExpanded = false;
+  bool _similarSoundingTileExpanded = false;
+  bool _rhymingTileExpanded = false;
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
@@ -147,10 +160,12 @@ class _HomePageState extends State<HomePage> {
       stronglyAssociatedWordsController.clear();
       similarlySpelledWordsController.clear();
       similarSoundingWordsController.clear();
+      rhymingWordsController.clear();
 
       stronglyAssociatedWordsCount = 0;
       similarSoundingWordsCount = 0;
       similarSpeltWordsCount = 0;
+      rhymingWordsCount = 0;
     }
   }
 
@@ -227,6 +242,7 @@ class _HomePageState extends State<HomePage> {
     stronglyAssociatedWordsController.dispose();
     similarlySpelledWordsController.dispose();
     similarSoundingWordsController.dispose();
+    rhymingWordsController.dispose();
     meaningPartOfSpeechList.clear();
     meaningDefinitionsList_tmp.clear();
 
@@ -274,17 +290,20 @@ class _HomePageState extends State<HomePage> {
                         (stronglyAssociatedWordsController.text.isEmpty &&
                             similarlySpelledWordsController.text.isEmpty &&
                             similarSoundingWordsController.text.isEmpty)),
-                    child: Container(
-                      height: 100,
-                      child: TextField(
-                        readOnly: true,
-                        decoration: InputDecoration(
-                            hintText: (wordToDefine.characters.length > 0)
-                                ? "Looking up: “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}”"
-                                : "",
-                            hintMaxLines: 3,
-                            hintStyle: hint,
-                            border: InputBorder.none),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Container(
+                        height: 60,
+                        child: TextField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                              hintText: (wordToDefine.characters.length > 0)
+                                  ? "Looking up: “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}”"
+                                  : "",
+                              hintMaxLines: 3,
+                              hintStyle: hint,
+                              border: InputBorder.none),
+                        ),
                       ),
                     ),
                   ),
@@ -295,17 +314,38 @@ class _HomePageState extends State<HomePage> {
                         (stronglyAssociatedWordsController.text.isEmpty &&
                             similarlySpelledWordsController.text.isEmpty &&
                             similarSoundingWordsController.text.isEmpty)),
-                    child: Container(
-                      height: 125,
-                      child: TextField(
-                        readOnly: true,
-                        decoration: InputDecoration(
-                            hintText:
-                                "Definitions and similar words will appear here",
-                            hintStyle: hint,
-                            hintMaxLines: 3,
-                            border: InputBorder.none),
-                      ),
+                    child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Container(
+                            height: 30,
+                            child: TextField(
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                  hintText: "Results will appear here",
+                                  hintStyle: hint,
+                                  hintMaxLines: 2,
+                                  border: InputBorder.none),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 50,
+                          child: TextField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                                hintText: appInfo,
+                                hintMaxLines: 3,
+                                hintStyle: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w300),
+                                border: InputBorder.none),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Visibility(
@@ -315,17 +355,20 @@ class _HomePageState extends State<HomePage> {
                         (stronglyAssociatedWordsController.text.isNotEmpty ||
                             similarlySpelledWordsController.text.isNotEmpty ||
                             similarSoundingWordsController.text.isNotEmpty)),
-                    child: Container(
-                      height: 100,
-                      child: TextField(
-                        readOnly: true,
-                        decoration: InputDecoration(
-                            hintText: (wordToDefine.characters.length > 0)
-                                ? "No definitions found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” - but here are similar words"
-                                : "",
-                            hintStyle: hint,
-                            hintMaxLines: 5,
-                            border: InputBorder.none),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Container(
+                        height: 80,
+                        child: TextField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                              hintText: (wordToDefine.characters.length > 0)
+                                  ? "No definitions found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” - but here are similar words"
+                                  : "",
+                              hintStyle: hint,
+                              hintMaxLines: 5,
+                              border: InputBorder.none),
+                        ),
                       ),
                     ),
                   ),
@@ -481,9 +524,12 @@ class _HomePageState extends State<HomePage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         // part of speech
-                                        Text(
-                                          "${index + 1}. ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
-                                          style: partOfSpeech,
+                                        Padding(
+                                          padding: EdgeInsets.only(top: 5),
+                                          child: Text(
+                                            "${index + 1}. ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
+                                            style: partOfSpeech,
+                                          ),
                                         ),
                                         // definitions for that part of speech
                                         Padding(
@@ -563,106 +609,156 @@ class _HomePageState extends State<HomePage> {
                         Visibility(
                           visible:
                               stronglyAssociatedWordsController.text.isNotEmpty,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    (stronglyAssociatedWordsCount > 1)
-                                        ? "${stronglyAssociatedWordsCount} strongly associated words "
-                                        : "${stronglyAssociatedWordsCount} strongly associated word ",
-                                    style: sectionTitle,
-                                  ),
-                                  Tooltip(
-                                    message:
-                                        "Words that may be commonly used with or related to \"${outputWordController.text.toLowerCase()}\"",
-                                    child: Icon(
-                                      Icons.info_outline_rounded,
-                                      size: 14,
-                                      color: Colors.grey[300],
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10.0),
-                                child: SelectableText(
-                                  stronglyAssociatedWordsController.text,
-                                  style: body,
+                          child: ExpansionTile(
+                            tilePadding: EdgeInsets.all(0),
+                            expandedAlignment: Alignment.topLeft,
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (stronglyAssociatedWordsCount > 1)
+                                      ? "${stronglyAssociatedWordsCount} strongly associated words "
+                                      : "${stronglyAssociatedWordsCount} strongly associated word ",
+                                  style: sectionTitle,
                                 ),
+                                Tooltip(
+                                  message:
+                                      "Words that may be commonly used with or related to \"${wordToDefine.toLowerCase()}\"",
+                                  child: Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 14,
+                                    color: Colors.grey[300],
+                                  ),
+                                )
+                              ],
+                            ),
+                            children: [
+                              SelectableText(
+                                stronglyAssociatedWordsController.text,
+                                style: body,
                               ),
                             ],
+                            onExpansionChanged: (bool expanded) {
+                              setState(() {
+                                _stronglyAssociatedTileExpanded = expanded;
+                              });
+                            },
                           ),
                         ),
                         Visibility(
                           visible:
                               similarlySpelledWordsController.text.isNotEmpty,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    (similarSpeltWordsCount > 1)
-                                        ? "${similarSpeltWordsCount} similarly spelled words "
-                                        : "${similarSpeltWordsCount} similarly spelled word ",
-                                    style: sectionTitle,
-                                  ),
-                                  Tooltip(
-                                    message:
-                                        "Note that some of these words may not be available in this dictionary.",
-                                    child: Icon(
-                                      Icons.info_outline_rounded,
-                                      size: 14,
-                                      color: Colors.grey[300],
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10.0),
-                                child: SelectableText(
-                                  similarlySpelledWordsController.text,
-                                  style: body,
+                          child: ExpansionTile(
+                            tilePadding: EdgeInsets.all(0),
+                            expandedAlignment: Alignment.topLeft,
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (similarSpeltWordsCount > 1)
+                                      ? "${similarSpeltWordsCount} similarly spelt words "
+                                      : "${similarSpeltWordsCount} similarly spelt word ",
+                                  style: sectionTitle,
                                 ),
+                                Tooltip(
+                                  message:
+                                      "Words that are spelt similar to \"${wordToDefine.toLowerCase()}\"",
+                                  child: Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 14,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            children: [
+                              SelectableText(
+                                similarlySpelledWordsController.text,
+                                style: body,
                               ),
                             ],
+                            onExpansionChanged: (bool expanded) {
+                              setState(() {
+                                _similarlySpeltTileExpanded = expanded;
+                              });
+                            },
                           ),
                         ),
                         Visibility(
                           visible:
                               similarSoundingWordsController.text.isNotEmpty,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    (similarSoundingWordsCount > 1)
-                                        ? "${similarSoundingWordsCount} similar sounding words/sounds "
-                                        : "${similarSoundingWordsCount} similar sounding word/sound ",
-                                    style: sectionTitle,
-                                  ),
-                                  Tooltip(
-                                    message:
-                                        "Note that some of these words/sounds may not be available in this dictionary.",
-                                    child: Icon(
-                                      Icons.info_outline_rounded,
-                                      size: 14,
-                                      color: Colors.grey[300],
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10.0),
-                                child: SelectableText(
-                                  similarSoundingWordsController.text,
-                                  style: body,
+                          child: ExpansionTile(
+                            tilePadding: EdgeInsets.all(0),
+                            expandedAlignment: Alignment.topLeft,
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (similarSoundingWordsCount > 1)
+                                      ? "${similarSoundingWordsCount} similar sounding words "
+                                      : "${similarSoundingWordsCount} similar sounding word ",
+                                  style: sectionTitle,
                                 ),
+                                Tooltip(
+                                  message:
+                                      "Words that sound similar to \"${wordToDefine.toLowerCase()}\"",
+                                  child: Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 14,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            children: [
+                              SelectableText(
+                                similarSoundingWordsController.text,
+                                style: body,
                               ),
                             ],
+                            onExpansionChanged: (bool expanded) {
+                              setState(() {
+                                _similarSoundingTileExpanded = expanded;
+                              });
+                            },
+                          ),
+                        ),
+                        Visibility(
+                          visible: rhymingWordsController.text.isNotEmpty,
+                          child: ExpansionTile(
+                            tilePadding: EdgeInsets.all(0),
+                            expandedAlignment: Alignment.topLeft,
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (rhymingWordsCount > 1)
+                                      ? "${rhymingWordsCount} rhyming words "
+                                      : "${rhymingWordsCount} rhyming word ",
+                                  style: sectionTitle,
+                                ),
+                                Tooltip(
+                                  message:
+                                      "Words that rhyme with \"${wordToDefine.toLowerCase()}\"",
+                                  child: Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 14,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            children: [
+                              SelectableText(
+                                rhymingWordsController.text,
+                                style: body,
+                              ),
+                            ],
+                            onExpansionChanged: (bool expanded) {
+                              setState(() {
+                                _rhymingTileExpanded = expanded;
+                              });
+                            },
                           ),
                         ),
                       ],
@@ -677,8 +773,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Tooltip(
-                    message:
-                        'Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.\n• Definitions powered by dictionaryapi.dev\n• Strongly associated, similarly spelled, and similar sounding words powered by the Datamuse API\nWordDefiner English Dictionary, Version 3.0.1\n© 2022-2023 Nocturnal Dev Lab (RT)',
+                    message: '$appDisclaimer\n$appInfo',
                     child: Icon(
                       Icons.info_outline_rounded,
                       color: Colors.grey[700],
@@ -796,6 +891,10 @@ class _HomePageState extends State<HomePage> {
                                         wordToDefine));
                                 similarSoundingWordsCount =
                                     similarSoundingWords!.length;
+                                final rhymingWords =
+                                    (await DatamuseAPI.getRhymingWords(
+                                        wordToDefine));
+                                rhymingWordsCount = rhymingWords!.length;
                                 stronglyAssociatedWordsController.text =
                                     stronglyAssociatedWords
                                         .toString()
@@ -815,6 +914,10 @@ class _HomePageState extends State<HomePage> {
                                         1,
                                         similarSoundingWords.toString().length -
                                             1);
+                                rhymingWordsController.text = rhymingWords
+                                    .toString()
+                                    .substring(
+                                        1, rhymingWords.toString().length - 1);
                                 setState(() {
                                   finding = false;
                                   if (definitionsList!.isNotFound == true) {
