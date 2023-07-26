@@ -19,7 +19,7 @@ WordDefiner is an open-source online English dictionary app for Android and iOS.
 ## Screenshots
 
 <div align="center">
-    <img alt="Screenshot1" width="300" height="649" src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource116/v4/de/31/f2/de31f286-5864-55ea-1225-5d547ace789e/32e2bbb3-2011-4944-ba8b-e890423424c1__U200escreenshots-6.5._U200e001.jpeg/600x0w.webp"> <img alt="Screenshot2" width="300" height="649" src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource126/v4/2a/38/44/2a3844bf-923a-4dff-7acb-dba5a2d054ed/6cb06b00-37b8-4173-a635-cb9c6bff3919__U200escreenshots-6.5._U200e002.jpeg/600x0w.webp"> <img alt="Screenshot3" width="300" height="649" src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource126/v4/c1/ce/85/c1ce85e4-1582-3512-1b48-04e91aa368b0/4e1f3291-ae61-4eb8-b042-051cce374d91__U200escreenshots-6.5._U200e003.jpeg/600x0w.webp"> 
+    <img alt="Screenshot1" height="600" src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource116/v4/35/c1/26/35c12695-7b3b-b7d0-d73f-316be3f6db22/b33c5447-0a52-46ca-9fc7-66295ab9d0ac__U200escreenshots-6.5._U200e001.jpeg/600x0w.webp"> <img alt="Screenshot2" height="600" src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource116/v4/fb/f3/3a/fbf33abd-95be-e171-4112-50ce3fb9e06b/666c1fff-f7f1-473d-ad52-85d67120dcab__U200escreenshots-6.5._U200e003.jpeg/600x0w.webp"> <img alt="Screenshot3" height="600" src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource126/v4/ae/c9/3a/aec93a4b-d6a6-6aa0-b15f-efc2a2fca9a0/0641ee12-a0c3-40a1-a30a-d22f17dc9652__U200escreenshots-6.5._U200e005.jpeg/600x0w.webp"> 
 </div>
 
 ### Credits:
