@@ -25,4 +25,5 @@ WordDefiner is an open-source online English dictionary app for Android and iOS.
 ### Credits:
 
 - Definitions from Dictionary API: https://dictionaryapi.dev/
+- Similar words from Datamuse API: https://www.datamuse.com/api/
 - App icon: Dictionary icons created by Freepik - Flaticon (https://www.flaticon.com/free-icons/dictionary)
