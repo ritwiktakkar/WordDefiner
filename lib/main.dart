@@ -109,15 +109,10 @@ class _HomePageState extends State<HomePage> {
   int rhymingWordsCount = 0;
 
   static const String appInfo =
-      "Results powered by dictionaryapi.dev and the Datamuse API.\nWordDefiner English Dictionary (Version 3.1.0)\n© 2022-2023 Nocturnal Dev Lab (RT)";
+      "Results powered by dictionaryapi.dev and the Datamuse API.\nWordDefiner English Dictionary (Version 3.2.0)\n© 2022-2023 Nocturnal Dev Lab (RT)";
 
   static const String appDisclaimer =
       "Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.";
-
-  bool _stronglyAssociatedTileExpanded = false;
-  bool _similarlySpeltTileExpanded = false;
-  bool _similarSoundingTileExpanded = false;
-  bool _rhymingTileExpanded = false;
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
@@ -259,6 +254,12 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  bool _definitionsTileExpanded = false;
+  bool _stronglyAssociatedTileExpanded = false;
+  bool _similarlySpeltTileExpanded = false;
+  bool _similarSoundingTileExpanded = false;
+  bool _rhymingTileExpanded = false;
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -315,7 +316,6 @@ class _HomePageState extends State<HomePage> {
                             similarlySpelledWordsController.text.isEmpty &&
                             similarSoundingWordsController.text.isEmpty)),
                     child: Column(
-                      // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
@@ -338,10 +338,7 @@ class _HomePageState extends State<HomePage> {
                             decoration: InputDecoration(
                                 hintText: appInfo,
                                 hintMaxLines: 3,
-                                hintStyle: TextStyle(
-                                    color: Colors.grey[400],
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w300),
+                                hintStyle: corporate,
                                 border: InputBorder.none),
                           ),
                         ),
@@ -396,53 +393,73 @@ class _HomePageState extends State<HomePage> {
               ),
               // outputWord shown only if definition found on server
               Visibility(
-                visible: outputWordController.text.isNotEmpty,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 50,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            width: screenWidth * .8,
-                            child: SelectableText(
-                              outputWordController.text,
-                              style: word,
-                              maxLines: 1,
+                visible: meaningDefinitionsMap.isNotEmpty,
+                child: Container(
+                  height: (outputPhoneticController.text.isNotEmpty ||
+                          pronounciationAudioSource != '')
+                      ? 65
+                      : 40,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        child: SelectableText(
+                          outputWordController.text,
+                          style: word,
+                          maxLines: 1,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: screenWidth * .8,
+                              child: Visibility(
+                                visible:
+                                    outputPhoneticController.text.isNotEmpty,
+                                child: SelectableText(
+                                  outputPhoneticController.text,
+                                  style: TextStyle(
+                                    color: Colors.yellow[200],
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 18,
+                                  ),
+                                  maxLines: 1,
+                                ),
+                              ),
                             ),
-                          ),
-                          Container(
-                            width: screenWidth * .1,
-                            child: Column(
-                              children: [
-                                Visibility(
-                                  visible: pronounciationAudioSource != '',
-                                  child: Tooltip(
-                                    message:
-                                        'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
-                                    child: IconButton(
-                                      icon: Icon(
-                                        Icons.hearing,
-                                        color: Colors.yellow[200],
-                                      ),
-                                      iconSize: 24,
-                                      onPressed: () {
-                                        audioPlayer.setVolume(1);
-                                        audioPlayer.play(UrlSource(
-                                            pronounciationAudioSource!));
-                                      },
+                            Container(
+                              width: screenWidth * .1,
+                              child: Visibility(
+                                visible: pronounciationAudioSource != '',
+                                child: Tooltip(
+                                  message:
+                                      'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
+                                  child: InkWell(
+                                    child: Icon(
+                                      Icons.hearing,
+                                      color: Colors.yellow[200],
+                                      size: 24,
                                     ),
+                                    onTap: () {
+                                      audioPlayer.setVolume(1);
+                                      audioPlayer.play(UrlSource(
+                                          pronounciationAudioSource!));
+                                    },
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               Expanded(
@@ -455,155 +472,136 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: screenWidth * .3,
-                              child: Visibility(
-                                visible: meaningDefinitionsMap.isNotEmpty,
-                                child: Text(
-                                  "Definitions",
-                                  style: sectionTitle,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: screenWidth * .6,
-                              child: Visibility(
-                                visible:
-                                    outputPhoneticController.text.isNotEmpty,
-                                child: SelectableText(
-                                  outputPhoneticController.text,
-                                  style: TextStyle(
-                                    color: Colors.yellow[200],
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 18,
-                                  ),
-                                  maxLines: 1,
-                                  textAlign: TextAlign.end,
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
                         Visibility(
                           visible: meaningDefinitionsMap.isNotEmpty,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: ExpansionTile(
+                            tilePadding: EdgeInsets.all(0),
+                            expandedAlignment: Alignment.topLeft,
+                            title: Text(
+                              "Definitions",
+                              style: sectionTitle,
+                            ),
                             children: [
-                              ListView.builder(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  padding: EdgeInsets.all(0),
-                                  shrinkWrap: true,
-                                  itemCount: meaningDefinitionsMap.keys.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    String key = meaningDefinitionsMap.keys
-                                        .elementAt(index);
-                                    String value = meaningDefinitionsMap.values
-                                        .elementAt(index)
-                                        .toString()
-                                        .substring(
-                                            1,
-                                            meaningDefinitionsMap.values
-                                                    .elementAt(index)
-                                                    .toString()
-                                                    .length -
-                                                1)
-                                        .replaceAll('.,', '\n—');
-                                    List<String>? meaningSynonymList =
-                                        meaningSynonymMap[meaningDefinitionsMap
-                                            .keys
-                                            .elementAt(index)] as List<String>;
-                                    List<String>? meaningAntonymList =
-                                        meaningAntonymMap[meaningDefinitionsMap
-                                            .keys
-                                            .elementAt(index)] as List<String>;
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ListView.builder(
+                                      physics: NeverScrollableScrollPhysics(),
+                                      padding: EdgeInsets.all(0),
+                                      shrinkWrap: true,
+                                      itemCount:
+                                          meaningDefinitionsMap.keys.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        String key = meaningDefinitionsMap.keys
+                                            .elementAt(index);
+                                        String value = meaningDefinitionsMap
+                                            .values
+                                            .elementAt(index)
+                                            .toString()
+                                            .substring(
+                                                1,
+                                                meaningDefinitionsMap.values
+                                                        .elementAt(index)
+                                                        .toString()
+                                                        .length -
+                                                    1)
+                                            .replaceAll('.,', '\n—');
+                                        List<String>? meaningSynonymList =
+                                            meaningSynonymMap[
+                                                    meaningDefinitionsMap.keys
+                                                        .elementAt(index)]
+                                                as List<String>;
+                                        List<String>? meaningAntonymList =
+                                            meaningAntonymMap[
+                                                    meaningDefinitionsMap.keys
+                                                        .elementAt(index)]
+                                                as List<String>;
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            // part of speech
+                                            Text(
+                                              "${index + 1}. ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
+                                              style: partOfSpeech,
+                                            ),
+                                            // definitions for that part of speech
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 10),
+                                              child: Text(
+                                                "— ${value.toString()}",
+                                                style: body,
+                                              ),
+                                            ),
+                                            Visibility(
+                                              visible:
+                                                  meaningSynonymList.isNotEmpty,
+                                              child: Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 10),
+                                                child: Text(
+                                                  'Synonyms: ${meaningSynonymList.join(', ')}',
+                                                  style: synonyms,
+                                                ),
+                                              ),
+                                            ),
+                                            Visibility(
+                                              visible:
+                                                  meaningAntonymList.isNotEmpty,
+                                              child: Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 10),
+                                                child: Text(
+                                                  'Antonyms: ${meaningAntonymList.join(', ')}',
+                                                  style: antonyms,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: ListBody(
                                       children: [
-                                        // part of speech
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 5),
-                                          child: Text(
-                                            "${index + 1}. ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
-                                            style: partOfSpeech,
-                                          ),
-                                        ),
-                                        // definitions for that part of speech
-                                        Padding(
-                                          padding: EdgeInsets.only(left: 10),
-                                          child: Text(
-                                            "— ${value.toString()}",
-                                            style: body,
-                                          ),
-                                        ),
                                         Visibility(
                                           visible:
-                                              meaningSynonymList.isNotEmpty,
-                                          child: Padding(
-                                            padding: EdgeInsets.only(left: 10),
-                                            child: Text(
-                                              'Synonyms: ${meaningSynonymList.join(', ')}',
-                                              style: synonyms,
-                                            ),
+                                              pronounciationAudioSource != '',
+                                          child: Text(
+                                            'Audio: ${pronounciationSourceController.text}',
+                                            style: corporate,
                                           ),
                                         ),
-                                        Visibility(
-                                          visible:
-                                              meaningAntonymList.isNotEmpty,
-                                          child: Padding(
-                                            padding: EdgeInsets.only(left: 10),
-                                            child: Text(
-                                              'Antonyms: ${meaningAntonymList.join(', ')}',
-                                              style: antonyms,
-                                            ),
-                                          ),
+                                        SelectableText(
+                                          "License name: ${licenseNameController.text}",
+                                          style: corporate,
+                                          maxLines: 1,
+                                        ),
+                                        SelectableText(
+                                          "License URLs: ${licenseUrlsController.text}",
+                                          style: corporate,
+                                          maxLines: 1,
+                                        ),
+                                        SelectableText(
+                                          "Source URLs: ${sourceUrlsController.text}",
+                                          style: corporate,
+                                          maxLines: 1,
                                         ),
                                       ],
-                                    );
-                                  }),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: ListBody(
-                                  children: [
-                                    Visibility(
-                                      visible: pronounciationAudioSource != '',
-                                      child: Text(
-                                        'Audio: ${pronounciationSourceController.text}',
-                                        style: corporate,
-                                      ),
                                     ),
-                                    SelectableText(
-                                      "License name: ${licenseNameController.text}",
-                                      style: corporate,
-                                      maxLines: 1,
-                                    ),
-                                    SelectableText(
-                                      "License URLs: ${licenseUrlsController.text}",
-                                      style: corporate,
-                                      maxLines: 1,
-                                    ),
-                                    SelectableText(
-                                      "Source URLs: ${sourceUrlsController.text}",
-                                      style: corporate,
-                                      maxLines: 1,
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                        ),
-                        Visibility(
-                          visible: stronglyAssociatedWordsController
-                                  .text.isNotEmpty ||
-                              similarlySpelledWordsController.text.isNotEmpty ||
-                              similarSoundingWordsController.text.isNotEmpty,
-                          child: Divider(
-                            color: Colors.grey[700],
-                            thickness: 1,
+                            onExpansionChanged: (bool expanded) {
+                              HapticFeedback.lightImpact();
+                              setState(() {
+                                _definitionsTileExpanded = expanded;
+                              });
+                            },
+                            initiallyExpanded: true,
                           ),
                         ),
                         Visibility(
@@ -639,6 +637,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
+                              HapticFeedback.lightImpact();
                               setState(() {
                                 _stronglyAssociatedTileExpanded = expanded;
                               });
@@ -678,6 +677,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
+                              HapticFeedback.lightImpact();
                               setState(() {
                                 _similarlySpeltTileExpanded = expanded;
                               });
@@ -717,6 +717,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
+                              HapticFeedback.lightImpact();
                               setState(() {
                                 _similarSoundingTileExpanded = expanded;
                               });
@@ -755,6 +756,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
+                              HapticFeedback.lightImpact();
                               setState(() {
                                 _rhymingTileExpanded = expanded;
                               });
@@ -804,7 +806,7 @@ class _HomePageState extends State<HomePage> {
                                     .text.isNotEmpty ||
                                 similarSoundingWordsController
                                     .text.isNotEmpty) {
-                              HapticFeedback.lightImpact();
+                              HapticFeedback.mediumImpact();
                               setState(() {
                                 clearOutput(
                                     alsoSearch: true,
@@ -837,7 +839,8 @@ class _HomePageState extends State<HomePage> {
                             Icons.search,
                             size: 20,
                           ),
-                          hintText: 'Look up a word',
+                          hintText:
+                              (finding) ? 'Please wait...' : 'Look up a word',
                         ),
                         controller: inputController,
                         onSubmitted: ((_) async {
@@ -846,7 +849,6 @@ class _HomePageState extends State<HomePage> {
                           if (_ == '') {
                             // CHECK 1: empty word - do nothing
                             finding = false;
-                            // wordToDefine = '';
                             DoNothingAction();
                             inputController.clear();
                           } else if (!validInputLetters.hasMatch(_) ||
@@ -939,6 +941,7 @@ class _HomePageState extends State<HomePage> {
                                     Dialogs.showNetworkIssues(context);
                                   } else {
                                     try {
+                                      HapticFeedback.lightImpact();
                                       outputWordController.text =
                                           "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
                                       // traverse through list of definitions and assign to controllers so user can see
@@ -947,7 +950,7 @@ class _HomePageState extends State<HomePage> {
                                         // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
                                         debugPrint('enter 1');
                                         if (element.phonetic == null) {
-                                          DoNothingAction();
+                                          phonetic = '';
                                         } else {
                                           phonetic = element.phonetic;
                                         }
@@ -1092,6 +1095,7 @@ class _HomePageState extends State<HomePage> {
                           fontSize: 18,
                           fontWeight: FontWeight.w300,
                         ),
+                        readOnly: (finding) ? true : false,
                       ),
                     ),
                   ),
