@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dialogs.dart';
 import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
 import 'package:WordDefiner/services/datamuseAPI.dart' as DatamuseAPI;
+import 'package:WordDefiner/readBadWords.dart' as ReadBadWords;
 
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -103,16 +104,20 @@ class _HomePageState extends State<HomePage> {
 
   bool finding = false;
 
+  bool isBadWord = false;
+
   int stronglyAssociatedWordsCount = 0;
   int similarSoundingWordsCount = 0;
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
+  static const String appVersion = "3.3.0";
+
   static const String appInfo =
-      "Results powered by dictionaryapi.dev and the Datamuse API.\nWordDefiner English Dictionary (Version 3.2.0)\n© 2022-2023 Nocturnal Dev Lab (RT)";
+      "Results powered by dictionaryapi.dev and the Datamuse API.\nWordDefiner English Dictionary (Version $appVersion) by Nocturnal Dev Lab (RT).\n© 2022-2023. All rights reserved.";
 
   static const String appDisclaimer =
-      "Using this app confirms that you agree with the privacy policy of WordDefiner, and exempt WordDefiner from any and all liability regarding the content(s) shown and functionality provided herein.";
+      "Using this app confirms that you agree with the privacy policy of WordDefiner, and agree to withhold WordDefiner from all liability regarding the content(s) shown and functionality provided herein.";
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
@@ -121,6 +126,7 @@ class _HomePageState extends State<HomePage> {
       bool alsoWord = true,
       bool definitionsOnly = true,
       bool similarWords = true}) {
+    isBadWord = false;
     if (alsoSearch == true) {
       inputController.clear();
     }
@@ -200,7 +206,7 @@ class _HomePageState extends State<HomePage> {
 
   TextStyle hint = TextStyle(
     color: Colors.grey[400],
-    fontSize: 18,
+    fontSize: 16,
   );
 
   TextStyle antonyms = TextStyle(
@@ -251,6 +257,9 @@ class _HomePageState extends State<HomePage> {
     licenseNames.clear();
     licenseUrls.clear();
     sourceUrls.clear();
+
+    badWords.clear();
+
     super.dispose();
   }
 
@@ -259,6 +268,18 @@ class _HomePageState extends State<HomePage> {
   bool _similarlySpeltTileExpanded = false;
   bool _similarSoundingTileExpanded = false;
   bool _rhymingTileExpanded = false;
+
+  List<String> badWords = [];
+
+  @override
+  void initState() {
+    super.initState();
+    ReadBadWords.readBadWordsFromFile().then((value) {
+      setState(() {
+        badWords = value;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -318,7 +339,7 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(top: 10),
+                          padding: const EdgeInsets.only(top: 20),
                           child: Container(
                             height: 30,
                             child: TextField(
@@ -329,17 +350,6 @@ class _HomePageState extends State<HomePage> {
                                   hintMaxLines: 2,
                                   border: InputBorder.none),
                             ),
-                          ),
-                        ),
-                        Container(
-                          height: 50,
-                          child: TextField(
-                            readOnly: true,
-                            decoration: InputDecoration(
-                                hintText: appInfo,
-                                hintMaxLines: 3,
-                                hintStyle: corporate,
-                                border: InputBorder.none),
                           ),
                         ),
                       ],
@@ -360,7 +370,7 @@ class _HomePageState extends State<HomePage> {
                           readOnly: true,
                           decoration: InputDecoration(
                               hintText: (wordToDefine.characters.length > 0)
-                                  ? "No definitions found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” - but here are similar words"
+                                  ? "No definitions found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” on dictionaryapi.dev — but here are similar words:"
                                   : "",
                               hintStyle: hint,
                               hintMaxLines: 5,
@@ -402,61 +412,81 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        child: SelectableText(
-                          outputWordController.text,
-                          style: word,
-                          maxLines: 1,
-                        ),
+                      Row(
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: screenWidth * 0.82,
+                            child: SelectableText(
+                              outputWordController.text,
+                              style: word,
+                              maxLines: 1,
+                            ),
+                          ),
+                          Container(
+                            width: screenWidth * .1,
+                            child: Visibility(
+                                visible: isBadWord,
+                                child: Tooltip(
+                                  message:
+                                      "Use this word with caution and awareness, given that some people may consider its use offensive depending on context.",
+                                  child: InkWell(
+                                    child: Icon(
+                                      Icons.warning_rounded,
+                                      color: Colors.red[200],
+                                      size: 24,
+                                    ),
+                                  ),
+                                )),
+                          ),
+                        ],
                       ),
                       SizedBox(
                         height: 8,
                       ),
-                      Container(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: screenWidth * .8,
-                              child: Visibility(
-                                visible:
-                                    outputPhoneticController.text.isNotEmpty,
-                                child: SelectableText(
-                                  outputPhoneticController.text,
-                                  style: TextStyle(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: screenWidth * .8,
+                            child: Visibility(
+                              visible: outputPhoneticController.text.isNotEmpty,
+                              child: SelectableText(
+                                outputPhoneticController.text,
+                                style: TextStyle(
+                                  color: Colors.yellow[200],
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 18,
+                                ),
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: screenWidth * .1,
+                            child: Visibility(
+                              visible: pronounciationAudioSource != '',
+                              child: Tooltip(
+                                message:
+                                    'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
+                                child: InkWell(
+                                  child: Icon(
+                                    Icons.hearing,
                                     color: Colors.yellow[200],
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 18,
+                                    size: 24,
                                   ),
-                                  maxLines: 1,
+                                  onTap: () {
+                                    audioPlayer.setVolume(1);
+                                    audioPlayer.play(
+                                        UrlSource(pronounciationAudioSource!));
+                                  },
                                 ),
                               ),
                             ),
-                            Container(
-                              width: screenWidth * .1,
-                              child: Visibility(
-                                visible: pronounciationAudioSource != '',
-                                child: Tooltip(
-                                  message:
-                                      'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
-                                  child: InkWell(
-                                    child: Icon(
-                                      Icons.hearing,
-                                      color: Colors.yellow[200],
-                                      size: 24,
-                                    ),
-                                    onTap: () {
-                                      audioPlayer.setVolume(1);
-                                      audioPlayer.play(UrlSource(
-                                          pronounciationAudioSource!));
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -763,6 +793,24 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                         ),
+                        Visibility(
+                          visible: (meaningDefinitionsMap.isNotEmpty ||
+                              stronglyAssociatedWordsController
+                                  .text.isNotEmpty ||
+                              similarlySpelledWordsController.text.isNotEmpty ||
+                              similarSoundingWordsController.text.isNotEmpty),
+                          child: Container(
+                            height: 40,
+                            child: TextField(
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                  hintText: appInfo,
+                                  hintMaxLines: 3,
+                                  hintStyle: corporate,
+                                  border: InputBorder.none),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -775,7 +823,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Tooltip(
-                    message: '$appDisclaimer\n$appInfo',
+                    message: '$appDisclaimer',
                     child: Icon(
                       Icons.info_outline_rounded,
                       color: Colors.grey[700],
@@ -944,6 +992,16 @@ class _HomePageState extends State<HomePage> {
                                       HapticFeedback.lightImpact();
                                       outputWordController.text =
                                           "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
+                                      if (badWords.contains(
+                                          wordToDefine.toLowerCase())) {
+                                        setState(() {
+                                          isBadWord = true;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          isBadWord = false;
+                                        });
+                                      }
                                       // traverse through list of definitions and assign to controllers so user can see
                                       definitionsList.definitionElements
                                           ?.forEach((element) {
