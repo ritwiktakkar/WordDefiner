@@ -41,3 +41,5 @@ doc/api/
 .flutter-plugins
 .flutter-plugins-dependencies
 lib/Analytics/constants.dart
+lib/bad-words.txt
+assets/badWords.txt
