@@ -111,13 +111,13 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "3.3.0";
+  static const String appVersion = "3.4.0";
 
-  static const String appInfo =
-      "Results powered by dictionaryapi.dev and the Datamuse API.\nWordDefiner English Dictionary (Version $appVersion) by Nocturnal Dev Lab (RT).\n© 2022-2023. All rights reserved.";
+  String appInfo =
+      "Results powered by dictionaryapi.dev and the Datamuse API.\nWordDefiner English Dictionary (Version $appVersion) by Nocturnal Dev Lab (RT).\n© 2022-${DateTime.now().year}. All rights reserved.";
 
   static const String appDisclaimer =
-      "Using this app confirms that you agree with the privacy policy of WordDefiner, and agree to withhold WordDefiner from all liability regarding the content(s) shown and functionality provided herein.";
+      "By utilizing this application, you acknowledge your agreement with the privacy policies of WordDefiner and hereby waive all claims against WordDefiner pertaining to the content(s) displayed, and the functionality provided herein.";
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
@@ -407,8 +407,8 @@ class _HomePageState extends State<HomePage> {
                 child: Container(
                   height: (outputPhoneticController.text.isNotEmpty ||
                           pronounciationAudioSource != '')
-                      ? 65
-                      : 40,
+                      ? 85
+                      : 55,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -593,7 +593,10 @@ class _HomePageState extends State<HomePage> {
                                         );
                                       }),
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
+                                    padding: const EdgeInsets.only(
+                                      top: 4.0,
+                                      bottom: 10,
+                                    ),
                                     child: ListBody(
                                       children: [
                                         Visibility(
@@ -661,9 +664,12 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                             children: [
-                              SelectableText(
-                                stronglyAssociatedWordsController.text,
-                                style: body,
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: SelectableText(
+                                  stronglyAssociatedWordsController.text,
+                                  style: body,
+                                ),
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
@@ -701,9 +707,12 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                             children: [
-                              SelectableText(
-                                similarlySpelledWordsController.text,
-                                style: body,
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: SelectableText(
+                                  similarlySpelledWordsController.text,
+                                  style: body,
+                                ),
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
@@ -741,9 +750,12 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                             children: [
-                              SelectableText(
-                                similarSoundingWordsController.text,
-                                style: body,
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: SelectableText(
+                                  similarSoundingWordsController.text,
+                                  style: body,
+                                ),
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
@@ -780,9 +792,12 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                             children: [
-                              SelectableText(
-                                rhymingWordsController.text,
-                                style: body,
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: SelectableText(
+                                  rhymingWordsController.text,
+                                  style: body,
+                                ),
                               ),
                             ],
                             onExpansionChanged: (bool expanded) {
