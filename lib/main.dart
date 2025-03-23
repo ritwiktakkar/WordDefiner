@@ -116,16 +116,16 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.0.0";
+  static const String appVersion = "4.0.1";
 
   static const String appInfo =
       "Results powered by dictionaryapi.dev and the Datamuse API.";
 
   static const String copyRight =
-      "WordDefiner English Dictionary (Version $appVersion) by Nocturnal Dev Lab (RT).";
+      "WordDefiner English Dictionary v$appVersion\n© 2022 Nocturnal Dev Lab (RT)";
 
   static const String appDisclaimer =
-      "By using this application, you accept the privacy policies of WordDefiner linked on the App/Play Store and hereby waive all claims against WordDefiner, including those related to the content(s) displayed, and the functionality provided herein.\n$copyRight";
+      "The developer disclaims all liability for any direct, indirect, incidental, consequential, or special damages arising from or related to your use of the app, including but not limited to, any errors or omissions in the content provided, any interruptions or malfunctions of the app's functionality, or any reliance on information displayed within the app.\n$copyRight";
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor:
             Color.fromARGB(255, 27, 27, 29), // make background color black
         body: Padding(
-          padding: const EdgeInsets.fromLTRB(15, 70, 15, 0),
+          padding: const EdgeInsets.fromLTRB(20, 70, 20, 30),
           // contains all following widgets
           child: Container(
             // color: Colors.amber,
@@ -668,7 +668,7 @@ class _HomePageState extends State<HomePage> {
                           // crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: screenWidth * 0.82,
+                              width: screenWidth * 0.78,
                               child: SelectableText(
                                 outputWordController.text,
                                 style: word,
@@ -701,7 +701,7 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: screenWidth * .8,
+                              width: screenWidth * .78,
                               child: Visibility(
                                 visible:
                                     outputPhoneticController.text.isNotEmpty,
@@ -1094,18 +1094,25 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Nocturnal Dev Lab (RT) © 2022-${DateTime.now().year}",
+                      "Nocturnal Dev Lab (RT)",
                       style: TextStyle(
-                          color: Colors.grey[800],
-                          fontSize: 10,
+                          color: Colors.grey[600],
+                          fontSize: 16,
                           fontWeight: FontWeight.w300),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Dialogs.showContactDialog(context);
+                      },
+                      icon: const Icon(Icons.contact_page_outlined),
+                      color: Colors.grey[500],
                     ),
                     Tooltip(
                       message: '$appDisclaimer',
                       child: Icon(
                         Icons.info_outline_rounded,
                         color: Colors.grey[800],
-                        size: 12,
+                        size: 20,
                       ),
                     ),
                     Tooltip(

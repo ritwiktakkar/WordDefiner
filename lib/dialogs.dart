@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:WordDefiner/Analytics/constants.dart' as Constants;
 
 class Dialogs {
   // this dialog pops up when there are no definitions for the word provided
@@ -142,6 +144,48 @@ class Dialogs {
               onPressed: () {
                 Navigator.of(context).pop();
               },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static Future<void> showContactDialog(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        if (Platform.isAndroid) {
+          DoNothingAction;
+        }
+        return CupertinoAlertDialog(
+          title: const Text("Get in Touch"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => launchUrl(Uri.parse(Constants.twitterUrl),
+                    mode: LaunchMode.externalApplication),
+                child: const Text('Twitter / X'),
+              ),
+              ElevatedButton(
+                onPressed: () => launchUrl(Uri.parse(Constants.emailUrl)),
+                child: const Text('Email'),
+              ),
+              ElevatedButton(
+                onPressed: () => launchUrl(Uri.parse(Constants.appStoreUrl)),
+                child: const Text('Check out my other apps'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Close"),
             ),
           ],
         );
