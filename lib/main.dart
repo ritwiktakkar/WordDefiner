@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.0.1";
+  static const String appVersion = "4.0.2";
 
   static const String appInfo =
       "Results powered by dictionaryapi.dev and the Datamuse API.";

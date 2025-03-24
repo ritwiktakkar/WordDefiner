@@ -166,16 +166,31 @@ class Dialogs {
             children: [
               SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () => launchUrl(Uri.parse(Constants.twitterUrl),
-                    mode: LaunchMode.externalApplication),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Dismiss dialog first
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    launchUrl(Uri.parse(Constants.twitterUrl),
+                        mode: LaunchMode.externalApplication);
+                  });
+                },
                 child: const Text('Twitter / X'),
               ),
               ElevatedButton(
-                onPressed: () => launchUrl(Uri.parse(Constants.emailUrl)),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Dismiss dialog first
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    launchUrl(Uri.parse(Constants.emailUrl));
+                  });
+                },
                 child: const Text('Email'),
               ),
               ElevatedButton(
-                onPressed: () => launchUrl(Uri.parse(Constants.appStoreUrl)),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Dismiss dialog first
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    launchUrl(Uri.parse(Constants.appStoreUrl));
+                  });
+                },
                 child: const Text('Check out my other apps'),
               ),
             ],
