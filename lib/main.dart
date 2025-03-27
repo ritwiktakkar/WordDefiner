@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
 import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
 import 'package:WordDefiner/services/datamuseAPI.dart' as DatamuseAPI;
 import 'package:WordDefiner/readBadWords.dart' as ReadBadWords;
-
+import 'package:WordDefiner/Analytics/constants.dart' as Constants;
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 void main() {
@@ -116,7 +119,7 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.0.3";
+  static const String appVersion = "4.1.0";
 
   static const String appInfo =
       "Results powered by dictionaryapi.dev and the Datamuse API.";
@@ -1097,15 +1100,30 @@ class _HomePageState extends State<HomePage> {
                       "Nocturnal Dev Lab (RT)",
                       style: TextStyle(
                           color: Colors.grey[600],
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w300),
                     ),
                     IconButton(
                       onPressed: () {
                         Dialogs.showContactDialog(context);
                       },
-                      icon: const Icon(Icons.contact_page_outlined),
-                      color: Colors.grey[500],
+                      icon: Icon(
+                        Icons.contact_page_outlined,
+                        color: Colors.grey[500],
+                        size: 30,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          launchUrl(Uri.parse(Constants.popopsURL));
+                        });
+                      },
+                      icon: Image.asset(
+                        "assets/popops_gs.png",
+                        width: 30,
+                        height: 30,
+                      ),
                     ),
                     Tooltip(
                       message: '$appDisclaimer',
