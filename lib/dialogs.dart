@@ -191,7 +191,7 @@ class Dialogs {
                     launchUrl(Uri.parse(Constants.appStoreUrl));
                   });
                 },
-                child: const Text('Check out my other apps'),
+                child: const Text('My other apps'),
               ),
             ],
           ),
