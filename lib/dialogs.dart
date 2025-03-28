@@ -179,10 +179,10 @@ class Dialogs {
                 onPressed: () {
                   Navigator.of(context).pop(); // Dismiss dialog first
                   Future.delayed(const Duration(milliseconds: 300), () {
-                    launchUrl(Uri.parse(Constants.emailUrl));
+                    launchUrl(Uri.parse(Constants.formUrl));
                   });
                 },
-                child: const Text('Email'),
+                child: const Text('Feedback form'),
               ),
               ElevatedButton(
                 onPressed: () {
