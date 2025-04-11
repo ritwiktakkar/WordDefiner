@@ -160,7 +160,7 @@ class Dialogs {
           DoNothingAction;
         }
         return CupertinoAlertDialog(
-          title: const Text("Get in Touch"),
+          title: const Text("Hey!  \u{1F44B}"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

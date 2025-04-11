@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.1.2";
+  static const String appVersion = "4.2.0";
 
   static const String appInfo =
       "Results powered by dictionaryapi.dev and the Datamuse API.";
@@ -309,7 +309,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor:
             Color.fromARGB(255, 27, 27, 29), // make background color black
         body: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 70, 20, 30),
+          padding: const EdgeInsets.fromLTRB(20, 60, 20, 25),
           // contains all following widgets
           child: Container(
             // color: Colors.amber,
@@ -1159,12 +1159,25 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Nocturnal Dev Lab (RT)",
-                      style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Nocturnal Dev Lab",
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 11,
+                              fontWeight: FontWeight.w300),
+                        ),
+                        Text(
+                          "(RT)",
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 11,
+                              fontWeight: FontWeight.w300,
+                              fontFamily: "CupertinoSystemText"),
+                        ),
+                      ],
                     ),
                     IconButton(
                       onPressed: () {
@@ -1196,6 +1209,18 @@ class _HomePageState extends State<HomePage> {
                       },
                       icon: Image.asset(
                         "assets/wwyd_gs.png",
+                        width: 30,
+                        height: 30,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          launchUrl(Uri.parse(Constants.shortenmyurlURL));
+                        });
+                      },
+                      icon: Image.asset(
+                        "assets/shortenmyurl_gs.png",
                         width: 30,
                         height: 30,
                       ),
