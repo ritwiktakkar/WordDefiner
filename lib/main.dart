@@ -117,16 +117,16 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.2.0";
+  static const String appVersion = "4.2.1";
 
   static const String appInfo =
       "Results powered by dictionaryapi.dev and the Datamuse API.";
 
-  static const String copyRight =
-      "WordDefiner English Dictionary v$appVersion\n© 2022 Nocturnal Dev Lab (RT)";
+  static final String copyRight =
+      "WordDefiner English Dictionary v$appVersion\n© 2022–${DateTime.now().year.toString()} Nocturnal Dev Lab (RT)";
 
-  static const String appDisclaimer =
-      "The developer disclaims all liability for any direct, indirect, incidental, consequential, or special damages arising from or related to your use of the app, including but not limited to, any errors or omissions in the content provided, any interruptions or malfunctions of the app's functionality, or any reliance on information displayed within the app.\n$copyRight";
+  static final String appDisclaimer =
+      "The developer disclaims all liability for any direct, indirect, incidental, consequential, or special damages arising from or related to your use of the app, including but not limited to, any errors or omissions in the content provided, any interruptions or malfunctions of the app's functionality, or any reliance on information displayed within the app.\n\n$copyRight";
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
