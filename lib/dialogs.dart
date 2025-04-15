@@ -184,15 +184,6 @@ class Dialogs {
                 },
                 child: const Text('Feedback form'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Dismiss dialog first
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    launchUrl(Uri.parse(Constants.appStoreUrl));
-                  });
-                },
-                child: const Text('My other apps'),
-              ),
             ],
           ),
           actions: <Widget>[
