@@ -1,10 +1,9 @@
 PODS:
   - audioplayers_darwin (0.0.1):
     - Flutter
-  - connectivity (0.0.1):
+  - connectivity_plus (0.0.1):
     - Flutter
-    - Reachability
-  - device_info (0.0.1):
+  - device_info_plus (0.0.1):
     - Flutter
   - external_app_launcher (0.0.1):
     - Flutter
@@ -14,7 +13,6 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - Reachability (3.2)
   - share_plus (0.0.1):
     - Flutter
   - url_launcher_ios (0.0.1):
@@ -22,8 +20,8 @@ PODS:
 
 DEPENDENCIES:
   - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
-  - connectivity (from `.symlinks/plugins/connectivity/ios`)
-  - device_info (from `.symlinks/plugins/device_info/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - external_app_launcher (from `.symlinks/plugins/external_app_launcher/ios`)
   - Flutter (from `Flutter`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
@@ -31,17 +29,13 @@ DEPENDENCIES:
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
-SPEC REPOS:
-  trunk:
-    - Reachability
-
 EXTERNAL SOURCES:
   audioplayers_darwin:
     :path: ".symlinks/plugins/audioplayers_darwin/ios"
-  connectivity:
-    :path: ".symlinks/plugins/connectivity/ios"
-  device_info:
-    :path: ".symlinks/plugins/device_info/ios"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/ios"
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
   external_app_launcher:
     :path: ".symlinks/plugins/external_app_launcher/ios"
   Flutter:
@@ -57,13 +51,12 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
-  connectivity: e7d9fd79099f39025737062855c00248b7afcdf0
-  device_info: 52e8c0c9c61def8d0a92bf175f5f500abbea04bc
+  connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
+  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   external_app_launcher: 3411245965270a74040a3de17e27bd02b8abb905
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
-  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
 

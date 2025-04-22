@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:WordDefiner/Analytics/constants.dart' as Constants;
 
 class Dialogs {
@@ -156,11 +157,8 @@ class Dialogs {
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
-        if (Platform.isAndroid) {
-          DoNothingAction;
-        }
         return CupertinoAlertDialog(
-          title: const Text("Hey  \u{1F44B}"),
+          title: const Text("Thanks for using WordDefiner  \u{1F64F}"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -173,7 +171,7 @@ class Dialogs {
                         mode: LaunchMode.externalApplication);
                   });
                 },
-                child: const Text('Twitter / X'),
+                child: const Text('Follow me on Twitter / X'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -182,7 +180,18 @@ class Dialogs {
                     launchUrl(Uri.parse(Constants.formUrl));
                   });
                 },
-                child: const Text('Feedback form'),
+                child: const Text('Provide feedback'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Dismiss dialog first
+                  if (Platform.isIOS || Platform.isMacOS) {
+                    Share.shareUri(Uri.parse(Constants.worddefinerURLApple));
+                  } else {
+                    Share.shareUri(Uri.parse(Constants.worddefinerURLAndroid));
+                  }
+                },
+                child: const Text('Share WordDefiner'),
               ),
             ],
           ),

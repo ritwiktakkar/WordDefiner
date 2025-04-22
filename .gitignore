@@ -14,6 +14,9 @@ android/key.properties
 *.aab
 *.pb
 *.apk*
+*.cxx
+.idea*
+symbols*
 
 # Files and directories created by pub
 .dart_tool/

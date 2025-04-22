@@ -1,4 +1,6 @@
-import 'package:connectivity/connectivity.dart';
+import 'dart:io';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'dialogs.dart';
 import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
@@ -118,7 +120,7 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.2.2";
+  static const String appVersion = "4.3.0";
 
   static const String appInfo =
       "Results powered by dictionaryapi.dev and the Datamuse API.";
@@ -790,7 +792,8 @@ class _HomePageState extends State<HomePage> {
                                   visible:
                                       outputPhoneticController.text.isNotEmpty,
                                   child: SelectableText(
-                                    outputPhoneticController.text,
+                                    outputPhoneticController.text
+                                        .replaceAll("/", ""),
                                     style: TextStyle(
                                       color: Colors.yellow[200],
                                       fontWeight: FontWeight.w300,
@@ -806,7 +809,7 @@ class _HomePageState extends State<HomePage> {
                                   visible: pronounciationAudioSource != '',
                                   child: Tooltip(
                                     message:
-                                        'Press to hear the pronounciation of \"${outputWordController.text.toLowerCase()}\". If you can\'t hear anything, try restarting the app.',
+                                        'Tap to hear the pronounciation of \“${outputWordController.text.toLowerCase()}.\” If you can\'t hear anything, try restarting the app or checking the device volume.',
                                     child: InkWell(
                                       child: Icon(
                                         Icons.hearing,
@@ -896,7 +899,7 @@ class _HomePageState extends State<HomePage> {
                                               children: [
                                                 // part of speech
                                                 Text(
-                                                  "${index + 1}. ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
+                                                  "${index + 1}. Part of speech: ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
                                                   style: partOfSpeech,
                                                 ),
                                                 // definitions for that part of speech
@@ -996,15 +999,6 @@ class _HomePageState extends State<HomePage> {
                                           : "${stronglyAssociatedWordsCount} strongly associated word ",
                                       style: sectionTitle,
                                     ),
-                                    Tooltip(
-                                      message:
-                                          "Words that may be commonly used with or related to \"${wordToDefine.toLowerCase()}\"",
-                                      child: Icon(
-                                        Icons.info_outline_rounded,
-                                        size: 14,
-                                        color: Colors.grey[300],
-                                      ),
-                                    )
                                   ],
                                 ),
                                 children: [
@@ -1038,15 +1032,6 @@ class _HomePageState extends State<HomePage> {
                                           ? "${similarSpeltWordsCount} similarly spelled words "
                                           : "${similarSpeltWordsCount} similarly spelled word ",
                                       style: sectionTitle,
-                                    ),
-                                    Tooltip(
-                                      message:
-                                          "Words that are spelled similarly to \"${wordToDefine.toLowerCase()}\"",
-                                      child: Icon(
-                                        Icons.info_outline_rounded,
-                                        size: 14,
-                                        color: Colors.grey[300],
-                                      ),
                                     ),
                                   ],
                                 ),
@@ -1082,15 +1067,6 @@ class _HomePageState extends State<HomePage> {
                                           : "${similarSoundingWordsCount} similar sounding word ",
                                       style: sectionTitle,
                                     ),
-                                    Tooltip(
-                                      message:
-                                          "Words that sound similar to \"${wordToDefine.toLowerCase()}\"",
-                                      child: Icon(
-                                        Icons.info_outline_rounded,
-                                        size: 14,
-                                        color: Colors.grey[300],
-                                      ),
-                                    ),
                                   ],
                                 ),
                                 children: [
@@ -1123,15 +1099,6 @@ class _HomePageState extends State<HomePage> {
                                           ? "${rhymingWordsCount} rhyming words "
                                           : "${rhymingWordsCount} rhyming word ",
                                       style: sectionTitle,
-                                    ),
-                                    Tooltip(
-                                      message:
-                                          "Words that rhyme with \"${wordToDefine.toLowerCase()}\"",
-                                      child: Icon(
-                                        Icons.info_outline_rounded,
-                                        size: 14,
-                                        color: Colors.grey[300],
-                                      ),
                                     ),
                                   ],
                                 ),
@@ -1183,7 +1150,7 @@ class _HomePageState extends State<HomePage> {
             Container(
               padding: const EdgeInsets.only(left: 11, right: 11),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1215,35 +1182,43 @@ class _HomePageState extends State<HomePage> {
                       size: 25,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () async {
-                      await LaunchApp.openApp(
-                        iosUrlScheme: Constants.popopsURLScheme,
-                        appStoreLink: Constants.popopsURL,
-                      );
-                    },
-                    icon: Image.asset(
-                      "assets/popops_gs.png",
-                      width: 25,
-                      height: 25,
+                  Visibility(
+                    visible: Platform.isIOS || Platform.isMacOS,
+                    child: IconButton(
+                      onPressed: () async {
+                        await LaunchApp.openApp(
+                          iosUrlScheme: Constants.popopsURLScheme,
+                          appStoreLink: Constants.popopsURL,
+                        );
+                      },
+                      icon: Image.asset(
+                        "assets/popops_gs.png",
+                        width: 25,
+                        height: 25,
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: Platform.isIOS || Platform.isMacOS,
+                    child: IconButton(
+                      onPressed: () async {
+                        await LaunchApp.openApp(
+                          iosUrlScheme: Constants.wwydURLScheme,
+                          appStoreLink: Constants.wwydURL,
+                        );
+                      },
+                      icon: Image.asset(
+                        "assets/wwyd_gs.png",
+                        width: 25,
+                        height: 25,
+                      ),
                     ),
                   ),
                   IconButton(
                     onPressed: () async {
                       await LaunchApp.openApp(
-                        iosUrlScheme: Constants.wwydURLScheme,
-                        appStoreLink: Constants.wwydURL,
-                      );
-                    },
-                    icon: Image.asset(
-                      "assets/wwyd_gs.png",
-                      width: 25,
-                      height: 25,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () async {
-                      await LaunchApp.openApp(
+                        androidPackageName:
+                            Constants.shortenmyurlAndroidPackageName,
                         iosUrlScheme: Constants.shortenmyurlURLScheme,
                         appStoreLink: Constants.shortenmyurlURL,
                       );
@@ -1263,7 +1238,13 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.grey[700],
                         ),
                         onPressed: () async {
-                          Share.shareUri(Uri.parse(Constants.worddefinerURL));
+                          if (Platform.isIOS || Platform.isMacOS) {
+                            Share.shareUri(
+                                Uri.parse(Constants.worddefinerURLApple));
+                          } else {
+                            Share.shareUri(
+                                Uri.parse(Constants.worddefinerURLAndroid));
+                          }
                         }),
                   ),
                 ],
