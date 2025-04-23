@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.3.0";
+  static const String appVersion = "4.3.1";
 
   static const String appInfo =
       "Results powered by dictionaryapi.dev and the Datamuse API.";
@@ -629,7 +629,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Tooltip(
-                        message: "Clear all output fields",
+                        message: "Clear all output fields.",
                         child: IconButton(
                             iconSize: 30,
                             icon: Icon(
@@ -792,8 +792,7 @@ class _HomePageState extends State<HomePage> {
                                   visible:
                                       outputPhoneticController.text.isNotEmpty,
                                   child: SelectableText(
-                                    outputPhoneticController.text
-                                        .replaceAll("/", ""),
+                                    outputPhoneticController.text,
                                     style: TextStyle(
                                       color: Colors.yellow[200],
                                       fontWeight: FontWeight.w300,
@@ -1172,65 +1171,80 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                  IconButton(
-                    onPressed: () {
-                      Dialogs.showContactDialog(context);
-                    },
-                    icon: Icon(
-                      Icons.contact_page_outlined,
-                      color: Colors.grey[500],
-                      size: 25,
-                    ),
-                  ),
-                  Visibility(
-                    visible: Platform.isIOS || Platform.isMacOS,
+                  Tooltip(
+                    message: "Link to feedback form.",
                     child: IconButton(
-                      onPressed: () async {
-                        await LaunchApp.openApp(
-                          iosUrlScheme: Constants.popopsURLScheme,
-                          appStoreLink: Constants.popopsURL,
-                        );
+                      onPressed: () {
+                        Dialogs.showContactDialog(context);
                       },
-                      icon: Image.asset(
-                        "assets/popops_gs.png",
-                        width: 25,
-                        height: 25,
+                      icon: Icon(
+                        Icons.contact_page_outlined,
+                        color: Colors.grey[500],
+                        size: 25,
                       ),
                     ),
                   ),
                   Visibility(
                     visible: Platform.isIOS || Platform.isMacOS,
-                    child: IconButton(
-                      onPressed: () async {
-                        await LaunchApp.openApp(
-                          iosUrlScheme: Constants.wwydURLScheme,
-                          appStoreLink: Constants.wwydURL,
-                        );
-                      },
-                      icon: Image.asset(
-                        "assets/wwyd_gs.png",
-                        width: 25,
-                        height: 25,
+                    child: Tooltip(
+                      message:
+                          "Open Popops — a fun game that combines mesmerizing visuals with lightning-fast gameplay for a unique experience anyone can pick up, but few can master.",
+                      child: IconButton(
+                        onPressed: () async {
+                          await LaunchApp.openApp(
+                            iosUrlScheme: Constants.popopsURLScheme,
+                            appStoreLink: Constants.popopsURL,
+                          );
+                        },
+                        icon: Image.asset(
+                          "assets/popops_gs.png",
+                          width: 25,
+                          height: 25,
+                        ),
                       ),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () async {
-                      await LaunchApp.openApp(
-                        androidPackageName:
-                            Constants.shortenmyurlAndroidPackageName,
-                        iosUrlScheme: Constants.shortenmyurlURLScheme,
-                        appStoreLink: Constants.shortenmyurlURL,
-                      );
-                    },
-                    icon: Image.asset(
-                      "assets/shortenmyurl_gs.png",
-                      width: 25,
-                      height: 25,
+                  Visibility(
+                    visible: Platform.isIOS || Platform.isMacOS,
+                    child: Tooltip(
+                      message:
+                          "Open WWYD — a community-driven app for iOS where users respond to daily hypothetical and real-world scenarios, then see how their choices compare to others.",
+                      child: IconButton(
+                        onPressed: () async {
+                          await LaunchApp.openApp(
+                            iosUrlScheme: Constants.wwydURLScheme,
+                            appStoreLink: Constants.wwydURL,
+                          );
+                        },
+                        icon: Image.asset(
+                          "assets/wwyd_gs.png",
+                          width: 25,
+                          height: 25,
+                        ),
+                      ),
                     ),
                   ),
                   Tooltip(
-                    message: "Share this app",
+                    message:
+                        "Open ShortenMyURL — an elegant URL shortening app.",
+                    child: IconButton(
+                      onPressed: () async {
+                        await LaunchApp.openApp(
+                          androidPackageName:
+                              Constants.shortenmyurlAndroidPackageName,
+                          iosUrlScheme: Constants.shortenmyurlURLScheme,
+                          appStoreLink: Constants.shortenmyurlURL,
+                        );
+                      },
+                      icon: Image.asset(
+                        "assets/shortenmyurl_gs.png",
+                        width: 25,
+                        height: 25,
+                      ),
+                    ),
+                  ),
+                  Tooltip(
+                    message: "Share this app.",
                     child: IconButton(
                         iconSize: 18,
                         icon: Icon(
