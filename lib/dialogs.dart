@@ -42,7 +42,7 @@ class Dialogs {
             "No definitions found for \“${word.trim()}\” on the Dictionary API server. If the word exists as spelled, then the word is not in this dictionary.",
           ),
           actions: <Widget>[
-            TextButton(
+            CupertinoButton(
               child: Text(
                 'Got it, thanks!',
               ),
@@ -90,7 +90,7 @@ class Dialogs {
             "A network issue exists either in the servers or on your device. Please check your network settings and try again.",
           ),
           actions: <Widget>[
-            TextButton(
+            CupertinoButton(
               child: Text(
                 'Got it, thanks!',
               ),
@@ -138,7 +138,7 @@ class Dialogs {
             "Please limit your search term to consist of letters from the English alphabet and without spaces, i.e., discard any number, emoji or punctuation mark. Additionally, please ensure that your search term is less than 50 characters.",
           ),
           actions: <Widget>[
-            TextButton(
+            CupertinoButton(
               child: Text(
                 'Got it, thanks!',
               ),
@@ -154,57 +154,106 @@ class Dialogs {
 
   static Future<void> showContactDialog(BuildContext context) {
     return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: const Text("Thanks for using WordDefiner  \u{1F64F}"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Dismiss dialog first
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    launchUrl(Uri.parse(Constants.twitterUrl),
-                        mode: LaunchMode.externalApplication);
-                  });
-                },
-                child: const Text('Follow me on Twitter / X'),
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          if (Platform.isAndroid) {
+            return AlertDialog(
+              title: const Text("Thanks for using WordDefiner!"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        launchUrl(Uri.parse(Constants.twitterUrl),
+                            mode: LaunchMode.externalApplication);
+                      });
+                    },
+                    child: const Text('Follow me on Twitter / X'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        launchUrl(Uri.parse(Constants.formUrl));
+                      });
+                    },
+                    child: const Text('Provide feedback'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      await Share.share(
+                          "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
+                              (Platform.isAndroid
+                                  ? Constants.worddefinerURLAndroid
+                                  : Constants.worddefinerURLApple));
+                    },
+                    child: const Text('Share WordDefiner'),
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Dismiss dialog first
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    launchUrl(Uri.parse(Constants.formUrl));
-                  });
-                },
-                child: const Text('Provide feedback'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: const Text("Close"),
+                ),
+              ],
+            );
+          } else {
+            return CupertinoAlertDialog(
+              title: const Text("Thanks for using WordDefiner!"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 10),
+                  CupertinoButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        launchUrl(Uri.parse(Constants.twitterUrl),
+                            mode: LaunchMode.externalApplication);
+                      });
+                    },
+                    child: const Text('Follow me on Twitter / X'),
+                  ),
+                  CupertinoButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        launchUrl(Uri.parse(Constants.formUrl));
+                      });
+                    },
+                    child: const Text('Provide feedback'),
+                  ),
+                  CupertinoButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      await Share.share(
+                          "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
+                              (Platform.isAndroid
+                                  ? Constants.worddefinerURLAndroid
+                                  : Constants.worddefinerURLApple));
+                    },
+                    child: const Text('Share WordDefiner'),
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.of(context).pop(); // Dismiss dialog first
-                  if (Platform.isIOS || Platform.isMacOS) {
-                    Share.shareUri(Uri.parse(Constants.worddefinerURLApple));
-                  } else {
-                    Share.shareUri(Uri.parse(Constants.worddefinerURLAndroid));
-                  }
-                },
-                child: const Text('Share WordDefiner'),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text("Close"),
-            ),
-          ],
-        );
-      },
-    );
+              actions: <Widget>[
+                CupertinoButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: const Text("Close"),
+                ),
+              ],
+            );
+          }
+        });
   }
 }
