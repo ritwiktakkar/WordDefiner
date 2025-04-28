@@ -27,9 +27,8 @@ class MyApp extends StatelessWidget {
         systemNavigationBarColor: Color.fromARGB(255, 27, 27, 29),
       ),
     );
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.portraitUp,
-    // ]);
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp]); // to prevent rotation
     // to make volume loud on iOS: https://github.com/bluefireteam/audioplayers/issues/1194
     final AudioContext audioContext = AudioContext(
         iOS: AudioContextIOS(
@@ -121,6 +120,7 @@ class _HomePageState extends State<HomePage> {
   int rhymingWordsCount = 0;
 
   static const String appVersion = "4.3.2";
+  static const String buildVersion = "4322";
 
   static const String appInfo =
       "Results by dictionaryapi.dev and the Datamuse API.";
@@ -1152,15 +1152,22 @@ class _HomePageState extends State<HomePage> {
                       Text(
                         "WordDefiner v$appVersion",
                         style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 11,
+                            color: Colors.grey[700],
+                            fontSize: 10,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      Text(
+                        "Build $buildVersion",
+                        style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 9,
                             fontWeight: FontWeight.w400),
                       ),
                       Text(
                         "\u00A9 2022–${DateTime.now().year.toString()} RT",
                         style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 11,
+                            color: Colors.grey[800],
+                            fontSize: 9,
                             fontWeight: FontWeight.w400),
                       ),
                     ],
