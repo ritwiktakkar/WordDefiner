@@ -178,6 +178,16 @@ class Dialogs {
                     onPressed: () {
                       Navigator.of(context).pop(); // Dismiss dialog first
                       Future.delayed(const Duration(milliseconds: 300), () {
+                        launchUrl(Uri.parse(Constants.myWebsite),
+                            mode: LaunchMode.externalApplication);
+                      });
+                    },
+                    child: const Text('Visit my website'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      Future.delayed(const Duration(milliseconds: 300), () {
                         launchUrl(Uri.parse(Constants.formUrl));
                       });
                     },
@@ -221,6 +231,16 @@ class Dialogs {
                       });
                     },
                     child: const Text('Follow me on Twitter / X'),
+                  ),
+                  CupertinoButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Dismiss dialog first
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        launchUrl(Uri.parse(Constants.myWebsite),
+                            mode: LaunchMode.externalApplication);
+                      });
+                    },
+                    child: const Text('Visit my website'),
                   ),
                   CupertinoButton(
                     onPressed: () {

@@ -119,8 +119,8 @@ class _HomePageState extends State<HomePage> {
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
 
-  static const String appVersion = "4.3.2";
-  static const String buildVersion = "4322";
+  static const String appVersion = "4.3.3";
+  static const String buildVersion = "4331";
 
   static const String appInfo =
       "Results by dictionaryapi.dev and the Datamuse API.";
@@ -307,13 +307,11 @@ class _HomePageState extends State<HomePage> {
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor:
-              Color.fromARGB(255, 27, 27, 29), // make background color black
           body: Column(
             children: [
               Container(
-                // color: Colors.red,
-                height: screenHeight * .92,
+                color: Color.fromARGB(255, 27, 27, 29),
+                height: screenHeight * .86,
                 padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1082,185 +1080,194 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          appInfo,
-                          style: corporate,
-                        ),
-                        Tooltip(
-                          message: '$appDisclaimer',
-                          child: Icon(
-                            Icons.info_outline_rounded,
-                            color: Colors.grey[800],
-                            size: 20,
-                          ),
-                        ),
-                        Tooltip(
-                          message: "Clear all output fields.",
-                          child: IconButton(
-                              iconSize: 26,
-                              icon: Icon(
-                                Icons.delete,
-                                color: (meaningDefinitionsMap.isNotEmpty ||
-                                        stronglyAssociatedWordsController
-                                            .text.isNotEmpty ||
-                                        similarlySpelledWordsController
-                                            .text.isNotEmpty ||
-                                        similarSoundingWordsController
-                                            .text.isNotEmpty)
-                                    ? Colors.grey[200]
-                                    : Colors.grey[800],
-                              ),
-                              onPressed: () {
-                                if (meaningDefinitionsMap.isNotEmpty ||
+                  ],
+                ),
+              ),
+              Container(
+                color: Color.fromARGB(255, 26, 26, 28),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Tooltip(
+                      message: '$appDisclaimer',
+                      child: Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.grey[800],
+                        size: 18,
+                      ),
+                    ),
+                    Text(
+                      appInfo,
+                      style: corporate,
+                    ),
+                    Tooltip(
+                      message: "Clear all output fields.",
+                      child: IconButton(
+                          iconSize: 26,
+                          icon: Icon(
+                            Icons.delete,
+                            color: (meaningDefinitionsMap.isNotEmpty ||
                                     stronglyAssociatedWordsController
                                         .text.isNotEmpty ||
                                     similarlySpelledWordsController
                                         .text.isNotEmpty ||
                                     similarSoundingWordsController
-                                        .text.isNotEmpty) {
-                                  HapticFeedback.mediumImpact();
-                                  setState(() {
-                                    clearOutput(
-                                        alsoSearch: true,
-                                        alsoWord: true,
-                                        definitionsOnly: true,
-                                        similarWords: true);
-                                    wordToDefine = '';
-                                  });
-                                  // shift focus back to input textfield
-                                  FocusScope.of(context)
-                                      .requestFocus(inputFocusNode);
-                                } else {
-                                  DoNothingAction();
-                                }
-                              }),
-                        ),
-                      ],
+                                        .text.isNotEmpty)
+                                ? Colors.grey[200]
+                                : Colors.grey[800],
+                          ),
+                          onPressed: () {
+                            if (meaningDefinitionsMap.isNotEmpty ||
+                                stronglyAssociatedWordsController
+                                    .text.isNotEmpty ||
+                                similarlySpelledWordsController
+                                    .text.isNotEmpty ||
+                                similarSoundingWordsController
+                                    .text.isNotEmpty) {
+                              HapticFeedback.mediumImpact();
+                              setState(() {
+                                clearOutput(
+                                    alsoSearch: true,
+                                    alsoWord: true,
+                                    definitionsOnly: true,
+                                    similarWords: true);
+                                wordToDefine = '';
+                              });
+                              // shift focus back to input textfield
+                              FocusScope.of(context)
+                                  .requestFocus(inputFocusNode);
+                            } else {
+                              DoNothingAction();
+                            }
+                          }),
                     ),
                   ],
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+              Expanded(
+                child: Container(
+                  color: Color.fromARGB(255, 25, 25, 27),
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text(
-                        "WordDefiner v$appVersion",
-                        style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "WordDefiner v$appVersion",
+                            style: TextStyle(
+                                color: Colors.grey[800],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Text(
+                            "Build $buildVersion",
+                            style: TextStyle(
+                                color: Colors.grey[800],
+                                fontSize: 9,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Text(
+                            "\u00A9 2022–${DateTime.now().year.toString()} RT",
+                            style: TextStyle(
+                                color: Colors.grey[800],
+                                fontSize: 9,
+                                fontWeight: FontWeight.w400),
+                          ),
+                        ],
                       ),
-                      Text(
-                        "Build $buildVersion",
-                        style: TextStyle(
-                            color: Colors.grey[800],
-                            fontSize: 9,
-                            fontWeight: FontWeight.w400),
+                      Tooltip(
+                        message: "Link to feedback form.",
+                        child: IconButton(
+                          onPressed: () {
+                            Dialogs.showContactDialog(context);
+                          },
+                          icon: Icon(
+                            Icons.contact_page_outlined,
+                            color: Colors.grey[500],
+                            size: 23,
+                          ),
+                        ),
                       ),
-                      Text(
-                        "\u00A9 2022–${DateTime.now().year.toString()} RT",
-                        style: TextStyle(
-                            color: Colors.grey[800],
-                            fontSize: 9,
-                            fontWeight: FontWeight.w400),
+                      Visibility(
+                        visible: Platform.isIOS || Platform.isMacOS,
+                        child: Tooltip(
+                          message:
+                              "Open Popops — a fun game that combines mesmerizing visuals with lightning-fast gameplay for a unique experience anyone can pick up, but few can master.",
+                          child: IconButton(
+                            onPressed: () async {
+                              await LaunchApp.openApp(
+                                iosUrlScheme: Constants.popopsURLScheme,
+                                appStoreLink: Constants.popopsURL,
+                              );
+                            },
+                            icon: Image.asset(
+                              "assets/popops_gs.png",
+                              width: 28,
+                              height: 28,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: Platform.isIOS || Platform.isMacOS,
+                        child: Tooltip(
+                          message:
+                              "Open WWYD — a community-driven app for iOS where users respond to daily hypothetical and real-world scenarios, then see how their choices compare to others.",
+                          child: IconButton(
+                            onPressed: () async {
+                              await LaunchApp.openApp(
+                                iosUrlScheme: Constants.wwydURLScheme,
+                                appStoreLink: Constants.wwydURL,
+                              );
+                            },
+                            icon: Image.asset(
+                              "assets/wwyd_gs.png",
+                              width: 28,
+                              height: 28,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Tooltip(
+                        message:
+                            "Open ShortenMyURL to shorten links quickly, simply, and for free.",
+                        child: IconButton(
+                          onPressed: () async {
+                            await LaunchApp.openApp(
+                              androidPackageName:
+                                  Constants.shortenmyurlAndroidPackageName,
+                              iosUrlScheme: Constants.shortenmyurlURLScheme,
+                              appStoreLink: Constants.shortenmyurlURL,
+                            );
+                          },
+                          icon: Image.asset(
+                            "assets/shortenmyurl_gs.png",
+                            width: 28,
+                            height: 28,
+                          ),
+                        ),
+                      ),
+                      Tooltip(
+                        message: "Share this app.",
+                        child: IconButton(
+                            iconSize: 20,
+                            icon: Icon(
+                              Icons.ios_share,
+                              color: Colors.grey[700],
+                            ),
+                            onPressed: () async {
+                              await Share.share(
+                                  "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
+                                      (Platform.isAndroid
+                                          ? Constants.worddefinerURLAndroid
+                                          : Constants.worddefinerURLApple));
+                            }),
                       ),
                     ],
                   ),
-                  Tooltip(
-                    message: "Link to feedback form.",
-                    child: IconButton(
-                      onPressed: () {
-                        Dialogs.showContactDialog(context);
-                      },
-                      icon: Icon(
-                        Icons.contact_page_outlined,
-                        color: Colors.grey[500],
-                        size: 25,
-                      ),
-                    ),
-                  ),
-                  Visibility(
-                    visible: Platform.isIOS || Platform.isMacOS,
-                    child: Tooltip(
-                      message:
-                          "Open Popops — a fun game that combines mesmerizing visuals with lightning-fast gameplay for a unique experience anyone can pick up, but few can master.",
-                      child: IconButton(
-                        onPressed: () async {
-                          await LaunchApp.openApp(
-                            iosUrlScheme: Constants.popopsURLScheme,
-                            appStoreLink: Constants.popopsURL,
-                          );
-                        },
-                        icon: Image.asset(
-                          "assets/popops_gs.png",
-                          width: 25,
-                          height: 25,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Visibility(
-                    visible: Platform.isIOS || Platform.isMacOS,
-                    child: Tooltip(
-                      message:
-                          "Open WWYD — a community-driven app for iOS where users respond to daily hypothetical and real-world scenarios, then see how their choices compare to others.",
-                      child: IconButton(
-                        onPressed: () async {
-                          await LaunchApp.openApp(
-                            iosUrlScheme: Constants.wwydURLScheme,
-                            appStoreLink: Constants.wwydURL,
-                          );
-                        },
-                        icon: Image.asset(
-                          "assets/wwyd_gs.png",
-                          width: 25,
-                          height: 25,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Tooltip(
-                    message:
-                        "Open ShortenMyURL to shorten links quickly, simply, and for free.",
-                    child: IconButton(
-                      onPressed: () async {
-                        await LaunchApp.openApp(
-                          androidPackageName:
-                              Constants.shortenmyurlAndroidPackageName,
-                          iosUrlScheme: Constants.shortenmyurlURLScheme,
-                          appStoreLink: Constants.shortenmyurlURL,
-                        );
-                      },
-                      icon: Image.asset(
-                        "assets/shortenmyurl_gs.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
-                  ),
-                  Tooltip(
-                    message: "Share this app.",
-                    child: IconButton(
-                        iconSize: 18,
-                        icon: Icon(
-                          Icons.ios_share,
-                          color: Colors.grey[700],
-                        ),
-                        onPressed: () async {
-                          await Share.share(
-                              "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
-                                  (Platform.isAndroid
-                                      ? Constants.worddefinerURLAndroid
-                                      : Constants.worddefinerURLApple));
-                        }),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
