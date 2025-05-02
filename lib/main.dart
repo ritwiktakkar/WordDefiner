@@ -430,7 +430,7 @@ class _HomePageState extends State<HomePage> {
                                 _.characters.length > 50) {
                               // CHECK 2: non letter, just space detected, or query exceeds 50 characters - show error dialog
                               Dialogs.showInputIssue(context);
-                            } else if (!words.contains(_)) {
+                            } else if (!words.contains(_.toLowerCase())) {
                               // CHECK 3: word not in list - show error dialog
                               Dialogs.showInvalidWord(context);
                             } else {
