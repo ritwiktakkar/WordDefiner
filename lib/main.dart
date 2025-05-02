@@ -6,6 +6,7 @@ import 'dialogs.dart';
 import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
 import 'package:WordDefiner/services/datamuseAPI.dart' as DatamuseAPI;
 import 'package:WordDefiner/readBadWords.dart' as ReadBadWords;
+import 'package:WordDefiner/readWords.dart' as ReadWords;
 import 'package:WordDefiner/Analytics/constants.dart' as Constants;
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -85,6 +86,16 @@ class _HomePageState extends State<HomePage> {
   final similarlySpelledWordsController = TextEditingController();
   final similarSoundingWordsController = TextEditingController();
   final rhymingWordsController = TextEditingController();
+  final followedByWordsController = TextEditingController();
+  final precededByWordsController = TextEditingController();
+  final nounsModifiedController = TextEditingController();
+  final adjectivesModifiedController = TextEditingController();
+  final synonymsController = TextEditingController();
+  final antonymsController = TextEditingController();
+  final hypernymsController = TextEditingController();
+  final hyponymsController = TextEditingController();
+  final holonymsController = TextEditingController();
+  final meronymsController = TextEditingController();
 
   List<String> meaningPartOfSpeechList = <String>[];
   List<String> meaningDefinitionsList_tmp = <String>[];
@@ -118,12 +129,21 @@ class _HomePageState extends State<HomePage> {
   int similarSoundingWordsCount = 0;
   int similarSpeltWordsCount = 0;
   int rhymingWordsCount = 0;
+  int followedByWordsCount = 0;
+  int precededByWordsCount = 0;
+  int nounsModifiedCount = 0;
+  int adjectivesModifiedCount = 0;
+  int synonymsCount = 0;
+  int antonymsCount = 0;
+  int hypernymsCount = 0;
+  int hyponymsCount = 0;
+  int holonymsCount = 0;
+  int meronymsCount = 0;
 
   String appVersion = '';
   String buildVersion = '';
 
-  static const String appInfo =
-      "Results by dictionaryapi.dev and the Datamuse API.";
+  static const String appInfo = "Results by Datamuse API and Dictionary API.";
 
   static final String appDisclaimer =
       "The developer disclaims all liability for any direct, indirect, incidental, consequential, or special damages arising from or related to your use of the app, including but not limited to, any errors or omissions in the content provided, any interruptions or malfunctions of the app's functionality, or any reliance on information displayed within the app.";
@@ -171,11 +191,31 @@ class _HomePageState extends State<HomePage> {
       similarlySpelledWordsController.clear();
       similarSoundingWordsController.clear();
       rhymingWordsController.clear();
+      followedByWordsController.clear();
+      precededByWordsController.clear();
+      nounsModifiedController.clear();
+      adjectivesModifiedController.clear();
+      synonymsController.clear();
+      antonymsController.clear();
+      hypernymsController.clear();
+      hyponymsController.clear();
+      holonymsController.clear();
+      meronymsController.clear();
 
       stronglyAssociatedWordsCount = 0;
       similarSoundingWordsCount = 0;
       similarSpeltWordsCount = 0;
       rhymingWordsCount = 0;
+      followedByWordsCount = 0;
+      precededByWordsCount = 0;
+      nounsModifiedCount = 0;
+      adjectivesModifiedCount = 0;
+      synonymsCount = 0;
+      antonymsCount = 0;
+      hypernymsCount = 0;
+      hyponymsCount = 0;
+      holonymsCount = 0;
+      meronymsCount = 0;
     }
   }
 
@@ -188,12 +228,12 @@ class _HomePageState extends State<HomePage> {
 
   TextStyle sectionTitle = TextStyle(
     color: Colors.grey[400],
-    fontWeight: FontWeight.w600,
-    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    fontSize: 17,
   );
 
   TextStyle word = TextStyle(
-    color: Colors.white,
+    color: Colors.grey[100],
     fontWeight: FontWeight.bold,
     fontSize: 28,
   );
@@ -261,6 +301,16 @@ class _HomePageState extends State<HomePage> {
     similarlySpelledWordsController.dispose();
     similarSoundingWordsController.dispose();
     rhymingWordsController.dispose();
+    followedByWordsController.dispose();
+    precededByWordsController.dispose();
+    nounsModifiedController.dispose();
+    adjectivesModifiedController.dispose();
+    synonymsController.dispose();
+    antonymsController.dispose();
+    hypernymsController.dispose();
+    hyponymsController.dispose();
+    holonymsController.dispose();
+    meronymsController.dispose();
     meaningPartOfSpeechList.clear();
     meaningDefinitionsList_tmp.clear();
 
@@ -285,8 +335,19 @@ class _HomePageState extends State<HomePage> {
   bool _similarlySpeltTileExpanded = false;
   bool _similarSoundingTileExpanded = false;
   bool _rhymingTileExpanded = false;
+  bool _followedByTileExpanded = false;
+  bool _precededByTileExpanded = false;
+  bool _nounsModifiedTileExpanded = false;
+  bool _adjectivesModifiedTileExpanded = false;
+  bool _synonymsTileExpanded = false;
+  bool _antonymsTileExpanded = false;
+  bool _hypernymsTileExpanded = false;
+  bool _hyponymsTileExpanded = false;
+  bool _holonymsTileExpanded = false;
+  bool _meronymsTileExpanded = false;
 
   List<String> badWords = [];
+  List<String> words = [];
 
   @override
   void initState() {
@@ -295,6 +356,11 @@ class _HomePageState extends State<HomePage> {
     ReadBadWords.readBadWordsFromFile().then((value) {
       setState(() {
         badWords = value;
+      });
+    });
+    ReadWords.readWordsFromFile().then((value) {
+      setState(() {
+        words = value;
       });
     });
   }
@@ -321,7 +387,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Container(
                 height: screenHeight * .87,
-                padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 65, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -364,6 +430,9 @@ class _HomePageState extends State<HomePage> {
                                 _.characters.length > 50) {
                               // CHECK 2: non letter, just space detected, or query exceeds 50 characters - show error dialog
                               Dialogs.showInputIssue(context);
+                            } else if (!words.contains(_)) {
+                              // CHECK 3: word not in list - show error dialog
+                              Dialogs.showInvalidWord(context);
                             } else {
                               // CHECK 1: check if device has internet connection
                               var result =
@@ -415,6 +484,50 @@ class _HomePageState extends State<HomePage> {
                                       (await DatamuseAPI.getRhymingWords(
                                           wordToDefine));
                                   rhymingWordsCount = rhymingWords!.length;
+                                  final followedByWords =
+                                      (await DatamuseAPI.getFollowedByWords(
+                                          wordToDefine));
+                                  followedByWordsCount =
+                                      followedByWords!.length;
+                                  final precededByWords =
+                                      (await DatamuseAPI.getPrecededByWords(
+                                          wordToDefine));
+                                  precededByWordsCount =
+                                      precededByWords!.length;
+                                  final nounsModified =
+                                      (await DatamuseAPI.getNounsModified(
+                                          wordToDefine));
+                                  nounsModifiedCount = nounsModified!.length;
+                                  final adjectivesModified =
+                                      (await DatamuseAPI.getAdjectivesModified(
+                                          wordToDefine));
+                                  adjectivesModifiedCount =
+                                      adjectivesModified!.length;
+                                  final synonyms =
+                                      (await DatamuseAPI.getSynonyms(
+                                          wordToDefine));
+                                  synonymsCount = synonyms!.length;
+                                  final antonyms =
+                                      (await DatamuseAPI.getAntonyms(
+                                          wordToDefine));
+                                  antonymsCount = antonyms!.length;
+                                  final hypernyms =
+                                      (await DatamuseAPI.getHypernyms(
+                                          wordToDefine));
+                                  hypernymsCount = hypernyms!.length;
+                                  final hyponyms =
+                                      (await DatamuseAPI.getHyponyms(
+                                          wordToDefine));
+                                  hyponymsCount = hyponyms!.length;
+                                  final holonyms =
+                                      (await DatamuseAPI.getHolonyms(
+                                          wordToDefine));
+                                  holonymsCount = holonyms!.length;
+                                  final meronyms =
+                                      (await DatamuseAPI.getMeronyms(
+                                          wordToDefine));
+                                  meronymsCount = meronyms!.length;
+
                                   stronglyAssociatedWordsController.text =
                                       stronglyAssociatedWords
                                           .toString()
@@ -442,6 +555,49 @@ class _HomePageState extends State<HomePage> {
                                       .toString()
                                       .substring(1,
                                           rhymingWords.toString().length - 1);
+                                  followedByWordsController.text =
+                                      followedByWords.toString().substring(
+                                          1,
+                                          followedByWords.toString().length -
+                                              1);
+                                  precededByWordsController.text =
+                                      precededByWords.toString().substring(
+                                          1,
+                                          precededByWords.toString().length -
+                                              1);
+                                  nounsModifiedController.text = nounsModified
+                                      .toString()
+                                      .substring(1,
+                                          nounsModified.toString().length - 1);
+                                  adjectivesModifiedController.text =
+                                      adjectivesModified.toString().substring(
+                                          1,
+                                          adjectivesModified.toString().length -
+                                              1);
+                                  synonymsController.text = synonyms
+                                      .toString()
+                                      .substring(
+                                          1, synonyms.toString().length - 1);
+                                  antonymsController.text = antonyms
+                                      .toString()
+                                      .substring(
+                                          1, antonyms.toString().length - 1);
+                                  hypernymsController.text = hypernyms
+                                      .toString()
+                                      .substring(
+                                          1, hypernyms.toString().length - 1);
+                                  hyponymsController.text = hyponyms
+                                      .toString()
+                                      .substring(
+                                          1, hyponyms.toString().length - 1);
+                                  holonymsController.text = holonyms
+                                      .toString()
+                                      .substring(
+                                          1, holonyms.toString().length - 1);
+                                  meronymsController.text = meronyms
+                                      .toString()
+                                      .substring(
+                                          1, meronyms.toString().length - 1);
                                   setState(() {
                                     finding = false;
                                     debugPrint(
@@ -563,7 +719,7 @@ class _HomePageState extends State<HomePage> {
                                                   meaningDefinitionsList_tmp;
                                               meaningDefinitionsList_tmp = [];
 
-                                              elementMeaning.synonyms
+                                              elementMeaning.synonymsEl
                                                   ?.forEach((element) {
                                                 meaningSynonymsList_tmp
                                                     .add(element);
@@ -573,7 +729,7 @@ class _HomePageState extends State<HomePage> {
                                                   meaningSynonymsList_tmp;
                                               meaningSynonymsList_tmp = [];
 
-                                              elementMeaning.antonyms
+                                              elementMeaning.antonymsEl
                                                   ?.forEach((element) {
                                                 meaningAntonymsList_tmp
                                                     .add(element);
@@ -655,7 +811,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           readOnly: (finding) ? true : false,
                         ),
-                        SizedBox(height: screenHeight * .012),
+                        SizedBox(height: screenHeight * .015),
                         Visibility(
                           visible: (finding &&
                               outputWordController.text.isEmpty &&
@@ -685,7 +841,7 @@ class _HomePageState extends State<HomePage> {
                             padding: const EdgeInsets.only(top: 10),
                             child: Text(
                                 (wordToDefine.characters.length > 0)
-                                    ? "No definition found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” — but here are similar words:"
+                                    ? "No definition found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” — but here's what we did find:"
                                     : "",
                                 style: fail),
                           ),
@@ -849,7 +1005,8 @@ class _HomePageState extends State<HomePage> {
                                                                   .toString()
                                                                   .length -
                                                               1)
-                                                      .replaceAll('.,', '\n—');
+                                                      .replaceAll(
+                                                          '.,', '\n\u2022');
                                               List<String>? meaningSynonymList =
                                                   meaningSynonymMap[
                                                           meaningDefinitionsMap
@@ -876,7 +1033,7 @@ class _HomePageState extends State<HomePage> {
                                                     padding: EdgeInsets.only(
                                                         left: 10),
                                                     child: Text(
-                                                      "— ${value.toString()}",
+                                                      "\u2022 ${value.toString()}",
                                                       style: body,
                                                     ),
                                                   ),
@@ -954,6 +1111,86 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               Visibility(
+                                visible: synonymsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        (synonymsCount > 1)
+                                            ? "${synonymsCount} synonyms"
+                                            : "${synonymsCount} synonym",
+                                        style: sectionTitle,
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 10),
+                                          child: SelectableText(
+                                            synonymsController.text,
+                                            style: synonyms,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _synonymsTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: antonymsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        (antonymsCount > 1)
+                                            ? "${antonymsCount} antonyms"
+                                            : "${antonymsCount} antonym",
+                                        style: sectionTitle,
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 10),
+                                          child: SelectableText(
+                                            antonymsController.text,
+                                            style: antonyms,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _antonymsTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
                                 visible: stronglyAssociatedWordsController
                                     .text.isNotEmpty,
                                 child: ExpansionTile(
@@ -964,8 +1201,8 @@ class _HomePageState extends State<HomePage> {
                                     children: [
                                       Text(
                                         (stronglyAssociatedWordsCount > 1)
-                                            ? "${stronglyAssociatedWordsCount} strongly associated words "
-                                            : "${stronglyAssociatedWordsCount} strongly associated word ",
+                                            ? "${stronglyAssociatedWordsCount} statistically associated words "
+                                            : "${stronglyAssociatedWordsCount} statistically associated word ",
                                         style: sectionTitle,
                                       ),
                                     ],
@@ -984,6 +1221,314 @@ class _HomePageState extends State<HomePage> {
                                     HapticFeedback.lightImpact();
                                     setState(() {
                                       _stronglyAssociatedTileExpanded =
+                                          expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible:
+                                    precededByWordsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Often preceded by $precededByWordsCount ${precededByWordsCount > 1 ? "words" : "word"}",
+                                        style: sectionTitle,
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        precededByWordsController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _precededByTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible:
+                                    followedByWordsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Often followed by $followedByWordsCount ${followedByWordsCount > 1 ? "words" : "word"}",
+                                        style: sectionTitle,
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        followedByWordsController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _followedByTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: hypernymsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        (hypernymsCount > 1)
+                                            ? "${hypernymsCount} hypernyms "
+                                            : "${hypernymsCount} hypernym ",
+                                        style: sectionTitle,
+                                      ),
+                                      Tooltip(
+                                        message:
+                                            'Hypernyms are words that are more general than the word being defined.',
+                                        child: Icon(
+                                          Icons.lightbulb_outlined,
+                                          color: Colors.grey[800],
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        hypernymsController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _hypernymsTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: hyponymsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        (hyponymsCount > 1)
+                                            ? "${hyponymsCount} hyponyms "
+                                            : "${hyponymsCount} hyponym ",
+                                        style: sectionTitle,
+                                      ),
+                                      Tooltip(
+                                        message:
+                                            'Hyponyms are words that are more specific than the word being defined.',
+                                        child: Icon(
+                                          Icons.lightbulb_outlined,
+                                          color: Colors.grey[800],
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        hyponymsController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _hyponymsTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: holonymsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Holonym ",
+                                        style: sectionTitle,
+                                      ),
+                                      Tooltip(
+                                        message:
+                                            'Holonyms are words that define the whole, whereas meronyms define the parts.',
+                                        child: Icon(
+                                          Icons.lightbulb_outlined,
+                                          color: Colors.grey[800],
+                                          size: 16,
+                                        ),
+                                      ),
+                                      Text(
+                                          " for ${holonymsCount} ${holonymsCount > 1 ? "words" : "word"}",
+                                          style: sectionTitle)
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        holonymsController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _holonymsTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: meronymsController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Meronym ",
+                                        style: sectionTitle,
+                                      ),
+                                      Tooltip(
+                                        message:
+                                            'Meronyms are words that define the parts, whereas holonyms define the whole.',
+                                        child: Icon(
+                                          Icons.lightbulb_outlined,
+                                          color: Colors.grey[800],
+                                          size: 16,
+                                        ),
+                                      ),
+                                      Text(
+                                        " for $meronymsCount ${meronymsCount > 1 ? "words" : "word"}",
+                                        style: sectionTitle,
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        meronymsController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _meronymsTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible:
+                                    nounsModifiedController.text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Often describes $nounsModifiedCount ${nounsModifiedCount > 1 ? "nouns" : "noun"}",
+                                        style: sectionTitle,
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        nounsModifiedController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _nounsModifiedTileExpanded = expanded;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: adjectivesModifiedController
+                                    .text.isNotEmpty,
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.all(0),
+                                  expandedAlignment: Alignment.topLeft,
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Often described by $adjectivesModifiedCount ${adjectivesModifiedCount > 1 ? "adjectives" : "adjective"}",
+                                        style: sectionTitle,
+                                      ),
+                                    ],
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        adjectivesModifiedController.text,
+                                        style: body,
+                                      ),
+                                    ),
+                                  ],
+                                  onExpansionChanged: (bool expanded) {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      _adjectivesModifiedTileExpanded =
                                           expanded;
                                     });
                                   },
@@ -1107,7 +1652,7 @@ class _HomePageState extends State<HomePage> {
                   Tooltip(
                     message: '$appDisclaimer',
                     child: Icon(
-                      Icons.info_outline_rounded,
+                      Icons.policy_outlined,
                       color: Colors.grey[800],
                       size: 18,
                     ),

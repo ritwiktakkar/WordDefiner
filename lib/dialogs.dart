@@ -152,6 +152,54 @@ class Dialogs {
     );
   }
 
+  // this dialog pops up when the user inputs a word that is not in the list
+  static Future<void> showInvalidWord(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        if (Platform.isAndroid) {
+          return AlertDialog(
+            title: Text(
+              'Unrecognized Word',
+            ),
+            content: Text(
+              "Are you sure this word exists as spelled? This app doesn't recognize it.",
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  'Got it, thanks!',
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }
+        return CupertinoAlertDialog(
+          title: Text(
+            'Unrecognized Word',
+          ),
+          content: Text(
+            "Are you sure this word exists as spelled? This app doesn't recognize it.",
+          ),
+          actions: <Widget>[
+            CupertinoButton(
+              child: Text(
+                'Got it, thanks!',
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   static Future<void> showContactDialog(BuildContext context) {
     return showDialog<void>(
         context: context,
