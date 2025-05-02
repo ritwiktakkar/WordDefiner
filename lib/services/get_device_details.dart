@@ -20,19 +20,19 @@ Future<DeviceForm> deviceDetails() async {
   try {
     appVersion = packageInfo.version;
     if (Platform.isAndroid) {
-      var build = await deviceInfoPlugin.androidInfo;
+      var androidInfo = await deviceInfoPlugin.androidInfo;
 
-      deviceName = build.model;
-      deviceVersion = build.version.toString();
-      identifier = build.fingerprint;
+      deviceName = androidInfo.model;
+      deviceVersion = androidInfo.version.release;
+      identifier = androidInfo.fingerprint;
 
       //UUID for Android
     } else if (Platform.isIOS) {
-      var data = await deviceInfoPlugin.iosInfo;
+      var iosInfo = await deviceInfoPlugin.iosInfo;
 
-      deviceName = data.modelName;
-      deviceVersion = data.systemVersion;
-      identifier = data.identifierForVendor.toString();
+      deviceName = iosInfo.modelName;
+      deviceVersion = iosInfo.systemVersion;
+      identifier = iosInfo.identifierForVendor.toString();
     }
   } on PlatformException {
     debugPrint('Failed to get platform version');
