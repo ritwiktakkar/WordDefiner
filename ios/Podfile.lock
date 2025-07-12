@@ -8,6 +8,10 @@ PODS:
   - external_app_launcher (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - flutter_platform_alert (0.0.1):
+    - Flutter
+  - in_app_review (2.0.0):
+    - Flutter
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -15,6 +19,9 @@ PODS:
     - FlutterMacOS
   - share_plus (0.0.1):
     - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - url_launcher_ios (0.0.1):
     - Flutter
 
@@ -24,9 +31,12 @@ DEPENDENCIES:
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - external_app_launcher (from `.symlinks/plugins/external_app_launcher/ios`)
   - Flutter (from `Flutter`)
+  - flutter_platform_alert (from `.symlinks/plugins/flutter_platform_alert/ios`)
+  - in_app_review (from `.symlinks/plugins/in_app_review/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 EXTERNAL SOURCES:
@@ -40,12 +50,18 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/external_app_launcher/ios"
   Flutter:
     :path: Flutter
+  flutter_platform_alert:
+    :path: ".symlinks/plugins/flutter_platform_alert/ios"
+  in_app_review:
+    :path: ".symlinks/plugins/in_app_review/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -55,9 +71,12 @@ SPEC CHECKSUMS:
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   external_app_launcher: 3411245965270a74040a3de17e27bd02b8abb905
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_platform_alert: bf3b5fcd4ac14bd637e20527e9c471633071afd3
+  in_app_review: 5596fe56fab799e8edb3561c03d053363ab13457
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
 
 PODFILE CHECKSUM: c4c93c5f6502fe2754f48404d3594bf779584011
