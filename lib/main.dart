@@ -2009,7 +2009,7 @@ class _HomePageState extends State<HomePage> {
                               child: Row(
                                 children: [
                                   Text(
-                                    "Get the ultimate calendar app: MyThyme",
+                                    "Get the ultimate calendar app: My Thyme",
                                     style: TextStyle(color: Colors.blue[800]),
                                   ),
                                   Tooltip(
