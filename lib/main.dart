@@ -1990,34 +1990,47 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Get MyThyme: the ultimate calendar app",
-                            style: TextStyle(color: Colors.blue[600]),
-                          ),
-                          Visibility(
-                            visible: Platform.isIOS || Platform.isMacOS,
-                            child: Tooltip(
-                              message:
-                                  "Open My Thyme — the ultimate privacy-focused time management tool that syncs with your calendars and helps you reach your goals.",
-                              child: IconButton(
-                                onPressed: () async {
-                                  await LaunchApp.openApp(
-                                    iosUrlScheme: Constants.myThymeURLScheme,
-                                    appStoreLink: Constants.myThymeURL,
-                                  );
-                                },
-                                icon: Image.asset(
-                                  "assets/mythyme.png",
-                                  width: 36,
-                                  height: 36,
-                                ),
+                      Visibility(
+                        visible: Platform.isIOS || Platform.isMacOS,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            InkWell(
+                              onTap: () async {
+                                await LaunchApp.openApp(
+                                  iosUrlScheme: Constants.myThymeURLScheme,
+                                  appStoreLink: Constants.myThymeURL,
+                                );
+                              },
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "Get MyThyme: the ultimate calendar app",
+                                    style: TextStyle(color: Colors.blue[600]),
+                                  ),
+                                  Tooltip(
+                                    message:
+                                        "Open My Thyme — the ultimate privacy-focused time management tool that syncs with your calendars and helps you reach your goals.",
+                                    child: IconButton(
+                                      onPressed: () async {
+                                        await LaunchApp.openApp(
+                                          iosUrlScheme:
+                                              Constants.myThymeURLScheme,
+                                          appStoreLink: Constants.myThymeURL,
+                                        );
+                                      },
+                                      icon: Image.asset(
+                                        "assets/mythyme.png",
+                                        width: 36,
+                                        height: 36,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
