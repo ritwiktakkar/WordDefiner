@@ -1026,14 +1026,11 @@ class _HomePageState extends State<HomePage> {
                                   similarlySpelledWordsController
                                       .text.isEmpty &&
                                   similarSoundingWordsController.text.isEmpty)),
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 100),
-                            child: Text(
-                              (wordToDefine.characters.length > 0)
-                                  ? "Looking up: “${wordToDefine}”"
-                                  : "",
-                              style: word,
-                            ),
+                          child: Text(
+                            (wordToDefine.characters.length > 0)
+                                ? "Looking up: “${wordToDefine}”"
+                                : "",
+                            style: word,
                           ),
                         ),
                         Visibility(
@@ -1091,13 +1088,20 @@ class _HomePageState extends State<HomePage> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    width: screenWidth * 0.85,
-                                    child: SelectableText(
-                                      outputWordController.text,
-                                      style: word,
-                                      maxLines: 1,
-                                    ),
+                                  Text(
+                                    (MediaQuery.of(context).orientation ==
+                                            Orientation.landscape)
+                                        ? outputWordController.text
+                                        : (screenHeight < 1200 &&
+                                                outputWordController
+                                                        .text.length >
+                                                    18) // portrait
+                                            ? outputWordController.text
+                                                    .substring(0, 18) +
+                                                '...'
+                                            : outputWordController.text,
+                                    style: word,
+                                    maxLines: 1,
                                   ),
                                   Visibility(
                                       visible: isBadWord,
@@ -2005,8 +2009,8 @@ class _HomePageState extends State<HomePage> {
                               child: Row(
                                 children: [
                                   Text(
-                                    "Get MyThyme: the ultimate calendar app",
-                                    style: TextStyle(color: Colors.blue[600]),
+                                    "Get the ultimate calendar app: MyThyme",
+                                    style: TextStyle(color: Colors.blue[800]),
                                   ),
                                   Tooltip(
                                     message:
