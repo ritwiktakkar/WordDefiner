@@ -479,7 +479,9 @@ class _HomePageState extends State<HomePage> {
                         ? screenHeight * .83 // small iPad landscape
                         : screenHeight * .87 // large iPad landscape
                     : (screenHeight < 1000)
-                        ? screenHeight * .86
+                        ? (Platform.isAndroid)
+                            ? screenHeight * .90
+                            : screenHeight * .86
                         : screenHeight * .89,
                 padding: const EdgeInsets.fromLTRB(20, 65, 20, 0),
                 child: Column(
