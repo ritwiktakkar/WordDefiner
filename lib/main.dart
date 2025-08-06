@@ -26,9 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        // statusBarBrightness: Brightness.dark,
-        statusBarColor: Color.fromARGB(255, 27, 27, 29),
-        systemNavigationBarColor: Color.fromARGB(255, 27, 27, 29),
+        statusBarBrightness: Brightness.dark,
       ),
     );
     // SystemChrome.setPreferredOrientations(
@@ -52,9 +50,12 @@ class MyApp extends StatelessWidget {
     // AudioPlayer.global.setGlobalAudioContext(audioContext);
     return new MaterialApp(
       debugShowCheckedModeBanner: false, // hide debug banner from top left
+      title: "WordDefiner",
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blueGrey, brightness: Brightness.dark),
+          seedColor: Colors.black,
+          brightness: Brightness.dark,
+        ),
       ),
 
       home: new HomePage(),
@@ -234,20 +235,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   TextStyle sectionTitle = TextStyle(
-    color: Colors.grey[400],
+    color: Colors.grey[300],
     fontWeight: FontWeight.w500,
     fontSize: 17,
-  );
-
-  TextStyle word = TextStyle(
-    color: Colors.grey[100],
-    fontWeight: FontWeight.bold,
-    fontSize: 28,
-  );
-
-  TextStyle body = TextStyle(
-    color: Colors.grey[200],
-    fontSize: 18,
   );
 
   TextStyle partOfSpeech = TextStyle(
@@ -284,8 +274,8 @@ class _HomePageState extends State<HomePage> {
   );
 
   TextStyle corporate = TextStyle(
-    color: Colors.grey[800],
-    fontSize: 10.5,
+    color: Colors.grey[700],
+    fontSize: 10,
     fontWeight: FontWeight.w400,
   );
 
@@ -468,7 +458,6 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
           resizeToAvoidBottomInset: false,
           body: Column(
             children: [
@@ -513,11 +502,18 @@ class _HomePageState extends State<HomePage> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   isDense: true,
-                                  fillColor: Colors.grey[900],
-                                  filled: true,
                                   prefixIcon: Icon(
                                     Icons.search,
                                     size: 24,
+                                    color: Colors.grey[300],
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      Icons.clear_rounded,
+                                      size: 24,
+                                      color: Colors.grey[300],
+                                    ),
+                                    onPressed: clearSearch,
                                   ),
                                   contentPadding: EdgeInsets.all(10),
                                   hintText:
@@ -969,7 +965,8 @@ class _HomePageState extends State<HomePage> {
                                   }
                                 }),
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -978,44 +975,45 @@ class _HomePageState extends State<HomePage> {
                             ),
                             Tooltip(
                               message: "Clear all output fields.",
-                              child: IconButton(
-                                  iconSize: 32,
-                                  icon: Icon(
-                                    Icons.delete,
-                                    color: (meaningDefinitionsMap.isNotEmpty ||
-                                            stronglyAssociatedWordsController
-                                                .text.isNotEmpty ||
-                                            similarlySpelledWordsController
-                                                .text.isNotEmpty ||
-                                            similarSoundingWordsController
-                                                .text.isNotEmpty)
-                                        ? Colors.grey[200]
-                                        : Colors.grey[800],
-                                  ),
-                                  onPressed: () {
-                                    if (meaningDefinitionsMap.isNotEmpty ||
-                                        stronglyAssociatedWordsController
-                                            .text.isNotEmpty ||
-                                        similarlySpelledWordsController
-                                            .text.isNotEmpty ||
-                                        similarSoundingWordsController
-                                            .text.isNotEmpty) {
-                                      HapticFeedback.mediumImpact();
-                                      setState(() {
-                                        clearOutput(
-                                            alsoSearch: true,
-                                            alsoWord: true,
-                                            definitionsOnly: true,
-                                            similarWords: true);
-                                        wordToDefine = '';
-                                      });
-                                      // shift focus back to input textfield
-                                      FocusScope.of(context)
-                                          .requestFocus(inputFocusNode);
-                                    } else {
-                                      DoNothingAction();
-                                    }
-                                  }),
+                              child: Visibility(
+                                visible: meaningDefinitionsMap.isNotEmpty ||
+                                    stronglyAssociatedWordsController
+                                        .text.isNotEmpty ||
+                                    similarlySpelledWordsController
+                                        .text.isNotEmpty ||
+                                    similarSoundingWordsController
+                                        .text.isNotEmpty,
+                                child: IconButton(
+                                    iconSize: 32,
+                                    icon: Icon(
+                                      Icons.delete,
+                                      color: Colors.grey[200],
+                                    ),
+                                    onPressed: () {
+                                      if (meaningDefinitionsMap.isNotEmpty ||
+                                          stronglyAssociatedWordsController
+                                              .text.isNotEmpty ||
+                                          similarlySpelledWordsController
+                                              .text.isNotEmpty ||
+                                          similarSoundingWordsController
+                                              .text.isNotEmpty) {
+                                        HapticFeedback.mediumImpact();
+                                        setState(() {
+                                          clearOutput(
+                                              alsoSearch: true,
+                                              alsoWord: true,
+                                              definitionsOnly: true,
+                                              similarWords: true);
+                                          wordToDefine = '';
+                                        });
+                                        // shift focus back to input textfield
+                                        FocusScope.of(context)
+                                            .requestFocus(inputFocusNode);
+                                      } else {
+                                        DoNothingAction();
+                                      }
+                                    }),
+                              ),
                             ),
                           ],
                         ),
@@ -1032,7 +1030,10 @@ class _HomePageState extends State<HomePage> {
                             (wordToDefine.characters.length > 0)
                                 ? "Looking up: “${wordToDefine}”"
                                 : "",
-                            style: word,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 28,
+                            ),
                           ),
                         ),
                         Visibility(
@@ -1102,7 +1103,13 @@ class _HomePageState extends State<HomePage> {
                                                     .substring(0, 18) +
                                                 '...'
                                             : outputWordController.text,
-                                    style: word,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                     maxLines: 1,
                                   ),
                                   Visibility(
@@ -1116,7 +1123,9 @@ class _HomePageState extends State<HomePage> {
                                             child: InkWell(
                                               child: Icon(
                                                 Icons.warning_sharp,
-                                                color: Colors.red[200],
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                                 size: 24,
                                               ),
                                             ),
@@ -1139,7 +1148,7 @@ class _HomePageState extends State<HomePage> {
                                     child: SelectableText(
                                       outputPhoneticController.text,
                                       style: TextStyle(
-                                        color: Colors.yellow[200],
+                                        color: Colors.yellow[100],
                                         fontWeight: FontWeight.w300,
                                         fontSize: 18,
                                       ),
@@ -1157,7 +1166,7 @@ class _HomePageState extends State<HomePage> {
                                           child: InkWell(
                                             child: Icon(
                                               Icons.hearing,
-                                              color: Colors.yellow[200],
+                                              color: Colors.yellow[100],
                                               size: 24,
                                             ),
                                             onTap: () {
@@ -1257,7 +1266,12 @@ class _HomePageState extends State<HomePage> {
                                                         left: 10),
                                                     child: Text(
                                                       "\u2022 ${value.toString()}",
-                                                      style: body,
+                                                      style: TextStyle(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onSurface,
+                                                        fontSize: 18,
+                                                      ),
                                                     ),
                                                   ),
                                                   Visibility(
@@ -1436,7 +1450,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         stronglyAssociatedWordsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1470,7 +1489,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         precededByWordsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1503,7 +1527,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         followedByWordsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1546,7 +1575,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         hypernymsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1589,7 +1623,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         hyponymsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1633,7 +1672,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         holonymsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1678,7 +1722,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         meronymsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1711,7 +1760,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         nounsModifiedController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1744,7 +1798,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         adjectivesModifiedController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1780,7 +1839,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         similarlySpelledWordsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1815,7 +1879,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         similarSoundingWordsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1849,7 +1918,12 @@ class _HomePageState extends State<HomePage> {
                                           const EdgeInsets.only(bottom: 10),
                                       child: SelectableText(
                                         rhymingWordsController.text,
-                                        style: body,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1870,7 +1944,7 @@ class _HomePageState extends State<HomePage> {
                                       message: '$appDisclaimer',
                                       child: Icon(
                                         Icons.policy_outlined,
-                                        color: Colors.grey[800],
+                                        color: Colors.grey[700],
                                         size: 18,
                                       ),
                                     ),
@@ -1890,12 +1964,12 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+              Divider(),
               Expanded(
                 child: Container(
-                  color: Colors.black12,
+                  // color: Colors.black12,
                   child: Column(
                     children: [
-                      SizedBox(height: screenHeight * .005),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -1903,24 +1977,15 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Text(
                                 "WordDefiner v$appVersion",
-                                style: TextStyle(
-                                    color: Colors.grey[800],
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w400),
+                                style: corporate,
                               ),
                               Text(
                                 "Build $buildVersion",
-                                style: TextStyle(
-                                    color: Colors.grey[800],
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w400),
+                                style: corporate,
                               ),
                               Text(
                                 "\u00A9 2022–${DateTime.now().year.toString()} RT",
-                                style: TextStyle(
-                                    color: Colors.grey[800],
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w400),
+                                style: corporate,
                               ),
                             ],
                           ),
@@ -1984,7 +2049,7 @@ class _HomePageState extends State<HomePage> {
                                 iconSize: 20,
                                 icon: Icon(
                                   Icons.ios_share,
-                                  color: Colors.grey[300],
+                                  color: Colors.grey[400],
                                 ),
                                 onPressed: () async {
                                   await Share.share(
@@ -2012,7 +2077,7 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   Text(
                                     "Get the ultimate calendar app: My Thyme",
-                                    style: TextStyle(color: Colors.blue[800]),
+                                    style: TextStyle(color: Colors.blue[900]),
                                   ),
                                   Tooltip(
                                     message:
