@@ -2043,13 +2043,9 @@ class _HomePageState extends State<HomePage> {
                                   DoNothingAction();
                                 } else if (menuResult ==
                                     CustomButton.neutralButton) {
-                                  if (await inAppReview.isAvailable()) {
-                                    try {
-                                      await inAppReview.requestReview();
-                                    } catch (_) {
-                                      // requestReview may throw on some platforms; fallthrough to counting
-                                    }
-                                  }
+                                  inAppReview.openStoreListing(
+                                    appStoreId: 'id1637774027',
+                                  );
                                 }
                               },
                               icon: Icon(
