@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_alert/flutter_platform_alert.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dialogs.dart';
 import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
 import 'package:WordDefiner/services/datamuseAPI.dart' as DatamuseAPI;
@@ -154,7 +156,7 @@ class _HomePageState extends State<HomePage> {
   static const String appInfo = "Results by Datamuse and Dictionary APIs";
 
   static final String appDisclaimer =
-      "The developer disclaims all liability for any direct, indirect, incidental, consequential, or special damages arising from or related to your use of the app, including but not limited to, any errors or omissions in the content provided, any interruptions or malfunctions of the app's functionality, or any reliance on information displayed within the app.";
+      "The developer disclaims all liability for any direct, indirect, incidental, consequential, or special damages arising from or related to your use of the app, including but not limited to, any errors or omissions in the content provided, any interruptions or malfunctions of the app's functionality, or any reliance on information displayed within the app.\n\u00A9 2022–${DateTime.now().year.toString()} RT (rickytakkar.com)";
 
   final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
 
@@ -450,6 +452,8 @@ class _HomePageState extends State<HomePage> {
     await prefs.setInt(_appOpensSinceReviewKey, appOpens + 1);
   }
 
+  CustomButton menuResult = CustomButton.other;
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -462,16 +466,19 @@ class _HomePageState extends State<HomePage> {
           body: Column(
             children: [
               Container(
-                height: (MediaQuery.of(context).orientation ==
-                        Orientation.landscape)
-                    ? (screenHeight < 1000)
-                        ? screenHeight * .83 // small iPad landscape
-                        : screenHeight * .87 // large iPad landscape
-                    : (screenHeight < 1000)
-                        ? (Platform.isAndroid)
-                            ? screenHeight * .90
-                            : screenHeight * .86
-                        : screenHeight * .89,
+                height: (screenWidth > screenHeight)
+                    ? screenHeight * .86 // landscape tablet
+                    : (screenHeight > 1100)
+                        ? screenHeight * .89 // portrait tablet
+                        : (Platform.isIOS)
+                            ? (screenHeight > 900)
+                                ? screenHeight * .85 // large iPhone
+                                : screenHeight * .83 // small iPhone
+                            : (Platform.isAndroid)
+                                ? (screenHeight > 900)
+                                    ? screenHeight * .90 // large Android
+                                    : screenHeight * .89 // small Android
+                                : screenHeight * .83, // small phone
                 padding: const EdgeInsets.fromLTRB(20, 65, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,8 +505,23 @@ class _HomePageState extends State<HomePage> {
                               child: TextField(
                                 focusNode: inputFocusNode,
                                 decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                    borderSide: BorderSide(
+                                        width: 1,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withAlpha(150)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                    borderSide: BorderSide(
+                                        width: 3,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withAlpha(200)),
                                   ),
                                   isDense: true,
                                   prefixIcon: Icon(
@@ -537,9 +559,6 @@ class _HomePageState extends State<HomePage> {
                                       _.characters.length > 50) {
                                     // CHECK 2: non letter, just space detected, or query exceeds 50 characters - show error dialog
                                     Dialogs.showInputIssue(context);
-                                  } else if (!words.contains(_.toLowerCase())) {
-                                    // CHECK 3: word not in list - show error dialog
-                                    Dialogs.showInvalidWord(context);
                                   } else {
                                     // CHECK 1: check if device has internet connection
                                     var result = await Connectivity()
@@ -555,387 +574,232 @@ class _HomePageState extends State<HomePage> {
                                         });
                                       });
                                     } else {
-                                      setState(() {
-                                        wordToDefine = _;
-                                        finding = true;
-                                        clearOutput(
-                                            alsoSearch: true,
-                                            alsoWord: true,
-                                            definitionsOnly: true,
-                                            similarWords: true);
-                                      });
-                                      try {
-                                        debugPrint(
-                                            "sent request to get definitions");
-                                        final definitionsList =
-                                            (await FreeDictionaryAPI
-                                                .getDefinition(wordToDefine));
-                                        debugPrint(
-                                            "received request to get definitions");
-                                        final stronglyAssociatedWords =
-                                            (await DatamuseAPI.getRelatedWords(
-                                                wordToDefine));
-                                        stronglyAssociatedWordsCount =
-                                            stronglyAssociatedWords!.length;
-                                        final similarSpelledWords =
-                                            (await DatamuseAPI
-                                                .getSimilarSpeltWords(
-                                                    wordToDefine));
-                                        similarSpeltWordsCount =
-                                            similarSpelledWords!.length;
-                                        final similarSoundingWords =
-                                            (await DatamuseAPI
-                                                .getSimilarSoundingWords(
-                                                    wordToDefine));
-                                        similarSoundingWordsCount =
-                                            similarSoundingWords!.length;
-                                        final rhymingWords =
-                                            (await DatamuseAPI.getRhymingWords(
-                                                wordToDefine));
-                                        rhymingWordsCount =
-                                            rhymingWords!.length;
-                                        final followedByWords =
-                                            (await DatamuseAPI
-                                                .getFollowedByWords(
-                                                    wordToDefine));
-                                        followedByWordsCount =
-                                            followedByWords!.length;
-                                        final precededByWords =
-                                            (await DatamuseAPI
-                                                .getPrecededByWords(
-                                                    wordToDefine));
-                                        precededByWordsCount =
-                                            precededByWords!.length;
-                                        final nounsModified =
-                                            (await DatamuseAPI.getNounsModified(
-                                                wordToDefine));
-                                        nounsModifiedCount =
-                                            nounsModified!.length;
-                                        final adjectivesModified =
-                                            (await DatamuseAPI
-                                                .getAdjectivesModified(
-                                                    wordToDefine));
-                                        adjectivesModifiedCount =
-                                            adjectivesModified!.length;
-                                        final synonyms =
-                                            (await DatamuseAPI.getSynonyms(
-                                                wordToDefine));
-                                        synonymsCount = synonyms!.length;
-                                        final antonyms =
-                                            (await DatamuseAPI.getAntonyms(
-                                                wordToDefine));
-                                        antonymsCount = antonyms!.length;
-                                        final hypernyms =
-                                            (await DatamuseAPI.getHypernyms(
-                                                wordToDefine));
-                                        hypernymsCount = hypernyms!.length;
-                                        final hyponyms =
-                                            (await DatamuseAPI.getHyponyms(
-                                                wordToDefine));
-                                        hyponymsCount = hyponyms!.length;
-                                        final holonyms =
-                                            (await DatamuseAPI.getHolonyms(
-                                                wordToDefine));
-                                        holonymsCount = holonyms!.length;
-                                        final meronyms =
-                                            (await DatamuseAPI.getMeronyms(
-                                                wordToDefine));
-                                        meronymsCount = meronyms!.length;
-
-                                        stronglyAssociatedWordsController.text =
-                                            stronglyAssociatedWords
-                                                .toString()
-                                                .substring(
-                                                    1,
-                                                    stronglyAssociatedWords
-                                                            .toString()
-                                                            .length -
-                                                        1);
-                                        similarlySpelledWordsController.text =
-                                            similarSpelledWords
-                                                .toString()
-                                                .substring(
-                                                    1,
-                                                    similarSpelledWords
-                                                            .toString()
-                                                            .length -
-                                                        1);
-                                        similarSoundingWordsController.text =
-                                            similarSoundingWords
-                                                .toString()
-                                                .substring(
-                                                    1,
-                                                    similarSoundingWords
-                                                            .toString()
-                                                            .length -
-                                                        1);
-                                        rhymingWordsController.text =
-                                            rhymingWords.toString().substring(
-                                                1,
-                                                rhymingWords.toString().length -
-                                                    1);
-                                        followedByWordsController.text =
-                                            followedByWords
-                                                .toString()
-                                                .substring(
-                                                    1,
-                                                    followedByWords
-                                                            .toString()
-                                                            .length -
-                                                        1);
-                                        precededByWordsController.text =
-                                            precededByWords
-                                                .toString()
-                                                .substring(
-                                                    1,
-                                                    precededByWords
-                                                            .toString()
-                                                            .length -
-                                                        1);
-                                        nounsModifiedController.text =
-                                            nounsModified.toString().substring(
-                                                1,
-                                                nounsModified
-                                                        .toString()
-                                                        .length -
-                                                    1);
-                                        adjectivesModifiedController.text =
-                                            adjectivesModified
-                                                .toString()
-                                                .substring(
-                                                    1,
-                                                    adjectivesModified
-                                                            .toString()
-                                                            .length -
-                                                        1);
-                                        synonymsController.text = synonyms
-                                            .toString()
-                                            .substring(1,
-                                                synonyms.toString().length - 1);
-                                        antonymsController.text = antonyms
-                                            .toString()
-                                            .substring(1,
-                                                antonyms.toString().length - 1);
-                                        hypernymsController.text = hypernyms
-                                            .toString()
-                                            .substring(
-                                                1,
-                                                hypernyms.toString().length -
-                                                    1);
-                                        hyponymsController.text = hyponyms
-                                            .toString()
-                                            .substring(1,
-                                                hyponyms.toString().length - 1);
-                                        holonymsController.text = holonyms
-                                            .toString()
-                                            .substring(1,
-                                                holonyms.toString().length - 1);
-                                        meronymsController.text = meronyms
-                                            .toString()
-                                            .substring(1,
-                                                meronyms.toString().length - 1);
+                                      if (words.contains(_.toLowerCase()) ||
+                                          (!words.contains(_.toLowerCase()) &&
+                                              await Dialogs
+                                                      .showUnrecognizedWord(
+                                                          context) ==
+                                                  AlertButton.yesButton)) {
                                         setState(() {
-                                          finding = false;
+                                          wordToDefine = _;
+                                          finding = true;
+                                          clearOutput(
+                                              alsoSearch: true,
+                                              alsoWord: true,
+                                              definitionsOnly: true,
+                                              similarWords: true);
+                                        });
+                                        try {
                                           debugPrint(
-                                              "definitions list: ${definitionsList}");
-                                          if (definitionsList?.isNotFound ==
-                                              true) {
-                                            debugPrint('404 word not found');
-                                            // Dialogs.showNoDefinitions(
-                                            //     context, wordToDefine);
-                                            // wordToDefine = '';
-                                            clearOutput(
-                                                alsoSearch: true,
-                                                alsoWord: true,
-                                                definitionsOnly: true,
-                                                similarWords: false);
-                                            // shift focus back to input textfield
-                                            FocusScope.of(context)
-                                                .requestFocus(inputFocusNode);
-                                          } else if (definitionsList?.isNull ==
-                                              true) {
+                                              "sent request to get definitions");
+                                          final definitionsList =
+                                              (await FreeDictionaryAPI
+                                                  .getDefinition(wordToDefine));
+                                          debugPrint(
+                                              "received request to get definitions");
+                                          final stronglyAssociatedWords =
+                                              (await DatamuseAPI
+                                                  .getRelatedWords(
+                                                      wordToDefine));
+                                          stronglyAssociatedWordsCount =
+                                              stronglyAssociatedWords!.length;
+                                          final similarSpelledWords =
+                                              (await DatamuseAPI
+                                                  .getSimilarSpeltWords(
+                                                      wordToDefine));
+                                          similarSpeltWordsCount =
+                                              similarSpelledWords!.length;
+                                          final similarSoundingWords =
+                                              (await DatamuseAPI
+                                                  .getSimilarSoundingWords(
+                                                      wordToDefine));
+                                          similarSoundingWordsCount =
+                                              similarSoundingWords!.length;
+                                          final rhymingWords =
+                                              (await DatamuseAPI
+                                                  .getRhymingWords(
+                                                      wordToDefine));
+                                          rhymingWordsCount =
+                                              rhymingWords!.length;
+                                          final followedByWords =
+                                              (await DatamuseAPI
+                                                  .getFollowedByWords(
+                                                      wordToDefine));
+                                          followedByWordsCount =
+                                              followedByWords!.length;
+                                          final precededByWords =
+                                              (await DatamuseAPI
+                                                  .getPrecededByWords(
+                                                      wordToDefine));
+                                          precededByWordsCount =
+                                              precededByWords!.length;
+                                          final nounsModified =
+                                              (await DatamuseAPI
+                                                  .getNounsModified(
+                                                      wordToDefine));
+                                          nounsModifiedCount =
+                                              nounsModified!.length;
+                                          final adjectivesModified =
+                                              (await DatamuseAPI
+                                                  .getAdjectivesModified(
+                                                      wordToDefine));
+                                          adjectivesModifiedCount =
+                                              adjectivesModified!.length;
+                                          final synonyms =
+                                              (await DatamuseAPI.getSynonyms(
+                                                  wordToDefine));
+                                          synonymsCount = synonyms!.length;
+                                          final antonyms =
+                                              (await DatamuseAPI.getAntonyms(
+                                                  wordToDefine));
+                                          antonymsCount = antonyms!.length;
+                                          final hypernyms =
+                                              (await DatamuseAPI.getHypernyms(
+                                                  wordToDefine));
+                                          hypernymsCount = hypernyms!.length;
+                                          final hyponyms =
+                                              (await DatamuseAPI.getHyponyms(
+                                                  wordToDefine));
+                                          hyponymsCount = hyponyms!.length;
+                                          final holonyms =
+                                              (await DatamuseAPI.getHolonyms(
+                                                  wordToDefine));
+                                          holonymsCount = holonyms!.length;
+                                          final meronyms =
+                                              (await DatamuseAPI.getMeronyms(
+                                                  wordToDefine));
+                                          meronymsCount = meronyms!.length;
+
+                                          stronglyAssociatedWordsController
+                                                  .text =
+                                              stronglyAssociatedWords
+                                                  .toString()
+                                                  .substring(
+                                                      1,
+                                                      stronglyAssociatedWords
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                          similarlySpelledWordsController.text =
+                                              similarSpelledWords
+                                                  .toString()
+                                                  .substring(
+                                                      1,
+                                                      similarSpelledWords
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                          similarSoundingWordsController.text =
+                                              similarSoundingWords
+                                                  .toString()
+                                                  .substring(
+                                                      1,
+                                                      similarSoundingWords
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                          rhymingWordsController.text =
+                                              rhymingWords.toString().substring(
+                                                  1,
+                                                  rhymingWords
+                                                          .toString()
+                                                          .length -
+                                                      1);
+                                          followedByWordsController.text =
+                                              followedByWords
+                                                  .toString()
+                                                  .substring(
+                                                      1,
+                                                      followedByWords
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                          precededByWordsController.text =
+                                              precededByWords
+                                                  .toString()
+                                                  .substring(
+                                                      1,
+                                                      precededByWords
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                          nounsModifiedController.text =
+                                              nounsModified
+                                                  .toString()
+                                                  .substring(
+                                                      1,
+                                                      nounsModified
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                          adjectivesModifiedController.text =
+                                              adjectivesModified
+                                                  .toString()
+                                                  .substring(
+                                                      1,
+                                                      adjectivesModified
+                                                              .toString()
+                                                              .length -
+                                                          1);
+                                          synonymsController.text = synonyms
+                                              .toString()
+                                              .substring(
+                                                  1,
+                                                  synonyms.toString().length -
+                                                      1);
+                                          antonymsController.text = antonyms
+                                              .toString()
+                                              .substring(
+                                                  1,
+                                                  antonyms.toString().length -
+                                                      1);
+                                          hypernymsController.text = hypernyms
+                                              .toString()
+                                              .substring(
+                                                  1,
+                                                  hypernyms.toString().length -
+                                                      1);
+                                          hyponymsController.text = hyponyms
+                                              .toString()
+                                              .substring(
+                                                  1,
+                                                  hyponyms.toString().length -
+                                                      1);
+                                          holonymsController.text = holonyms
+                                              .toString()
+                                              .substring(
+                                                  1,
+                                                  holonyms.toString().length -
+                                                      1);
+                                          meronymsController.text = meronyms
+                                              .toString()
+                                              .substring(
+                                                  1,
+                                                  meronyms.toString().length -
+                                                      1);
+                                          setState(() {
+                                            finding = false;
                                             debugPrint(
-                                                'definitions list is null');
-                                            Future.delayed(Duration(seconds: 1),
-                                                () {
-                                              Dialogs.showNetworkIssues(
-                                                  context);
-                                              setState(() {
-                                                finding = false;
-                                                inputController.clear();
-                                                wordToDefine = '';
-                                              });
-                                            });
-                                          } else {
-                                            try {
-                                              HapticFeedback.lightImpact();
-                                              outputWordController.text =
-                                                  "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
-                                              if (badWords.contains(
-                                                  wordToDefine.toLowerCase())) {
-                                                setState(() {
-                                                  isBadWord = true;
-                                                });
-                                              } else {
-                                                setState(() {
-                                                  isBadWord = false;
-                                                });
-                                              }
-                                              // traverse through list of definitions and assign to controllers so user can see
-                                              definitionsList
-                                                  ?.definitionElements
-                                                  ?.forEach((element) {
-                                                // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                                                debugPrint('enter 1');
-                                                if (element.phonetic == null) {
-                                                  phonetic = '';
-                                                } else {
-                                                  phonetic = element.phonetic;
-                                                }
-                                                // assign phonetic to phonetic controller in 2.3 because that's last place to do it
-                                                debugPrint('exit 1');
-                                                // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
-                                                // 2.1 - for audio
-                                                element.phonetics?.forEach(
-                                                    (elementPhonetic) {
-                                                  debugPrint('enter 2');
-                                                  if (elementPhonetic.audio ==
-                                                          null ||
-                                                      elementPhonetic.audio ==
-                                                          '') {
-                                                    DoNothingAction();
-                                                  } else {
-                                                    pronounciationAudioSource =
-                                                        elementPhonetic.audio
-                                                            as String;
-                                                  }
-                                                  // 2.2 - for audio source
-                                                  if (elementPhonetic
-                                                              .sourceUrl ==
-                                                          null ||
-                                                      elementPhonetic
-                                                              .sourceUrl ==
-                                                          '') {
-                                                    DoNothingAction();
-                                                  } else {
-                                                    pronounciationSourceUrl =
-                                                        elementPhonetic
-                                                                .sourceUrl
-                                                            as String;
-                                                  }
-                                                  // 2.3 - find some phonetic if not already there since phonetics list also has some
-                                                  // debugPrint('1-${phonetic}');
-                                                  if (phonetic == '' &&
-                                                      elementPhonetic.text !=
-                                                          null) {
-                                                    phonetic = elementPhonetic
-                                                        .text as String;
-                                                  }
-                                                  outputPhoneticController
-                                                      .text = phonetic!;
-                                                  // assign pronounciationSourceController.text to pronounciationSourceUrl
-                                                  pronounciationSourceController
-                                                          .text =
-                                                      pronounciationSourceUrl!;
-                                                  debugPrint('exit 2');
-                                                });
-                                                // 3 - for meanings (look through each field in meanings)
-                                                element.meanings
-                                                    ?.forEach((elementMeaning) {
-                                                  debugPrint('enter 3');
-                                                  // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
-                                                  // 3.1 - add part of speech to list
-                                                  meaningPartOfSpeechList.add(
-                                                      elementMeaning
-                                                              .partOfSpeech
-                                                          as String);
-                                                  // 3.2 - add definitions list to their list
-                                                  for (int i = 0;
-                                                      i <
-                                                          meaningPartOfSpeechList
-                                                              .length;
-                                                      i++) {
-                                                    elementMeaning.definitions
-                                                        ?.forEach(
-                                                            (elementMeaningDefinitions) {
-                                                      meaningDefinitionsList_tmp.add(
-                                                          elementMeaningDefinitions
-                                                                  .definition
-                                                              as String);
-                                                    });
-                                                    meaningDefinitionsMap[
-                                                            elementMeaning
-                                                                .partOfSpeech] =
-                                                        meaningDefinitionsList_tmp;
-                                                    meaningDefinitionsList_tmp =
-                                                        [];
-
-                                                    elementMeaning.synonymsEl
-                                                        ?.forEach((element) {
-                                                      meaningSynonymsList_tmp
-                                                          .add(element);
-                                                    });
-                                                    meaningSynonymMap[
-                                                            elementMeaning
-                                                                .partOfSpeech] =
-                                                        meaningSynonymsList_tmp;
-                                                    meaningSynonymsList_tmp =
-                                                        [];
-
-                                                    elementMeaning.antonymsEl
-                                                        ?.forEach((element) {
-                                                      meaningAntonymsList_tmp
-                                                          .add(element);
-                                                    });
-                                                    meaningAntonymMap[
-                                                            elementMeaning
-                                                                .partOfSpeech] =
-                                                        meaningAntonymsList_tmp;
-                                                    meaningAntonymsList_tmp =
-                                                        [];
-                                                  }
-                                                });
-                                                debugPrint('exit 3');
-                                                // 4 - for license
-                                                debugPrint('enter 4');
-                                                // 4.1 -  check if license name in licenseNames already
-                                                (licenseNames.contains(
-                                                        element.license?.name)
-                                                    ? DoNothingAction()
-                                                    : (licenseNames.add(element
-                                                        .license
-                                                        ?.name as String)));
-                                                // 4.2 - check if license url in licenseUrls already
-                                                (licenseUrls.contains(
-                                                        element.license?.url)
-                                                    ? DoNothingAction()
-                                                    : (licenseUrls.add(element
-                                                        .license
-                                                        ?.url as String)));
-                                                // assign license lists to their respective text editing controllers
-                                                licenseNameController.text =
-                                                    licenseNames.join(', ');
-                                                licenseUrlsController.text =
-                                                    licenseUrls.join(', ');
-                                                debugPrint('exit 4');
-                                                // 5 - for source urls (check if license name in licenseNames already)
-                                                element.sourceUrls?.forEach(
-                                                    (elementSourceUrl) {
-                                                  debugPrint('enter 5');
-                                                  (sourceUrls.contains(
-                                                          elementSourceUrl)
-                                                      ? DoNothingAction()
-                                                      : (sourceUrls.add(
-                                                          elementSourceUrl)));
-                                                });
-                                                // assign sourceUrls list to its text editing controller
-                                                sourceUrlsController.text =
-                                                    sourceUrls.join(', ');
-                                              });
-                                              debugPrint('exit 5');
-                                            } on Exception catch (e) {
+                                                "definitions list: ${definitionsList}");
+                                            if (definitionsList?.isNotFound ==
+                                                true) {
+                                              debugPrint('404 word not found');
+                                              // Dialogs.showNoDefinitions(
+                                              //     context, wordToDefine);
+                                              // wordToDefine = '';
+                                              clearOutput(
+                                                  alsoSearch: true,
+                                                  alsoWord: true,
+                                                  definitionsOnly: true,
+                                                  similarWords: false);
+                                              // shift focus back to input textfield
+                                              FocusScope.of(context)
+                                                  .requestFocus(inputFocusNode);
+                                            } else if (definitionsList
+                                                    ?.isNull ==
+                                                true) {
                                               debugPrint(
-                                                  '!caught exception! $e');
+                                                  'definitions list is null');
                                               Future.delayed(
                                                   Duration(seconds: 1), () {
                                                 Dialogs.showNetworkIssues(
@@ -946,20 +810,203 @@ class _HomePageState extends State<HomePage> {
                                                   wordToDefine = '';
                                                 });
                                               });
+                                            } else {
+                                              try {
+                                                HapticFeedback.lightImpact();
+                                                outputWordController.text =
+                                                    "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
+                                                if (badWords.contains(
+                                                    wordToDefine
+                                                        .toLowerCase())) {
+                                                  setState(() {
+                                                    isBadWord = true;
+                                                  });
+                                                } else {
+                                                  setState(() {
+                                                    isBadWord = false;
+                                                  });
+                                                }
+                                                // traverse through list of definitions and assign to controllers so user can see
+                                                definitionsList
+                                                    ?.definitionElements
+                                                    ?.forEach((element) {
+                                                  // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
+                                                  debugPrint('enter 1');
+                                                  if (element.phonetic ==
+                                                      null) {
+                                                    phonetic = '';
+                                                  } else {
+                                                    phonetic = element.phonetic;
+                                                  }
+                                                  // assign phonetic to phonetic controller in 2.3 because that's last place to do it
+                                                  debugPrint('exit 1');
+                                                  // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
+                                                  // 2.1 - for audio
+                                                  element.phonetics?.forEach(
+                                                      (elementPhonetic) {
+                                                    debugPrint('enter 2');
+                                                    if (elementPhonetic.audio ==
+                                                            null ||
+                                                        elementPhonetic.audio ==
+                                                            '') {
+                                                      DoNothingAction();
+                                                    } else {
+                                                      pronounciationAudioSource =
+                                                          elementPhonetic.audio
+                                                              as String;
+                                                    }
+                                                    // 2.2 - for audio source
+                                                    if (elementPhonetic
+                                                                .sourceUrl ==
+                                                            null ||
+                                                        elementPhonetic
+                                                                .sourceUrl ==
+                                                            '') {
+                                                      DoNothingAction();
+                                                    } else {
+                                                      pronounciationSourceUrl =
+                                                          elementPhonetic
+                                                                  .sourceUrl
+                                                              as String;
+                                                    }
+                                                    // 2.3 - find some phonetic if not already there since phonetics list also has some
+                                                    // debugPrint('1-${phonetic}');
+                                                    if (phonetic == '' &&
+                                                        elementPhonetic.text !=
+                                                            null) {
+                                                      phonetic = elementPhonetic
+                                                          .text as String;
+                                                    }
+                                                    outputPhoneticController
+                                                        .text = phonetic!;
+                                                    // assign pronounciationSourceController.text to pronounciationSourceUrl
+                                                    pronounciationSourceController
+                                                            .text =
+                                                        pronounciationSourceUrl!;
+                                                    debugPrint('exit 2');
+                                                  });
+                                                  // 3 - for meanings (look through each field in meanings)
+                                                  element.meanings?.forEach(
+                                                      (elementMeaning) {
+                                                    debugPrint('enter 3');
+                                                    // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
+                                                    // 3.1 - add part of speech to list
+                                                    meaningPartOfSpeechList.add(
+                                                        elementMeaning
+                                                                .partOfSpeech
+                                                            as String);
+                                                    // 3.2 - add definitions list to their list
+                                                    for (int i = 0;
+                                                        i <
+                                                            meaningPartOfSpeechList
+                                                                .length;
+                                                        i++) {
+                                                      elementMeaning.definitions
+                                                          ?.forEach(
+                                                              (elementMeaningDefinitions) {
+                                                        meaningDefinitionsList_tmp.add(
+                                                            elementMeaningDefinitions
+                                                                    .definition
+                                                                as String);
+                                                      });
+                                                      meaningDefinitionsMap[
+                                                              elementMeaning
+                                                                  .partOfSpeech] =
+                                                          meaningDefinitionsList_tmp;
+                                                      meaningDefinitionsList_tmp =
+                                                          [];
+
+                                                      elementMeaning.synonymsEl
+                                                          ?.forEach((element) {
+                                                        meaningSynonymsList_tmp
+                                                            .add(element);
+                                                      });
+                                                      meaningSynonymMap[
+                                                              elementMeaning
+                                                                  .partOfSpeech] =
+                                                          meaningSynonymsList_tmp;
+                                                      meaningSynonymsList_tmp =
+                                                          [];
+
+                                                      elementMeaning.antonymsEl
+                                                          ?.forEach((element) {
+                                                        meaningAntonymsList_tmp
+                                                            .add(element);
+                                                      });
+                                                      meaningAntonymMap[
+                                                              elementMeaning
+                                                                  .partOfSpeech] =
+                                                          meaningAntonymsList_tmp;
+                                                      meaningAntonymsList_tmp =
+                                                          [];
+                                                    }
+                                                  });
+                                                  debugPrint('exit 3');
+                                                  // 4 - for license
+                                                  debugPrint('enter 4');
+                                                  // 4.1 -  check if license name in licenseNames already
+                                                  (licenseNames.contains(
+                                                          element.license?.name)
+                                                      ? DoNothingAction()
+                                                      : (licenseNames.add(
+                                                          element.license?.name
+                                                              as String)));
+                                                  // 4.2 - check if license url in licenseUrls already
+                                                  (licenseUrls.contains(
+                                                          element.license?.url)
+                                                      ? DoNothingAction()
+                                                      : (licenseUrls.add(element
+                                                          .license
+                                                          ?.url as String)));
+                                                  // assign license lists to their respective text editing controllers
+                                                  licenseNameController.text =
+                                                      licenseNames.join(', ');
+                                                  licenseUrlsController.text =
+                                                      licenseUrls.join(', ');
+                                                  debugPrint('exit 4');
+                                                  // 5 - for source urls (check if license name in licenseNames already)
+                                                  element.sourceUrls?.forEach(
+                                                      (elementSourceUrl) {
+                                                    debugPrint('enter 5');
+                                                    (sourceUrls.contains(
+                                                            elementSourceUrl)
+                                                        ? DoNothingAction()
+                                                        : (sourceUrls.add(
+                                                            elementSourceUrl)));
+                                                  });
+                                                  // assign sourceUrls list to its text editing controller
+                                                  sourceUrlsController.text =
+                                                      sourceUrls.join(', ');
+                                                });
+                                                debugPrint('exit 5');
+                                              } on Exception catch (e) {
+                                                debugPrint(
+                                                    '!caught exception! $e');
+                                                Future.delayed(
+                                                    Duration(seconds: 1), () {
+                                                  Dialogs.showNetworkIssues(
+                                                      context);
+                                                  setState(() {
+                                                    finding = false;
+                                                    inputController.clear();
+                                                    wordToDefine = '';
+                                                  });
+                                                });
+                                              }
                                             }
-                                          }
-                                        });
-                                      } on Exception catch (e) {
-                                        debugPrint('!caught exception! $e');
-                                        Future.delayed(Duration(seconds: 1),
-                                            () {
-                                          Dialogs.showNetworkIssues(context);
-                                          setState(() {
-                                            finding = false;
-                                            inputController.clear();
-                                            wordToDefine = '';
                                           });
-                                        });
+                                        } on Exception catch (e) {
+                                          debugPrint('!caught exception! $e');
+                                          Future.delayed(Duration(seconds: 1),
+                                              () {
+                                            Dialogs.showNetworkIssues(context);
+                                            setState(() {
+                                              finding = false;
+                                              inputController.clear();
+                                              wordToDefine = '';
+                                            });
+                                          });
+                                        }
                                       }
                                     }
                                   }
@@ -974,46 +1021,45 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Tooltip(
-                              message: "Clear all output fields.",
-                              child: Visibility(
-                                visible: meaningDefinitionsMap.isNotEmpty ||
-                                    stronglyAssociatedWordsController
-                                        .text.isNotEmpty ||
-                                    similarlySpelledWordsController
-                                        .text.isNotEmpty ||
-                                    similarSoundingWordsController
-                                        .text.isNotEmpty,
-                                child: IconButton(
-                                    iconSize: 32,
-                                    icon: Icon(
-                                      Icons.delete,
-                                      color: Colors.grey[200],
-                                    ),
-                                    onPressed: () {
-                                      if (meaningDefinitionsMap.isNotEmpty ||
-                                          stronglyAssociatedWordsController
-                                              .text.isNotEmpty ||
-                                          similarlySpelledWordsController
-                                              .text.isNotEmpty ||
-                                          similarSoundingWordsController
-                                              .text.isNotEmpty) {
-                                        HapticFeedback.mediumImpact();
-                                        setState(() {
-                                          clearOutput(
-                                              alsoSearch: true,
-                                              alsoWord: true,
-                                              definitionsOnly: true,
-                                              similarWords: true);
-                                          wordToDefine = '';
-                                        });
-                                        // shift focus back to input textfield
-                                        FocusScope.of(context)
-                                            .requestFocus(inputFocusNode);
-                                      } else {
-                                        DoNothingAction();
-                                      }
-                                    }),
-                              ),
+                              message: "Clear all output fields",
+                              child: IconButton(
+                                  iconSize: 32,
+                                  icon: Icon(
+                                    Icons.delete,
+                                    color: (meaningDefinitionsMap.isNotEmpty ||
+                                            stronglyAssociatedWordsController
+                                                .text.isNotEmpty ||
+                                            similarlySpelledWordsController
+                                                .text.isNotEmpty ||
+                                            similarSoundingWordsController
+                                                .text.isNotEmpty)
+                                        ? Colors.grey[200]
+                                        : Colors.grey[800],
+                                  ),
+                                  onPressed: () {
+                                    if (meaningDefinitionsMap.isNotEmpty ||
+                                        stronglyAssociatedWordsController
+                                            .text.isNotEmpty ||
+                                        similarlySpelledWordsController
+                                            .text.isNotEmpty ||
+                                        similarSoundingWordsController
+                                            .text.isNotEmpty) {
+                                      HapticFeedback.mediumImpact();
+                                      setState(() {
+                                        clearOutput(
+                                            alsoSearch: true,
+                                            alsoWord: true,
+                                            definitionsOnly: true,
+                                            similarWords: true);
+                                        wordToDefine = '';
+                                      });
+                                      // shift focus back to input textfield
+                                      FocusScope.of(context)
+                                          .requestFocus(inputFocusNode);
+                                    } else {
+                                      DoNothingAction();
+                                    }
+                                  }),
                             ),
                           ],
                         ),
@@ -1119,14 +1165,14 @@ class _HomePageState extends State<HomePage> {
                                           SizedBox(width: 5),
                                           Tooltip(
                                             message:
-                                                "\“${outputWordController.text}\” may be offensive depending on context.",
+                                                "\“${outputWordController.text}\” may be offensive depending on context",
                                             child: InkWell(
                                               child: Icon(
                                                 Icons.warning_sharp,
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .primary,
-                                                size: 24,
+                                                size: 22,
                                               ),
                                             ),
                                           ),
@@ -1162,12 +1208,12 @@ class _HomePageState extends State<HomePage> {
                                         SizedBox(width: 5),
                                         Tooltip(
                                           message:
-                                              'Tap to hear the pronounciation of \“${outputWordController.text.toLowerCase()}.\” If you can\'t hear anything, try restarting the app or checking the device volume.',
+                                              'Tap to hear the pronounciation of \“${outputWordController.text.toLowerCase()}.\” If you can\'t hear anything, check the device volume.',
                                           child: InkWell(
                                             child: Icon(
                                               Icons.hearing,
                                               color: Colors.yellow[100],
-                                              size: 24,
+                                              size: 20,
                                             ),
                                             onTap: () {
                                               audioPlayer.setVolume(1);
@@ -1562,8 +1608,8 @@ class _HomePageState extends State<HomePage> {
                                         message:
                                             'Hypernyms are words that are more general than the word being defined.',
                                         child: Icon(
-                                          Icons.lightbulb_outlined,
-                                          color: Colors.grey[700],
+                                          Icons.info_outline,
+                                          color: Colors.grey[500],
                                           size: 16,
                                         ),
                                       ),
@@ -1610,8 +1656,8 @@ class _HomePageState extends State<HomePage> {
                                         message:
                                             'Hyponyms are words that are more specific than the word being defined.',
                                         child: Icon(
-                                          Icons.lightbulb_outlined,
-                                          color: Colors.grey[700],
+                                          Icons.info_outline,
+                                          color: Colors.grey[500],
                                           size: 16,
                                         ),
                                       ),
@@ -1656,8 +1702,8 @@ class _HomePageState extends State<HomePage> {
                                         message:
                                             'Holonyms are words that define the whole, whereas meronyms define the parts.',
                                         child: Icon(
-                                          Icons.lightbulb_outlined,
-                                          color: Colors.grey[700],
+                                          Icons.info_outline,
+                                          color: Colors.grey[500],
                                           size: 16,
                                         ),
                                       ),
@@ -1705,8 +1751,8 @@ class _HomePageState extends State<HomePage> {
                                         message:
                                             'Meronyms are words that define the parts, whereas holonyms define the whole.',
                                         child: Icon(
-                                          Icons.lightbulb_outlined,
-                                          color: Colors.grey[700],
+                                          Icons.info_outline,
+                                          color: Colors.grey[500],
                                           size: 16,
                                         ),
                                       ),
@@ -1938,17 +1984,26 @@ class _HomePageState extends State<HomePage> {
                               Padding(
                                 padding:
                                     const EdgeInsets.only(top: 10, bottom: 20),
-                                child: Row(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Tooltip(
-                                      message: '$appDisclaimer',
-                                      child: Icon(
-                                        Icons.policy_outlined,
-                                        color: Colors.grey[700],
-                                        size: 18,
-                                      ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "WordDefiner $appVersion ($buildVersion) ",
+                                          style: corporate,
+                                        ),
+                                        SizedBox(width: 5),
+                                        Tooltip(
+                                          message: '$appDisclaimer',
+                                          child: Icon(
+                                            Icons.policy_outlined,
+                                            color: Colors.grey[700],
+                                            size: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    SizedBox(width: 5),
                                     Text(
                                       appInfo,
                                       style: corporate,
@@ -1973,32 +2028,32 @@ class _HomePageState extends State<HomePage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Column(
-                            children: [
-                              Text(
-                                "WordDefiner v$appVersion",
-                                style: corporate,
-                              ),
-                              Text(
-                                "Build $buildVersion",
-                                style: corporate,
-                              ),
-                              Text(
-                                "\u00A9 2022–${DateTime.now().year.toString()} RT",
-                                style: corporate,
-                              ),
-                            ],
-                          ),
                           Tooltip(
-                            message: "Link to feedback form.",
+                            message: "Open menu",
                             child: IconButton(
-                              onPressed: () {
-                                Dialogs.showContactDialog(context);
-                                debugPrint(
-                                    "COLOR: ${Theme.of(context).colorScheme.surface.toString()}");
+                              onPressed: () async {
+                                menuResult = await Dialogs.showMenu(context);
+                                if (menuResult == CustomButton.positiveButton) {
+                                  Future.delayed(
+                                      const Duration(milliseconds: 300), () {
+                                    launchUrl(Uri.parse(Constants.formUrl));
+                                  });
+                                } else if (menuResult ==
+                                    CustomButton.negativeButton) {
+                                  DoNothingAction();
+                                } else if (menuResult ==
+                                    CustomButton.neutralButton) {
+                                  if (await inAppReview.isAvailable()) {
+                                    try {
+                                      await inAppReview.requestReview();
+                                    } catch (_) {
+                                      // requestReview may throw on some platforms; fallthrough to counting
+                                    }
+                                  }
+                                }
                               },
                               icon: Icon(
-                                Icons.contact_page_outlined,
+                                Icons.menu,
                                 color: Colors.grey[400],
                                 size: 23,
                               ),
@@ -2008,7 +2063,7 @@ class _HomePageState extends State<HomePage> {
                             visible: Platform.isIOS || Platform.isMacOS,
                             child: Tooltip(
                               message:
-                                  "Open Popops — a fun game that combines mesmerizing visuals with lightning-fast gameplay for a unique experience anyone can pick up, but few can master.",
+                                  "Open Popops — a fun game that combines mesmerizing visuals with lightning-fast gameplay for a unique experience anyone can pick up, but few can master",
                               child: IconButton(
                                 onPressed: () async {
                                   await LaunchApp.openApp(
@@ -2026,7 +2081,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           Tooltip(
                             message:
-                                "Open ShortenMyURL to shorten links quickly, simply, and for free.",
+                                "Open ShortenMyURL to shorten links quickly, simply, and for free",
                             child: IconButton(
                               onPressed: () async {
                                 await LaunchApp.openApp(
@@ -2044,11 +2099,13 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Tooltip(
-                            message: "Share this app.",
+                            message: "Share this app",
                             child: IconButton(
                                 iconSize: 20,
                                 icon: Icon(
-                                  Icons.ios_share,
+                                  (Platform.isAndroid)
+                                      ? Icons.share
+                                      : Icons.ios_share,
                                   color: Colors.grey[400],
                                 ),
                                 onPressed: () async {
@@ -2081,7 +2138,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   Tooltip(
                                     message:
-                                        "Open My Thyme — the ultimate privacy-focused time management tool that syncs with your calendars and helps you reach your goals.",
+                                        "Open My Thyme — the ultimate privacy-focused time management tool that syncs with your calendars and helps you reach your goals",
                                     child: IconButton(
                                       onPressed: () async {
                                         await LaunchApp.openApp(
