@@ -4,10 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 final inAppReview = InAppReview.instance;
+String appVersion = '';
+String buildVersion = '';
 
 class Dialogs {
+  // this function is used to initialize the app version and build version
+  static Future<void> initPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    appVersion = info.version;
+    buildVersion = info.buildNumber;
+  }
+
   // this dialog pops up when there are no definitions for the word provided
   static Future<AlertButton> showNoDefinitions(BuildContext context) async {
     return FlutterPlatformAlert.showAlert(
@@ -53,8 +63,8 @@ class Dialogs {
   // this dialog pops up when the user presses the menu button
   static Future<CustomButton> showMenu(BuildContext context) async {
     return FlutterPlatformAlert.showCustomAlert(
-      windowTitle: 'Thanks',
-      text: 'for using WordDefiner',
+      windowTitle: 'Thanks for using WordDefiner',
+      text: 'Version $appVersion ($buildVersion)',
       windowPosition: AlertWindowPosition.screenCenter,
       positiveButtonTitle: 'Provide Feedback',
       negativeButtonTitle: 'Dismiss',

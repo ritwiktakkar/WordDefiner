@@ -145,9 +145,6 @@ class _HomePageState extends State<HomePage> {
   int holonymsCount = 0;
   int meronymsCount = 0;
 
-  String appVersion = '';
-  String buildVersion = '';
-
   // In-app review tracking
   static const String _lastReviewDateKey = 'last_review_date';
   static const String _appOpensSinceReviewKey = 'app_opens_since_review';
@@ -351,7 +348,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _initPackageInfo();
+    Dialogs.initPackageInfo();
     ReadBadWords.readBadWordsFromFile().then((value) {
       setState(() {
         badWords = value;
@@ -363,14 +360,6 @@ class _HomePageState extends State<HomePage> {
       });
     });
     _handleAppLaunch();
-  }
-
-  Future<void> _initPackageInfo() async {
-    final info = await PackageInfo.fromPlatform();
-    setState(() {
-      appVersion = info.version;
-      buildVersion = info.buildNumber;
-    });
   }
 
   Future<void> _handleAppLaunch() async {
@@ -1984,31 +1973,9 @@ class _HomePageState extends State<HomePage> {
                               Padding(
                                 padding:
                                     const EdgeInsets.only(top: 10, bottom: 20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "WordDefiner $appVersion ($buildVersion) ",
-                                          style: corporate,
-                                        ),
-                                        SizedBox(width: 5),
-                                        Tooltip(
-                                          message: '$appDisclaimer',
-                                          child: Icon(
-                                            Icons.policy_outlined,
-                                            color: Colors.grey[700],
-                                            size: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      appInfo,
-                                      style: corporate,
-                                    ),
-                                  ],
+                                child: Text(
+                                  appInfo,
+                                  style: corporate,
                                 ),
                               ),
                             ],
@@ -2028,6 +1995,23 @@ class _HomePageState extends State<HomePage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          Row(
+                            children: [
+                              Text(
+                                "WordDefiner",
+                                style: corporate,
+                              ),
+                              SizedBox(width: 5),
+                              Tooltip(
+                                message: '$appDisclaimer',
+                                child: Icon(
+                                  Icons.policy_outlined,
+                                  color: Colors.grey[700],
+                                  size: 12,
+                                ),
+                              ),
+                            ],
+                          ),
                           Tooltip(
                             message: "Open menu",
                             child: IconButton(
