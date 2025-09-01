@@ -17,6 +17,14 @@ android/key.properties
 *.cxx
 .idea*
 symbols*
+parts/
+prime/
+stage/
+overlay/
+.craft/
+.idea/
+*.snap
+*.iml
 
 # Files and directories created by pub
 .dart_tool/
