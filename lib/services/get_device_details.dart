@@ -25,14 +25,18 @@ Future<DeviceForm> deviceDetails() async {
       deviceName = androidInfo.model;
       deviceVersion = androidInfo.version.release;
       identifier = androidInfo.fingerprint;
-
-      //UUID for Android
     } else if (Platform.isIOS) {
       var iosInfo = await deviceInfoPlugin.iosInfo;
 
       deviceName = iosInfo.modelName;
       deviceVersion = iosInfo.systemVersion;
       identifier = iosInfo.identifierForVendor.toString();
+    } else if (Platform.isLinux) {
+      var linuxInfo = await deviceInfoPlugin.linuxInfo;
+
+      deviceName = linuxInfo.id;
+      deviceVersion = linuxInfo.prettyName;
+      identifier = linuxInfo.machineId.toString();
     }
   } on PlatformException {
     debugPrint('Failed to get platform version');

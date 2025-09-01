@@ -1,22 +1,23 @@
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_alert/flutter_platform_alert.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'dialogs.dart';
-import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
-import 'package:WordDefiner/services/datamuseAPI.dart' as DatamuseAPI;
-import 'package:WordDefiner/readBadWords.dart' as ReadBadWords;
-import 'package:WordDefiner/readWords.dart' as ReadWords;
-import 'package:WordDefiner/Analytics/constants.dart' as Constants;
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:external_app_launcher/external_app_launcher.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+
+import 'dialogs.dart';
+import 'styles.dart';
+import 'app_constants.dart';
+import 'app_state.dart';
+import 'word_search_handler.dart';
+import 'custom_button.dart';
+import 'readBadWords.dart' as ReadBadWords;
+import 'readWords.dart' as ReadWords;
+import 'Analytics/constants.dart' as Constants;
 
 void main() {
   runApp(MyApp());
@@ -31,36 +32,43 @@ class MyApp extends StatelessWidget {
         statusBarBrightness: Brightness.dark,
       ),
     );
-    // SystemChrome.setPreferredOrientations(
-    //     [DeviceOrientation.portraitUp]); // to prevent rotation
-    // to make volume loud on iOS: https://github.com/bluefireteam/audioplayers/issues/1194
-    final AudioContext audioContext = AudioContext(
-        iOS: AudioContextIOS(
-          category: AVAudioSessionCategory.playback,
-          options: {
-            // AVAudioSessionOptions.defaultToSpeaker,
-            AVAudioSessionOptions.mixWithOthers,
-          },
-        ),
-        android: AudioContextAndroid(
-          audioFocus: AndroidAudioFocus.gainTransient,
-          usageType: AndroidUsageType.media,
-          contentType: AndroidContentType.speech,
-          stayAwake: true,
-          isSpeakerphoneOn: true,
-        ));
-    // AudioPlayer.global.setGlobalAudioContext(audioContext);
-    return new MaterialApp(
-      debugShowCheckedModeBanner: false, // hide debug banner from top left
-      title: "WordDefiner",
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.black,
-          brightness: Brightness.dark,
-        ),
-      ),
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        ColorScheme lightColorScheme;
+        ColorScheme darkColorScheme;
 
-      home: new HomePage(),
+        if (lightDynamic != null && darkDynamic != null) {
+          // Use dynamic colors when available
+          lightColorScheme = lightDynamic.harmonized();
+          darkColorScheme = darkDynamic.harmonized();
+        } else {
+          // Fallback to custom color schemes when dynamic colors aren't available
+          lightColorScheme = ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.light,
+          );
+          darkColorScheme = ColorScheme.fromSeed(
+            seedColor: Colors.black,
+            brightness: Brightness.dark,
+          );
+        }
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false, // hide debug banner from top left
+          title: "WordDefiner",
+          theme: ThemeData(
+            colorScheme: lightColorScheme,
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: darkColorScheme,
+            useMaterial3: true,
+          ),
+          themeMode: ThemeMode
+              .system, // Automatically switch based on system preference
+          home: new HomePage(),
+        );
+      },
     );
   }
 }
@@ -73,290 +81,40 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Create a text controller and use it to retrieve the current value of the TextField.
-  final inputController = TextEditingController();
-  var inputFocusNode = FocusNode();
-  final outputWordController = TextEditingController();
-  final outputPhoneticController = TextEditingController();
-  final pronounciationSourceController = TextEditingController();
-  final meaningPartOfSpeechController = TextEditingController();
-  final meaningDefinitionController = TextEditingController();
-  final synonymController = TextEditingController();
-  final antonymController = TextEditingController();
-  final licenseNameController = TextEditingController();
-  final licenseUrlsController = TextEditingController();
-  final sourceUrlsController = TextEditingController();
+  late AppState appState;
+  CustomButton menuResult = CustomButton.other;
 
-  final stronglyAssociatedWordsController = TextEditingController();
-  final similarlySpelledWordsController = TextEditingController();
-  final similarSoundingWordsController = TextEditingController();
-  final rhymingWordsController = TextEditingController();
-  final followedByWordsController = TextEditingController();
-  final precededByWordsController = TextEditingController();
-  final nounsModifiedController = TextEditingController();
-  final adjectivesModifiedController = TextEditingController();
-  final synonymsController = TextEditingController();
-  final antonymsController = TextEditingController();
-  final hypernymsController = TextEditingController();
-  final hyponymsController = TextEditingController();
-  final holonymsController = TextEditingController();
-  final meronymsController = TextEditingController();
-
-  List<String> meaningPartOfSpeechList = <String>[];
-  List<String> meaningDefinitionsList_tmp = <String>[];
-  List<String> meaningSynonymsList = <String>[];
-  List<String> meaningSynonymsList_tmp = <String>[];
-  List<String> meaningAntonymsList = <String>[];
-  List<String> meaningAntonymsList_tmp = <String>[];
-  List<List<String>> meaningDefinitionsList = [];
-  var meaningDefinitionsMap = new Map();
-  List<String> meaningSynonymList = <String>[];
-  var meaningSynonymMap = new Map();
-  List<String> meaningAntonymList = <String>[];
-  var meaningAntonymMap = new Map();
-  List<String> licenseNames = <String>[];
-  List<String> licenseUrls = <String>[];
-  List<String> sourceUrls = <String>[];
-
-  final audioPlayer = AudioPlayer();
-
-  String wordToDefine = "";
-  String? phonetic = '';
-  String? pronounciationAudioSource = '';
-  String? pronounciationSourceUrl = '';
-  String wordExample = '';
-
-  bool finding = false;
-
-  bool isBadWord = false;
-
-  int stronglyAssociatedWordsCount = 0;
-  int similarSoundingWordsCount = 0;
-  int similarSpeltWordsCount = 0;
-  int rhymingWordsCount = 0;
-  int followedByWordsCount = 0;
-  int precededByWordsCount = 0;
-  int nounsModifiedCount = 0;
-  int adjectivesModifiedCount = 0;
-  int synonymsCount = 0;
-  int antonymsCount = 0;
-  int hypernymsCount = 0;
-  int hyponymsCount = 0;
-  int holonymsCount = 0;
-  int meronymsCount = 0;
-
-  // In-app review tracking
+  // Constants for SharedPreferences keys
+  static const String _installDateKey = 'install_date';
   static const String _lastReviewDateKey = 'last_review_date';
   static const String _appOpensSinceReviewKey = 'app_opens_since_review';
-  static const String _installDateKey = 'install_date';
-
-  static const String appInfo = "Results by Datamuse and Dictionary APIs";
-
-  static final String appDisclaimer =
-      "The developer disclaims all liability for any direct, indirect, incidental, consequential, or special damages arising from or related to your use of the app, including but not limited to, any errors or omissions in the content provided, any interruptions or malfunctions of the app's functionality, or any reliance on information displayed within the app.\n\u00A9 2022–${DateTime.now().year.toString()} RT (rickytakkar.com)";
-
-  final validInputLetters = RegExp(r'^[a-zA-Z ]+$');
-
-  void clearOutput(
-      {bool alsoSearch = true,
-      bool alsoWord = true,
-      bool definitionsOnly = true,
-      bool similarWords = true}) {
-    isBadWord = false;
-    if (alsoSearch == true) {
-      inputController.clear();
-    }
-    if (alsoWord == true) {
-      outputWordController.clear();
-    }
-    if (definitionsOnly == true) {
-      outputPhoneticController.clear();
-      pronounciationSourceController.clear();
-      pronounciationAudioSource = '';
-      pronounciationSourceUrl = '';
-      audioPlayer.release();
-      meaningPartOfSpeechController.clear();
-      meaningDefinitionController.clear();
-      synonymController.clear();
-      antonymController.clear();
-      licenseNameController.clear();
-      licenseUrlsController.clear();
-      sourceUrlsController.clear();
-      meaningPartOfSpeechList.clear();
-      meaningDefinitionsList_tmp.clear();
-
-      meaningDefinitionsList.clear();
-      meaningDefinitionsMap.clear();
-      meaningSynonymList.clear();
-      meaningAntonymList.clear();
-      licenseNames.clear();
-      licenseUrls.clear();
-      sourceUrls.clear();
-    }
-    if (similarWords == true) {
-      stronglyAssociatedWordsController.clear();
-      similarlySpelledWordsController.clear();
-      similarSoundingWordsController.clear();
-      rhymingWordsController.clear();
-      followedByWordsController.clear();
-      precededByWordsController.clear();
-      nounsModifiedController.clear();
-      adjectivesModifiedController.clear();
-      synonymsController.clear();
-      antonymsController.clear();
-      hypernymsController.clear();
-      hyponymsController.clear();
-      holonymsController.clear();
-      meronymsController.clear();
-
-      stronglyAssociatedWordsCount = 0;
-      similarSoundingWordsCount = 0;
-      similarSpeltWordsCount = 0;
-      rhymingWordsCount = 0;
-      followedByWordsCount = 0;
-      precededByWordsCount = 0;
-      nounsModifiedCount = 0;
-      adjectivesModifiedCount = 0;
-      synonymsCount = 0;
-      antonymsCount = 0;
-      hypernymsCount = 0;
-      hyponymsCount = 0;
-      holonymsCount = 0;
-      meronymsCount = 0;
-    }
-  }
 
   void clearSearch() {
     HapticFeedback.lightImpact();
-    inputController.clear();
+    appState.inputController.clear();
     // shift focus back to input textfield
-    FocusScope.of(context).requestFocus(inputFocusNode);
+    FocusScope.of(context).requestFocus(appState.inputFocusNode);
   }
-
-  TextStyle sectionTitle = TextStyle(
-    color: Colors.grey[300],
-    fontWeight: FontWeight.w500,
-    fontSize: 17,
-  );
-
-  TextStyle partOfSpeech = TextStyle(
-    color: Colors.blue[100],
-    fontSize: 18,
-  );
-
-  TextStyle synonyms = TextStyle(
-    color: Colors.green[100],
-    fontSize: 18,
-  );
-
-  TextStyle hint = TextStyle(
-    color: Colors.grey[400],
-    fontWeight: FontWeight.w300,
-    fontSize: 16,
-  );
-
-  TextStyle fail = TextStyle(
-    color: Colors.red[300],
-    fontWeight: FontWeight.w400,
-    fontSize: 18,
-  );
-
-  TextStyle antonyms = TextStyle(
-    color: Colors.red[100],
-    fontSize: 18,
-  );
-
-  TextStyle subsectionTitle = TextStyle(
-    color: Colors.grey[200],
-    fontWeight: FontWeight.w300,
-    fontSize: 18,
-  );
-
-  TextStyle corporate = TextStyle(
-    color: Colors.grey[700],
-    fontSize: 10,
-    fontWeight: FontWeight.w400,
-  );
 
   @override
   void dispose() {
-    // release memory allocated to existing variables of state
-    inputController.dispose();
-    outputWordController.dispose();
-    outputPhoneticController.dispose();
-    pronounciationSourceController.dispose();
-    audioPlayer.release();
-    meaningPartOfSpeechController.dispose();
-    meaningDefinitionController.dispose();
-    synonymController.dispose();
-    antonymController.dispose();
-    licenseNameController.dispose();
-    licenseUrlsController.dispose();
-    sourceUrlsController.dispose();
-    stronglyAssociatedWordsController.dispose();
-    similarlySpelledWordsController.dispose();
-    similarSoundingWordsController.dispose();
-    rhymingWordsController.dispose();
-    followedByWordsController.dispose();
-    precededByWordsController.dispose();
-    nounsModifiedController.dispose();
-    adjectivesModifiedController.dispose();
-    synonymsController.dispose();
-    antonymsController.dispose();
-    hypernymsController.dispose();
-    hyponymsController.dispose();
-    holonymsController.dispose();
-    meronymsController.dispose();
-    meaningPartOfSpeechList.clear();
-    meaningDefinitionsList_tmp.clear();
-
-    meaningDefinitionsList.clear();
-    meaningDefinitionsMap.clear();
-    meaningSynonymList.clear();
-    meaningSynonymMap.clear();
-    meaningAntonymList.clear();
-    meaningAntonymMap.clear();
-
-    licenseNames.clear();
-    licenseUrls.clear();
-    sourceUrls.clear();
-
-    badWords.clear();
-
+    appState.dispose();
     super.dispose();
   }
-
-  bool _definitionsTileExpanded = false;
-  bool _stronglyAssociatedTileExpanded = false;
-  bool _similarlySpeltTileExpanded = false;
-  bool _similarSoundingTileExpanded = false;
-  bool _rhymingTileExpanded = false;
-  bool _followedByTileExpanded = false;
-  bool _precededByTileExpanded = false;
-  bool _nounsModifiedTileExpanded = false;
-  bool _adjectivesModifiedTileExpanded = false;
-  bool _synonymsTileExpanded = false;
-  bool _antonymsTileExpanded = false;
-  bool _hypernymsTileExpanded = false;
-  bool _hyponymsTileExpanded = false;
-  bool _holonymsTileExpanded = false;
-  bool _meronymsTileExpanded = false;
-
-  List<String> badWords = [];
-  List<String> words = [];
 
   @override
   void initState() {
     super.initState();
+    appState = AppState();
     Dialogs.initPackageInfo();
     ReadBadWords.readBadWordsFromFile().then((value) {
       setState(() {
-        badWords = value;
+        appState.badWords = value;
       });
     });
     ReadWords.readWordsFromFile().then((value) {
       setState(() {
-        words = value;
+        appState.words = value;
       });
     });
     _handleAppLaunch();
@@ -441,1711 +199,1336 @@ class _HomePageState extends State<HomePage> {
     await prefs.setInt(_appOpensSinceReviewKey, appOpens + 1);
   }
 
-  CustomButton menuResult = CustomButton.other;
-
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          body: Column(
-            children: [
-              Container(
-                height: (screenWidth > screenHeight)
-                    ? screenHeight * .86 // landscape tablet
-                    : (screenHeight > 1100)
-                        ? screenHeight * .89 // portrait tablet
-                        : (Platform.isIOS)
-                            ? (screenHeight > 900)
-                                ? screenHeight * .85 // large iPhone
-                                : screenHeight * .83 // small iPhone
-                            : (Platform.isAndroid)
-                                ? (screenHeight > 900)
-                                    ? screenHeight * .90 // large Android
-                                    : screenHeight * .89 // small Android
-                                : screenHeight * .83, // small phone
-                padding: const EdgeInsets.fromLTRB(20, 65, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Result status column
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: (MediaQuery.of(context).orientation ==
-                                      Orientation.landscape)
-                                  ? (screenHeight < 1000)
-                                      ? screenWidth *
-                                          .87 // small iPad landscape
-                                      : screenWidth *
-                                          .89 // large iPad landscape
-                                  : (screenHeight < 1000) // portrait
-                                      ? screenWidth * .77
-                                      : screenWidth * .86,
-                              child: TextField(
-                                focusNode: inputFocusNode,
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                    borderSide: BorderSide(
-                                        width: 1,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withAlpha(150)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                    borderSide: BorderSide(
-                                        width: 3,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withAlpha(200)),
-                                  ),
-                                  isDense: true,
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    size: 24,
-                                    color: Colors.grey[300],
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      Icons.clear_rounded,
-                                      size: 24,
-                                      color: Colors.grey[300],
-                                    ),
-                                    onPressed: clearSearch,
-                                  ),
-                                  contentPadding: EdgeInsets.all(10),
-                                  hintText:
-                                      (finding) ? 'Searching...' : 'Search',
-                                  hintStyle: TextStyle(
-                                    color: Colors.grey[300],
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                controller: inputController,
-                                onSubmitted: ((_) async {
-                                  _ = _.trim();
-                                  if (_ == '') {
-                                    // CHECK 1: empty word - do nothing
-                                    finding = false;
-                                    DoNothingAction();
-                                    inputController.clear();
-                                  } else if (!validInputLetters.hasMatch(_) ||
-                                      _.characters.contains(' ') ||
-                                      _.characters.length > 50) {
-                                    // CHECK 2: non letter, just space detected, or query exceeds 50 characters - show error dialog
-                                    Dialogs.showInputIssue(context);
-                                  } else {
-                                    // CHECK 1: check if device has internet connection
-                                    var result = await Connectivity()
-                                        .checkConnectivity();
-                                    if (result == ConnectivityResult.none) {
-                                      debugPrint("no internet connection");
-                                      Future.delayed(Duration(seconds: 1), () {
-                                        Dialogs.showNetworkIssues(context);
-                                        setState(() {
-                                          finding = false;
-                                          inputController.clear();
-                                          wordToDefine = '';
-                                        });
-                                      });
-                                    } else {
-                                      if (words.contains(_.toLowerCase()) ||
-                                          (!words.contains(_.toLowerCase()) &&
-                                              await Dialogs
-                                                      .showUnrecognizedWord(
-                                                          context) ==
-                                                  AlertButton.yesButton)) {
-                                        setState(() {
-                                          wordToDefine = _;
-                                          finding = true;
-                                          clearOutput(
-                                              alsoSearch: true,
-                                              alsoWord: true,
-                                              definitionsOnly: true,
-                                              similarWords: true);
-                                        });
-                                        try {
-                                          debugPrint(
-                                              "sent request to get definitions");
-                                          final definitionsList =
-                                              (await FreeDictionaryAPI
-                                                  .getDefinition(wordToDefine));
-                                          debugPrint(
-                                              "received request to get definitions");
-                                          final stronglyAssociatedWords =
-                                              (await DatamuseAPI
-                                                  .getRelatedWords(
-                                                      wordToDefine));
-                                          stronglyAssociatedWordsCount =
-                                              stronglyAssociatedWords!.length;
-                                          final similarSpelledWords =
-                                              (await DatamuseAPI
-                                                  .getSimilarSpeltWords(
-                                                      wordToDefine));
-                                          similarSpeltWordsCount =
-                                              similarSpelledWords!.length;
-                                          final similarSoundingWords =
-                                              (await DatamuseAPI
-                                                  .getSimilarSoundingWords(
-                                                      wordToDefine));
-                                          similarSoundingWordsCount =
-                                              similarSoundingWords!.length;
-                                          final rhymingWords =
-                                              (await DatamuseAPI
-                                                  .getRhymingWords(
-                                                      wordToDefine));
-                                          rhymingWordsCount =
-                                              rhymingWords!.length;
-                                          final followedByWords =
-                                              (await DatamuseAPI
-                                                  .getFollowedByWords(
-                                                      wordToDefine));
-                                          followedByWordsCount =
-                                              followedByWords!.length;
-                                          final precededByWords =
-                                              (await DatamuseAPI
-                                                  .getPrecededByWords(
-                                                      wordToDefine));
-                                          precededByWordsCount =
-                                              precededByWords!.length;
-                                          final nounsModified =
-                                              (await DatamuseAPI
-                                                  .getNounsModified(
-                                                      wordToDefine));
-                                          nounsModifiedCount =
-                                              nounsModified!.length;
-                                          final adjectivesModified =
-                                              (await DatamuseAPI
-                                                  .getAdjectivesModified(
-                                                      wordToDefine));
-                                          adjectivesModifiedCount =
-                                              adjectivesModified!.length;
-                                          final synonyms =
-                                              (await DatamuseAPI.getSynonyms(
-                                                  wordToDefine));
-                                          synonymsCount = synonyms!.length;
-                                          final antonyms =
-                                              (await DatamuseAPI.getAntonyms(
-                                                  wordToDefine));
-                                          antonymsCount = antonyms!.length;
-                                          final hypernyms =
-                                              (await DatamuseAPI.getHypernyms(
-                                                  wordToDefine));
-                                          hypernymsCount = hypernyms!.length;
-                                          final hyponyms =
-                                              (await DatamuseAPI.getHyponyms(
-                                                  wordToDefine));
-                                          hyponymsCount = hyponyms!.length;
-                                          final holonyms =
-                                              (await DatamuseAPI.getHolonyms(
-                                                  wordToDefine));
-                                          holonymsCount = holonyms!.length;
-                                          final meronyms =
-                                              (await DatamuseAPI.getMeronyms(
-                                                  wordToDefine));
-                                          meronymsCount = meronyms!.length;
-
-                                          stronglyAssociatedWordsController
-                                                  .text =
-                                              stronglyAssociatedWords
-                                                  .toString()
-                                                  .substring(
-                                                      1,
-                                                      stronglyAssociatedWords
-                                                              .toString()
-                                                              .length -
-                                                          1);
-                                          similarlySpelledWordsController.text =
-                                              similarSpelledWords
-                                                  .toString()
-                                                  .substring(
-                                                      1,
-                                                      similarSpelledWords
-                                                              .toString()
-                                                              .length -
-                                                          1);
-                                          similarSoundingWordsController.text =
-                                              similarSoundingWords
-                                                  .toString()
-                                                  .substring(
-                                                      1,
-                                                      similarSoundingWords
-                                                              .toString()
-                                                              .length -
-                                                          1);
-                                          rhymingWordsController.text =
-                                              rhymingWords.toString().substring(
-                                                  1,
-                                                  rhymingWords
-                                                          .toString()
-                                                          .length -
-                                                      1);
-                                          followedByWordsController.text =
-                                              followedByWords
-                                                  .toString()
-                                                  .substring(
-                                                      1,
-                                                      followedByWords
-                                                              .toString()
-                                                              .length -
-                                                          1);
-                                          precededByWordsController.text =
-                                              precededByWords
-                                                  .toString()
-                                                  .substring(
-                                                      1,
-                                                      precededByWords
-                                                              .toString()
-                                                              .length -
-                                                          1);
-                                          nounsModifiedController.text =
-                                              nounsModified
-                                                  .toString()
-                                                  .substring(
-                                                      1,
-                                                      nounsModified
-                                                              .toString()
-                                                              .length -
-                                                          1);
-                                          adjectivesModifiedController.text =
-                                              adjectivesModified
-                                                  .toString()
-                                                  .substring(
-                                                      1,
-                                                      adjectivesModified
-                                                              .toString()
-                                                              .length -
-                                                          1);
-                                          synonymsController.text = synonyms
-                                              .toString()
-                                              .substring(
-                                                  1,
-                                                  synonyms.toString().length -
-                                                      1);
-                                          antonymsController.text = antonyms
-                                              .toString()
-                                              .substring(
-                                                  1,
-                                                  antonyms.toString().length -
-                                                      1);
-                                          hypernymsController.text = hypernyms
-                                              .toString()
-                                              .substring(
-                                                  1,
-                                                  hypernyms.toString().length -
-                                                      1);
-                                          hyponymsController.text = hyponyms
-                                              .toString()
-                                              .substring(
-                                                  1,
-                                                  hyponyms.toString().length -
-                                                      1);
-                                          holonymsController.text = holonyms
-                                              .toString()
-                                              .substring(
-                                                  1,
-                                                  holonyms.toString().length -
-                                                      1);
-                                          meronymsController.text = meronyms
-                                              .toString()
-                                              .substring(
-                                                  1,
-                                                  meronyms.toString().length -
-                                                      1);
-                                          setState(() {
-                                            finding = false;
-                                            debugPrint(
-                                                "definitions list: ${definitionsList}");
-                                            if (definitionsList?.isNotFound ==
-                                                true) {
-                                              debugPrint('404 word not found');
-                                              // Dialogs.showNoDefinitions(
-                                              //     context, wordToDefine);
-                                              // wordToDefine = '';
-                                              clearOutput(
-                                                  alsoSearch: true,
-                                                  alsoWord: true,
-                                                  definitionsOnly: true,
-                                                  similarWords: false);
-                                              // shift focus back to input textfield
-                                              FocusScope.of(context)
-                                                  .requestFocus(inputFocusNode);
-                                            } else if (definitionsList
-                                                    ?.isNull ==
-                                                true) {
-                                              debugPrint(
-                                                  'definitions list is null');
-                                              Future.delayed(
-                                                  Duration(seconds: 1), () {
-                                                Dialogs.showNetworkIssues(
-                                                    context);
-                                                setState(() {
-                                                  finding = false;
-                                                  inputController.clear();
-                                                  wordToDefine = '';
-                                                });
-                                              });
-                                            } else {
-                                              try {
-                                                HapticFeedback.lightImpact();
-                                                outputWordController.text =
-                                                    "${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}";
-                                                if (badWords.contains(
-                                                    wordToDefine
-                                                        .toLowerCase())) {
-                                                  setState(() {
-                                                    isBadWord = true;
-                                                  });
-                                                } else {
-                                                  setState(() {
-                                                    isBadWord = false;
-                                                  });
-                                                }
-                                                // traverse through list of definitions and assign to controllers so user can see
-                                                definitionsList
-                                                    ?.definitionElements
-                                                    ?.forEach((element) {
-                                                  // 1 - for phonetic (assign last phonetic to outputPhoneticController.text)
-                                                  debugPrint('enter 1');
-                                                  if (element.phonetic ==
-                                                      null) {
-                                                    phonetic = '';
-                                                  } else {
-                                                    phonetic = element.phonetic;
-                                                  }
-                                                  // assign phonetic to phonetic controller in 2.3 because that's last place to do it
-                                                  debugPrint('exit 1');
-                                                  // 2 - for pronounciation (look through each field in phonetics and assign last audio to pronounciationAudioSource)
-                                                  // 2.1 - for audio
-                                                  element.phonetics?.forEach(
-                                                      (elementPhonetic) {
-                                                    debugPrint('enter 2');
-                                                    if (elementPhonetic.audio ==
-                                                            null ||
-                                                        elementPhonetic.audio ==
-                                                            '') {
-                                                      DoNothingAction();
-                                                    } else {
-                                                      pronounciationAudioSource =
-                                                          elementPhonetic.audio
-                                                              as String;
-                                                    }
-                                                    // 2.2 - for audio source
-                                                    if (elementPhonetic
-                                                                .sourceUrl ==
-                                                            null ||
-                                                        elementPhonetic
-                                                                .sourceUrl ==
-                                                            '') {
-                                                      DoNothingAction();
-                                                    } else {
-                                                      pronounciationSourceUrl =
-                                                          elementPhonetic
-                                                                  .sourceUrl
-                                                              as String;
-                                                    }
-                                                    // 2.3 - find some phonetic if not already there since phonetics list also has some
-                                                    // debugPrint('1-${phonetic}');
-                                                    if (phonetic == '' &&
-                                                        elementPhonetic.text !=
-                                                            null) {
-                                                      phonetic = elementPhonetic
-                                                          .text as String;
-                                                    }
-                                                    outputPhoneticController
-                                                        .text = phonetic!;
-                                                    // assign pronounciationSourceController.text to pronounciationSourceUrl
-                                                    pronounciationSourceController
-                                                            .text =
-                                                        pronounciationSourceUrl!;
-                                                    debugPrint('exit 2');
-                                                  });
-                                                  // 3 - for meanings (look through each field in meanings)
-                                                  element.meanings?.forEach(
-                                                      (elementMeaning) {
-                                                    debugPrint('enter 3');
-                                                    // each field in meanings has 1 partOfSpeech and 1 list of definitions which itself has a definition string, along with a list of synonyms and antonyms
-                                                    // 3.1 - add part of speech to list
-                                                    meaningPartOfSpeechList.add(
-                                                        elementMeaning
-                                                                .partOfSpeech
-                                                            as String);
-                                                    // 3.2 - add definitions list to their list
-                                                    for (int i = 0;
-                                                        i <
-                                                            meaningPartOfSpeechList
-                                                                .length;
-                                                        i++) {
-                                                      elementMeaning.definitions
-                                                          ?.forEach(
-                                                              (elementMeaningDefinitions) {
-                                                        meaningDefinitionsList_tmp.add(
-                                                            elementMeaningDefinitions
-                                                                    .definition
-                                                                as String);
-                                                      });
-                                                      meaningDefinitionsMap[
-                                                              elementMeaning
-                                                                  .partOfSpeech] =
-                                                          meaningDefinitionsList_tmp;
-                                                      meaningDefinitionsList_tmp =
-                                                          [];
-
-                                                      elementMeaning.synonymsEl
-                                                          ?.forEach((element) {
-                                                        meaningSynonymsList_tmp
-                                                            .add(element);
-                                                      });
-                                                      meaningSynonymMap[
-                                                              elementMeaning
-                                                                  .partOfSpeech] =
-                                                          meaningSynonymsList_tmp;
-                                                      meaningSynonymsList_tmp =
-                                                          [];
-
-                                                      elementMeaning.antonymsEl
-                                                          ?.forEach((element) {
-                                                        meaningAntonymsList_tmp
-                                                            .add(element);
-                                                      });
-                                                      meaningAntonymMap[
-                                                              elementMeaning
-                                                                  .partOfSpeech] =
-                                                          meaningAntonymsList_tmp;
-                                                      meaningAntonymsList_tmp =
-                                                          [];
-                                                    }
-                                                  });
-                                                  debugPrint('exit 3');
-                                                  // 4 - for license
-                                                  debugPrint('enter 4');
-                                                  // 4.1 -  check if license name in licenseNames already
-                                                  (licenseNames.contains(
-                                                          element.license?.name)
-                                                      ? DoNothingAction()
-                                                      : (licenseNames.add(
-                                                          element.license?.name
-                                                              as String)));
-                                                  // 4.2 - check if license url in licenseUrls already
-                                                  (licenseUrls.contains(
-                                                          element.license?.url)
-                                                      ? DoNothingAction()
-                                                      : (licenseUrls.add(element
-                                                          .license
-                                                          ?.url as String)));
-                                                  // assign license lists to their respective text editing controllers
-                                                  licenseNameController.text =
-                                                      licenseNames.join(', ');
-                                                  licenseUrlsController.text =
-                                                      licenseUrls.join(', ');
-                                                  debugPrint('exit 4');
-                                                  // 5 - for source urls (check if license name in licenseNames already)
-                                                  element.sourceUrls?.forEach(
-                                                      (elementSourceUrl) {
-                                                    debugPrint('enter 5');
-                                                    (sourceUrls.contains(
-                                                            elementSourceUrl)
-                                                        ? DoNothingAction()
-                                                        : (sourceUrls.add(
-                                                            elementSourceUrl)));
-                                                  });
-                                                  // assign sourceUrls list to its text editing controller
-                                                  sourceUrlsController.text =
-                                                      sourceUrls.join(', ');
-                                                });
-                                                debugPrint('exit 5');
-                                              } on Exception catch (e) {
-                                                debugPrint(
-                                                    '!caught exception! $e');
-                                                Future.delayed(
-                                                    Duration(seconds: 1), () {
-                                                  Dialogs.showNetworkIssues(
-                                                      context);
-                                                  setState(() {
-                                                    finding = false;
-                                                    inputController.clear();
-                                                    wordToDefine = '';
-                                                  });
-                                                });
-                                              }
-                                            }
-                                          });
-                                        } on Exception catch (e) {
-                                          debugPrint('!caught exception! $e');
-                                          Future.delayed(Duration(seconds: 1),
-                                              () {
-                                            Dialogs.showNetworkIssues(context);
-                                            setState(() {
-                                              finding = false;
-                                              inputController.clear();
-                                              wordToDefine = '';
-                                            });
-                                          });
-                                        }
-                                      }
-                                    }
-                                  }
-                                }),
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                readOnly: (finding) ? true : false,
-                              ),
-                            ),
-                            Tooltip(
-                              message: "Clear all output fields",
-                              child: IconButton(
-                                  iconSize: 32,
-                                  icon: Icon(
-                                    Icons.delete,
-                                    color: (meaningDefinitionsMap.isNotEmpty ||
-                                            stronglyAssociatedWordsController
-                                                .text.isNotEmpty ||
-                                            similarlySpelledWordsController
-                                                .text.isNotEmpty ||
-                                            similarSoundingWordsController
-                                                .text.isNotEmpty)
-                                        ? Colors.grey[200]
-                                        : Colors.grey[800],
-                                  ),
-                                  onPressed: () {
-                                    if (meaningDefinitionsMap.isNotEmpty ||
-                                        stronglyAssociatedWordsController
-                                            .text.isNotEmpty ||
-                                        similarlySpelledWordsController
-                                            .text.isNotEmpty ||
-                                        similarSoundingWordsController
-                                            .text.isNotEmpty) {
-                                      HapticFeedback.mediumImpact();
-                                      setState(() {
-                                        clearOutput(
-                                            alsoSearch: true,
-                                            alsoWord: true,
-                                            definitionsOnly: true,
-                                            similarWords: true);
-                                        wordToDefine = '';
-                                      });
-                                      // shift focus back to input textfield
-                                      FocusScope.of(context)
-                                          .requestFocus(inputFocusNode);
-                                    } else {
-                                      DoNothingAction();
-                                    }
-                                  }),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: screenHeight * .015),
-                        Visibility(
-                          visible: (finding &&
-                              outputWordController.text.isEmpty &&
-                              wordToDefine.isNotEmpty &&
-                              (stronglyAssociatedWordsController.text.isEmpty &&
-                                  similarlySpelledWordsController
-                                      .text.isEmpty &&
-                                  similarSoundingWordsController.text.isEmpty)),
-                          child: Text(
-                            (wordToDefine.characters.length > 0)
-                                ? "Looking up: “${wordToDefine}”"
-                                : "",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: 28,
-                            ),
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Builder(builder: (context) {
+        return Column(
+          children: [
+            Container(
+              width: screenWidth,
+              height: (Platform.isLinux ||
+                      Platform.isWindows ||
+                      Platform.isMacOS) // desktop
+                  ? screenHeight * .87
+                  : (screenWidth > screenHeight)
+                      ? screenHeight * .88 // landscape tablet
+                      : (screenHeight > 1100)
+                          ? screenHeight * .90 // portrait tablet
+                          : (Platform.isIOS)
+                              ? (screenHeight > 900)
+                                  ? screenHeight * .87 // large iPhone
+                                  : screenHeight * .85 // small iPhone
+                              : (Platform.isAndroid)
+                                  ? (screenHeight > 900)
+                                      ? screenHeight * .87 // large Android
+                                      : screenHeight * .93 // small Android
+                                  : screenHeight * .83, // small phone
+              padding:
+                  (Platform.isLinux || Platform.isWindows || Platform.isMacOS)
+                      ? const EdgeInsets.fromLTRB(20, 10, 20, 0) // desktop
+                      : const EdgeInsets.fromLTRB(20, 65, 20, 0), // phone
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(32),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withAlpha(20),
+                      ),
+                      height: 40,
+                      child: TextField(
+                        focusNode: appState.inputFocusNode,
+                        decoration: InputDecoration.collapsed(
+                          focusColor: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withAlpha(200),
+                          hintText:
+                              (appState.finding) ? 'Searching...' : 'Search',
+                          hintStyle: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                        Visibility(
-                          visible: (!finding &&
-                              outputWordController.text.isEmpty &&
-                              wordToDefine.isNotEmpty &&
-                              (stronglyAssociatedWordsController
-                                      .text.isNotEmpty ||
-                                  similarlySpelledWordsController
-                                      .text.isNotEmpty ||
-                                  similarSoundingWordsController
-                                      .text.isNotEmpty)),
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Text(
-                                (wordToDefine.characters.length > 0)
-                                    ? "No definition found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” — but here's what we did find:"
-                                    : "",
-                                style: fail),
-                          ),
+                        controller: appState.inputController,
+                        onSubmitted: (word) async {
+                          await WordSearchHandler.handleWordSearch(
+                            searchTerm: word,
+                            context: context,
+                            setWordToDefine: (value) =>
+                                setState(() => appState.wordToDefine = value),
+                            setFinding: (value) =>
+                                setState(() => appState.finding = value),
+                            clearOutput: appState.clearOutput,
+                            clearInput: () => appState.inputController.clear(),
+                            setOutputWord: (value) =>
+                                appState.outputWordController.text = value,
+                            setIsBadWord: (value) =>
+                                setState(() => appState.isBadWord = value),
+                            setPhonetic: (value) {
+                              appState.phonetic = value;
+                              appState.outputPhoneticController.text =
+                                  value ?? '';
+                            },
+                            setPronunciationAudioSource: (value) =>
+                                appState.pronounciationAudioSource = value,
+                            setPronunciationSourceUrl: (value) {
+                              appState.pronounciationSourceUrl = value;
+                              appState.pronounciationSourceController.text =
+                                  value ?? '';
+                            },
+                            setMeaningDefinitionsMap: (value) => setState(
+                                () => appState.meaningDefinitionsMap = value),
+                            setMeaningSynonymMap: (value) => setState(
+                                () => appState.meaningSynonymMap = value),
+                            setMeaningAntonymMap: (value) => setState(
+                                () => appState.meaningAntonymMap = value),
+                            setLicenseNames: (value) {
+                              setState(() => appState.licenseNames = value);
+                              appState.licenseNameController.text =
+                                  value.join(', ');
+                            },
+                            setLicenseUrls: (value) {
+                              setState(() => appState.licenseUrls = value);
+                              appState.licenseUrlsController.text =
+                                  value.join(', ');
+                            },
+                            setSourceUrls: (value) {
+                              setState(() => appState.sourceUrls = value);
+                              appState.sourceUrlsController.text =
+                                  value.join(', ');
+                            },
+                            setMeaningPartOfSpeechList: (value) => setState(
+                                () => appState.meaningPartOfSpeechList = value),
+                            setStronglyAssociatedWords: (value) => appState
+                                .stronglyAssociatedWordsController.text = value,
+                            setSimilarlySpelledWords: (value) => appState
+                                .similarlySpelledWordsController.text = value,
+                            setSimilarSoundingWords: (value) => appState
+                                .similarSoundingWordsController.text = value,
+                            setRhymingWords: (value) =>
+                                appState.rhymingWordsController.text = value,
+                            setFollowedByWords: (value) =>
+                                appState.followedByWordsController.text = value,
+                            setPrecededByWords: (value) =>
+                                appState.precededByWordsController.text = value,
+                            setNounsModified: (value) =>
+                                appState.nounsModifiedController.text = value,
+                            setAdjectivesModified: (value) => appState
+                                .adjectivesModifiedController.text = value,
+                            setSynonyms: (value) =>
+                                appState.synonymsController.text = value,
+                            setAntonyms: (value) =>
+                                appState.antonymsController.text = value,
+                            setHypernyms: (value) =>
+                                appState.hypernymsController.text = value,
+                            setHyponyms: (value) =>
+                                appState.hyponymsController.text = value,
+                            setHolonyms: (value) =>
+                                appState.holonymsController.text = value,
+                            setMeronyms: (value) =>
+                                appState.meronymsController.text = value,
+                            setWordResults: (category, count) => setState(() {
+                              // Update word result counts based on category
+                              switch (category) {
+                                case 'stronglyAssociated':
+                                  appState.stronglyAssociatedWordsCount = count;
+                                  break;
+                                case 'similarSpelled':
+                                  appState.similarSpeltWordsCount = count;
+                                  break;
+                                case 'similarSounding':
+                                  appState.similarSoundingWordsCount = count;
+                                  break;
+                                case 'rhyming':
+                                  appState.rhymingWordsCount = count;
+                                  break;
+                                case 'followedBy':
+                                  appState.followedByWordsCount = count;
+                                  break;
+                                case 'precededBy':
+                                  appState.precededByWordsCount = count;
+                                  break;
+                                case 'nounsModified':
+                                  appState.nounsModifiedCount = count;
+                                  break;
+                                case 'adjectivesModified':
+                                  appState.adjectivesModifiedCount = count;
+                                  break;
+                                case 'synonyms':
+                                  appState.synonymsCount = count;
+                                  break;
+                                case 'antonyms':
+                                  appState.antonymsCount = count;
+                                  break;
+                                case 'hypernyms':
+                                  appState.hypernymsCount = count;
+                                  break;
+                                case 'hyponyms':
+                                  appState.hyponymsCount = count;
+                                  break;
+                                case 'holonyms':
+                                  appState.holonymsCount = count;
+                                  break;
+                                case 'meronyms':
+                                  appState.meronymsCount = count;
+                                  break;
+                              }
+                            }),
+                            words: appState.words,
+                            badWords: appState.badWords,
+                            inputFocusNode: appState.inputFocusNode,
+                            validInputLetters: AppConstants.validInputLetters,
+                          );
+                        },
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
                         ),
-                        Visibility(
-                          visible: (!finding &&
-                              outputWordController.text.isEmpty &&
-                              wordToDefine.isNotEmpty &&
-                              stronglyAssociatedWordsController.text.isEmpty &&
-                              similarlySpelledWordsController.text.isEmpty &&
-                              similarSoundingWordsController.text.isEmpty),
-                          child: Container(
-                            height: 100,
-                            child: Text(
-                              (wordToDefine.characters.length > 0)
-                                  ? "No definition or similar word found for “${wordToDefine[0].toUpperCase()}${wordToDefine.substring(1).toLowerCase()}” on dictionaryapi.dev 😔"
-                                  : "",
-                              style: fail,
-                            ),
-                          ),
-                        ),
-                      ],
+                        readOnly: (appState.finding) ? true : false,
+                      ),
                     ),
-                    //
-                    Visibility(
-                      visible: meaningDefinitionsMap.isNotEmpty,
-                      child: Container(
-                        height: (outputPhoneticController.text.isNotEmpty ||
-                                pronounciationAudioSource != '')
-                            ? 85
-                            : 55,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: screenWidth * 0.9,
-                              // color: Colors.amber,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    (MediaQuery.of(context).orientation ==
-                                            Orientation.landscape)
-                                        ? outputWordController.text
-                                        : (screenHeight < 1200 &&
-                                                outputWordController
-                                                        .text.length >
-                                                    18) // portrait
-                                            ? outputWordController.text
-                                                    .substring(0, 18) +
-                                                '...'
-                                            : outputWordController.text,
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    maxLines: 1,
+                  ),
+                  // Result status column
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                        visible: (appState.finding &&
+                            appState.outputWordController.text.isEmpty &&
+                            appState.wordToDefine.isNotEmpty &&
+                            (appState.stronglyAssociatedWordsController.text
+                                    .isEmpty &&
+                                appState.similarlySpelledWordsController.text
+                                    .isEmpty &&
+                                appState.similarSoundingWordsController.text
+                                    .isEmpty)),
+                        child: Text(
+                          (appState.wordToDefine.characters.length > 0)
+                              ? "Looking up: “${appState.wordToDefine}”"
+                              : "",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 28,
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: (!appState.finding &&
+                            appState.outputWordController.text.isEmpty &&
+                            appState.wordToDefine.isNotEmpty &&
+                            (appState.stronglyAssociatedWordsController.text
+                                    .isNotEmpty ||
+                                appState.similarlySpelledWordsController.text
+                                    .isNotEmpty ||
+                                appState.similarSoundingWordsController.text
+                                    .isNotEmpty)),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Text(
+                              (appState.wordToDefine.characters.length > 0)
+                                  ? "No definition found for “${appState.wordToDefine[0].toUpperCase()}${appState.wordToDefine.substring(1).toLowerCase()}” — but here's what we did find:"
+                                  : "",
+                              style: AppStyles.fail(context)),
+                        ),
+                      ),
+                      Visibility(
+                        visible: (!appState.finding &&
+                            appState.outputWordController.text.isEmpty &&
+                            appState.wordToDefine.isNotEmpty &&
+                            appState.stronglyAssociatedWordsController.text
+                                .isEmpty &&
+                            appState
+                                .similarlySpelledWordsController.text.isEmpty &&
+                            appState
+                                .similarSoundingWordsController.text.isEmpty),
+                        child: Container(
+                          height: 100,
+                          child: Text(
+                            (appState.wordToDefine.characters.length > 0)
+                                ? "No definition found for “${appState.wordToDefine[0].toUpperCase()}${appState.wordToDefine.substring(1).toLowerCase()}”"
+                                : "",
+                            style: AppStyles.fail(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  //
+                  Visibility(
+                    visible: appState.meaningDefinitionsMap.isNotEmpty,
+                    child: Container(
+                      height:
+                          (appState.outputPhoneticController.text.isNotEmpty ||
+                                  appState.pronounciationAudioSource != '')
+                              ? 85
+                              : 55,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: screenWidth * 0.9,
+                            // color: Colors.amber,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (MediaQuery.of(context).orientation ==
+                                          Orientation.landscape)
+                                      ? appState.outputWordController.text
+                                      : (screenHeight < 1200 &&
+                                              appState.outputWordController.text
+                                                      .length >
+                                                  18) // portrait
+                                          ? appState.outputWordController.text
+                                                  .substring(0, 18) +
+                                              '...'
+                                          : appState.outputWordController.text,
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  Visibility(
-                                      visible: isBadWord,
-                                      child: Row(
-                                        children: [
-                                          SizedBox(width: 5),
-                                          Tooltip(
-                                            message:
-                                                "\“${outputWordController.text}\” may be offensive depending on context",
-                                            child: InkWell(
-                                              child: Icon(
-                                                Icons.warning_sharp,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                                size: 22,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      )),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Container(
-                              width: screenWidth * .9,
-                              child: Row(
-                                children: [
-                                  Visibility(
-                                    visible: outputPhoneticController
-                                        .text.isNotEmpty,
-                                    child: SelectableText(
-                                      outputPhoneticController.text,
-                                      style: TextStyle(
-                                        color: Colors.yellow[100],
-                                        fontWeight: FontWeight.w300,
-                                        fontSize: 18,
-                                      ),
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                  Visibility(
-                                    visible: pronounciationAudioSource != '',
+                                  maxLines: 1,
+                                ),
+                                Visibility(
+                                    visible: appState.isBadWord,
                                     child: Row(
                                       children: [
                                         SizedBox(width: 5),
                                         Tooltip(
                                           message:
-                                              'Tap to hear the pronounciation of \“${outputWordController.text.toLowerCase()}.\” If you can\'t hear anything, check the device volume.',
+                                              "\"${appState.outputWordController.text}\" may be offensive depending on context",
                                           child: InkWell(
                                             child: Icon(
-                                              Icons.hearing,
-                                              color: Colors.yellow[100],
-                                              size: 20,
+                                              Icons.warning_sharp,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              size: 22,
                                             ),
-                                            onTap: () {
-                                              audioPlayer.setVolume(1);
-                                              audioPlayer.play(UrlSource(
-                                                  pronounciationAudioSource!));
-                                            },
                                           ),
                                         ),
                                       ],
+                                    )),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          Container(
+                            width: screenWidth * .9,
+                            child: Row(
+                              children: [
+                                Visibility(
+                                  visible: appState
+                                      .outputPhoneticController.text.isNotEmpty,
+                                  child: SelectableText(
+                                    appState.outputPhoneticController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 18,
+                                    ),
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                Visibility(
+                                  visible:
+                                      appState.pronounciationAudioSource != '',
+                                  child: Row(
+                                    children: [
+                                      SizedBox(width: 5),
+                                      Tooltip(
+                                        message:
+                                            'Tap to hear the pronounciation of \"${appState.outputWordController.text.toLowerCase()}.\" If you can\'t hear anything, check the device volume.',
+                                        child: InkWell(
+                                          child: Icon(
+                                            Icons.hearing,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
+                                            size: 20,
+                                          ),
+                                          onTap: () {
+                                            appState.audioPlayer.setVolume(1);
+                                            if (appState
+                                                    .pronounciationAudioSource !=
+                                                null) {
+                                              appState.audioPlayer.play(
+                                                  UrlSource(appState
+                                                      .pronounciationAudioSource!));
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Visibility(
+                            visible: appState.meaningDefinitionsMap.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Text(
+                                appState.meaningDefinitionsMap.length > 1
+                                    ? "Definitions for ${appState.meaningDefinitionsMap.length} parts of speech"
+                                    : "Definition",
+                                style: AppStyles.sectionTitle(context),
+                              ),
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ListView.builder(
+                                        physics: NeverScrollableScrollPhysics(),
+                                        padding: EdgeInsets.all(0),
+                                        shrinkWrap: true,
+                                        itemCount: appState
+                                            .meaningDefinitionsMap.length,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          String key = appState
+                                              .meaningDefinitionsMap.keys
+                                              .elementAt(index);
+                                          String value = appState
+                                              .meaningDefinitionsMap.values
+                                              .elementAt(index)
+                                              .toString()
+                                              .substring(
+                                                  1,
+                                                  appState.meaningDefinitionsMap
+                                                          .values
+                                                          .elementAt(index)
+                                                          .toString()
+                                                          .length -
+                                                      1)
+                                              .replaceAll('.,', '\n\u2022');
+                                          List<String>? meaningSynonymList =
+                                              appState.meaningSynonymMap[index];
+                                          List<String>? meaningAntonymList =
+                                              appState.meaningAntonymMap[index];
+                                          return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              // part of speech
+                                              Text(
+                                                "${index + 1}. Part of speech: ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
+                                                style: AppStyles.partOfSpeech(
+                                                    context),
+                                              ),
+                                              // definitions for that part of speech
+                                              Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 10),
+                                                child: Text(
+                                                  "\u2022 ${value.toString()}",
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ),
+                                              Visibility(
+                                                visible: meaningSynonymList !=
+                                                        null &&
+                                                    meaningSynonymList
+                                                        .isNotEmpty,
+                                                child: Padding(
+                                                  padding:
+                                                      EdgeInsets.only(left: 10),
+                                                  child: Text(
+                                                    'Synonyms: ${meaningSynonymList?.join(', ') ?? ''}',
+                                                    style: AppStyles.synonyms(
+                                                        context),
+                                                  ),
+                                                ),
+                                              ),
+                                              Visibility(
+                                                visible: meaningAntonymList !=
+                                                        null &&
+                                                    meaningAntonymList
+                                                        .isNotEmpty,
+                                                child: Padding(
+                                                  padding:
+                                                      EdgeInsets.only(left: 10),
+                                                  child: Text(
+                                                    'Antonyms: ${meaningAntonymList?.join(', ') ?? ''}',
+                                                    style: AppStyles.antonyms(
+                                                        context),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 4.0,
+                                        bottom: 10,
+                                      ),
+                                      child: ListBody(
+                                        children: [
+                                          Visibility(
+                                            visible: appState
+                                                    .pronounciationAudioSource !=
+                                                '',
+                                            child: Text(
+                                              'Pronunciation: ${appState.pronounciationSourceController.text}',
+                                              style:
+                                                  AppStyles.corporate(context),
+                                            ),
+                                          ),
+                                          SelectableText(
+                                            "License name: ${appState.licenseNameController.text}",
+                                            style: AppStyles.corporate(context),
+                                            maxLines: 1,
+                                          ),
+                                          SelectableText(
+                                            "License URLs: ${appState.licenseUrlsController.text}",
+                                            style: AppStyles.corporate(context),
+                                            maxLines: 1,
+                                          ),
+                                          SelectableText(
+                                            "Source URLs: ${appState.sourceUrlsController.text}",
+                                            style: AppStyles.corporate(context),
+                                            maxLines: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.definitionsTileExpanded = expanded;
+                                });
+                              },
+                              initiallyExpanded: true,
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                appState.synonymsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    appState.synonymsCount > 1
+                                        ? "${appState.synonymsCount} synonyms"
+                                        : "${appState.synonymsCount} synonym",
+                                    style: AppStyles.synonyms(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        appState.synonymsController.text,
+                                        style: AppStyles.synonyms(context),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.synonymsTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                appState.antonymsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    appState.antonymsCount > 1
+                                        ? "${appState.antonymsCount} antonyms"
+                                        : "${appState.antonymsCount} antonym",
+                                    style: AppStyles.antonyms(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: SelectableText(
+                                        appState.antonymsController.text,
+                                        style: AppStyles.antonyms(context),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.antonymsTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible: appState.stronglyAssociatedWordsController
+                                .text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    appState.stronglyAssociatedWordsCount > 1
+                                        ? "${appState.stronglyAssociatedWordsCount} strongly associated words"
+                                        : "${appState.stronglyAssociatedWordsCount} strongly associated word",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState
+                                        .stronglyAssociatedWordsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.stronglyAssociatedTileExpanded =
+                                      expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible: appState
+                                .precededByWordsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Often preceded by ${appState.precededByWordsCount > 1 ? appState.precededByWordsCount : appState.precededByWordsCount} words",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.precededByWordsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.precededByTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible: appState
+                                .followedByWordsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Often followed by ${appState.followedByWordsCount > 1 ? appState.followedByWordsCount : appState.followedByWordsCount} words",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.followedByWordsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.followedByTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible: appState
+                                .nounsModifiedController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Often describes ${appState.nounsModifiedCount} ${appState.nounsModifiedCount > 1 ? "nouns" : "noun"}",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.nounsModifiedController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.nounsModifiedTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible: appState
+                                .adjectivesModifiedController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Often described by ${appState.adjectivesModifiedCount} ${appState.adjectivesModifiedCount > 1 ? "adjectives" : "adjective"}",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.adjectivesModifiedController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.adjectivesModifiedTileExpanded =
+                                      expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                appState.hypernymsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    appState.hypernymsCount > 1
+                                        ? "${appState.hypernymsCount} hypernyms "
+                                        : "${appState.hypernymsCount} hypernym ",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                  Tooltip(
+                                    message:
+                                        'Hypernyms are words that are more general than the word being defined.',
+                                    child: Icon(
+                                      Icons.info_outline,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                      size: 16,
                                     ),
                                   ),
                                 ],
                               ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.hypernymsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.hypernymsTileExpanded = expanded;
+                                });
+                              },
                             ),
-                          ],
-                        ),
+                          ),
+                          Visibility(
+                            visible:
+                                appState.hyponymsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (appState.hyponymsCount > 1)
+                                        ? "${appState.hyponymsCount} hyponyms "
+                                        : "${appState.hyponymsCount} hyponym ",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                  Tooltip(
+                                    message:
+                                        'Hyponyms are words that are more specific than the word being defined.',
+                                    child: Icon(
+                                      Icons.info_outline,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.hyponymsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.hyponymsTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                appState.holonymsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (appState.holonymsCount > 1)
+                                        ? "${appState.holonymsCount} holonyms "
+                                        : "${appState.holonymsCount} holonym ",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                  Tooltip(
+                                    message:
+                                        'Holonyms are words that define the whole, whereas meronyms define the parts.',
+                                    child: Icon(
+                                      Icons.info_outline,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.holonymsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.holonymsTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible: appState.similarlySpelledWordsController
+                                .text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (appState.similarSpeltWordsCount > 1)
+                                        ? "${appState.similarSpeltWordsCount} similarly spelled words "
+                                        : "${appState.similarSpeltWordsCount} similarly spelled word ",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState
+                                        .similarlySpelledWordsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.similarlySpeltTileExpanded =
+                                      expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible: appState
+                                .similarSoundingWordsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (appState.similarSoundingWordsCount > 1)
+                                        ? "${appState.similarSoundingWordsCount} similar sounding words "
+                                        : "${appState.similarSoundingWordsCount} similar sounding word ",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState
+                                        .similarSoundingWordsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.similarSoundingTileExpanded =
+                                      expanded;
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                appState.rhymingWordsController.text.isNotEmpty,
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.all(0),
+                              expandedAlignment: Alignment.topLeft,
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (appState.rhymingWordsCount > 1)
+                                        ? "${appState.rhymingWordsCount} rhyming words "
+                                        : "${appState.rhymingWordsCount} rhyming word ",
+                                    style: AppStyles.sectionTitle(context),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: SelectableText(
+                                    appState.rhymingWordsController.text,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onExpansionChanged: (bool expanded) {
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  appState.rhymingTileExpanded = expanded;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Expanded(
-                      child: RawScrollbar(
-                        thumbColor: Colors.grey,
-                        thickness: 4,
-                        radius: Radius.circular(5),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppConstants.appInfo,
+                          style: AppStyles.corporate(context),
+                        ),
+                        Tooltip(
+                          message: "Clear all output fields",
+                          child: IconButton(
+                              iconSize: 32,
+                              icon: Icon(
+                                Icons.delete,
+                                color:
+                                    (appState.meaningDefinitionsMap
+                                                .isNotEmpty ||
+                                            appState
+                                                .stronglyAssociatedWordsController
+                                                .text
+                                                .isNotEmpty ||
+                                            appState
+                                                .similarlySpelledWordsController
+                                                .text
+                                                .isNotEmpty ||
+                                            appState
+                                                .similarSoundingWordsController
+                                                .text
+                                                .isNotEmpty)
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withAlpha(100)
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withAlpha(5),
+                              ),
+                              onPressed: () {
+                                if (appState.meaningDefinitionsMap.isNotEmpty ||
+                                    appState.stronglyAssociatedWordsController
+                                        .text.isNotEmpty ||
+                                    appState.similarlySpelledWordsController
+                                        .text.isNotEmpty ||
+                                    appState.similarSoundingWordsController.text
+                                        .isNotEmpty) {
+                                  HapticFeedback.mediumImpact();
+                                  setState(() {
+                                    appState.clearOutput(
+                                        alsoSearch: true,
+                                        alsoWord: true,
+                                        definitionsOnly: true,
+                                        similarWords: true);
+                                    appState.wordToDefine = '';
+                                  });
+                                  // shift focus back to input textfield
+                                  FocusScope.of(context)
+                                      .requestFocus(appState.inputFocusNode);
+                                } else {
+                                  DoNothingAction();
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          child: Row(
                             children: [
-                              Visibility(
-                                visible: meaningDefinitionsMap.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Text(
-                                    (meaningDefinitionsMap.keys.length > 1)
-                                        ? "Definitions for ${meaningDefinitionsMap.keys.length} parts of speech"
-                                        : "Definition",
-                                    style: sectionTitle,
-                                  ),
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ListView.builder(
-                                            physics:
-                                                NeverScrollableScrollPhysics(),
-                                            padding: EdgeInsets.all(0),
-                                            shrinkWrap: true,
-                                            itemCount: meaningDefinitionsMap
-                                                .keys.length,
-                                            itemBuilder: (BuildContext context,
-                                                int index) {
-                                              String key = meaningDefinitionsMap
-                                                  .keys
-                                                  .elementAt(index);
-                                              String value =
-                                                  meaningDefinitionsMap.values
-                                                      .elementAt(index)
-                                                      .toString()
-                                                      .substring(
-                                                          1,
-                                                          meaningDefinitionsMap
-                                                                  .values
-                                                                  .elementAt(
-                                                                      index)
-                                                                  .toString()
-                                                                  .length -
-                                                              1)
-                                                      .replaceAll(
-                                                          '.,', '\n\u2022');
-                                              List<String>? meaningSynonymList =
-                                                  meaningSynonymMap[
-                                                          meaningDefinitionsMap
-                                                              .keys
-                                                              .elementAt(index)]
-                                                      as List<String>;
-                                              List<String>? meaningAntonymList =
-                                                  meaningAntonymMap[
-                                                          meaningDefinitionsMap
-                                                              .keys
-                                                              .elementAt(index)]
-                                                      as List<String>;
-                                              return Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  // part of speech
-                                                  Text(
-                                                    "${index + 1}. Part of speech: ${key[0].toUpperCase()}${key.substring(1).toLowerCase()}",
-                                                    style: partOfSpeech,
-                                                  ),
-                                                  // definitions for that part of speech
-                                                  Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 10),
-                                                    child: Text(
-                                                      "\u2022 ${value.toString()}",
-                                                      style: TextStyle(
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .onSurface,
-                                                        fontSize: 18,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Visibility(
-                                                    visible: meaningSynonymList
-                                                        .isNotEmpty,
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 10),
-                                                      child: Text(
-                                                        'Synonyms: ${meaningSynonymList.join(', ')}',
-                                                        style: synonyms,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Visibility(
-                                                    visible: meaningAntonymList
-                                                        .isNotEmpty,
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 10),
-                                                      child: Text(
-                                                        'Antonyms: ${meaningAntonymList.join(', ')}',
-                                                        style: antonyms,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            }),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 4.0,
-                                            bottom: 10,
-                                          ),
-                                          child: ListBody(
-                                            children: [
-                                              Visibility(
-                                                visible:
-                                                    pronounciationAudioSource !=
-                                                        '',
-                                                child: Text(
-                                                  'Audio: ${pronounciationSourceController.text}',
-                                                  style: corporate,
-                                                ),
-                                              ),
-                                              SelectableText(
-                                                "License name: ${licenseNameController.text}",
-                                                style: corporate,
-                                                maxLines: 1,
-                                              ),
-                                              SelectableText(
-                                                "License URLs: ${licenseUrlsController.text}",
-                                                style: corporate,
-                                                maxLines: 1,
-                                              ),
-                                              SelectableText(
-                                                "Source URLs: ${sourceUrlsController.text}",
-                                                style: corporate,
-                                                maxLines: 1,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
+                              Text(
+                                "WordDefiner",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 12,
                                     ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _definitionsTileExpanded = expanded;
-                                    });
-                                  },
-                                  initiallyExpanded: true,
-                                ),
                               ),
-                              Visibility(
-                                visible: synonymsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (synonymsCount > 1)
-                                            ? "${synonymsCount} synonyms"
-                                            : "${synonymsCount} synonym",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 10),
-                                          child: SelectableText(
-                                            synonymsController.text,
-                                            style: synonyms,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _synonymsTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: antonymsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (antonymsCount > 1)
-                                            ? "${antonymsCount} antonyms"
-                                            : "${antonymsCount} antonym",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 10),
-                                          child: SelectableText(
-                                            antonymsController.text,
-                                            style: antonyms,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _antonymsTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: stronglyAssociatedWordsController
-                                    .text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (stronglyAssociatedWordsCount > 1)
-                                            ? "${stronglyAssociatedWordsCount} statistically associated words "
-                                            : "${stronglyAssociatedWordsCount} statistically associated word ",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        stronglyAssociatedWordsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _stronglyAssociatedTileExpanded =
-                                          expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible:
-                                    precededByWordsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Often preceded by $precededByWordsCount ${precededByWordsCount > 1 ? "words" : "word"}",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        precededByWordsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _precededByTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible:
-                                    followedByWordsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Often followed by $followedByWordsCount ${followedByWordsCount > 1 ? "words" : "word"}",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        followedByWordsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _followedByTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: hypernymsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (hypernymsCount > 1)
-                                            ? "${hypernymsCount} hypernyms "
-                                            : "${hypernymsCount} hypernym ",
-                                        style: sectionTitle,
-                                      ),
-                                      Tooltip(
-                                        message:
-                                            'Hypernyms are words that are more general than the word being defined.',
-                                        child: Icon(
-                                          Icons.info_outline,
-                                          color: Colors.grey[500],
-                                          size: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        hypernymsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _hypernymsTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: hyponymsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (hyponymsCount > 1)
-                                            ? "${hyponymsCount} hyponyms "
-                                            : "${hyponymsCount} hyponym ",
-                                        style: sectionTitle,
-                                      ),
-                                      Tooltip(
-                                        message:
-                                            'Hyponyms are words that are more specific than the word being defined.',
-                                        child: Icon(
-                                          Icons.info_outline,
-                                          color: Colors.grey[500],
-                                          size: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        hyponymsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _hyponymsTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: holonymsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Holonym ",
-                                        style: sectionTitle,
-                                      ),
-                                      Tooltip(
-                                        message:
-                                            'Holonyms are words that define the whole, whereas meronyms define the parts.',
-                                        child: Icon(
-                                          Icons.info_outline,
-                                          color: Colors.grey[500],
-                                          size: 16,
-                                        ),
-                                      ),
-                                      Text(
-                                          " for ${holonymsCount} ${holonymsCount > 1 ? "words" : "word"}",
-                                          style: sectionTitle)
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        holonymsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _holonymsTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: meronymsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Meronym ",
-                                        style: sectionTitle,
-                                      ),
-                                      Tooltip(
-                                        message:
-                                            'Meronyms are words that define the parts, whereas holonyms define the whole.',
-                                        child: Icon(
-                                          Icons.info_outline,
-                                          color: Colors.grey[500],
-                                          size: 16,
-                                        ),
-                                      ),
-                                      Text(
-                                        " for $meronymsCount ${meronymsCount > 1 ? "words" : "word"}",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        meronymsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _meronymsTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible:
-                                    nounsModifiedController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Often describes $nounsModifiedCount ${nounsModifiedCount > 1 ? "nouns" : "noun"}",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        nounsModifiedController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _nounsModifiedTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: adjectivesModifiedController
-                                    .text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Often described by $adjectivesModifiedCount ${adjectivesModifiedCount > 1 ? "adjectives" : "adjective"}",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        adjectivesModifiedController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _adjectivesModifiedTileExpanded =
-                                          expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: similarlySpelledWordsController
-                                    .text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (similarSpeltWordsCount > 1)
-                                            ? "${similarSpeltWordsCount} similarly spelled words "
-                                            : "${similarSpeltWordsCount} similarly spelled word ",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        similarlySpelledWordsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _similarlySpeltTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: similarSoundingWordsController
-                                    .text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (similarSoundingWordsCount > 1)
-                                            ? "${similarSoundingWordsCount} similar sounding words "
-                                            : "${similarSoundingWordsCount} similar sounding word ",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        similarSoundingWordsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _similarSoundingTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Visibility(
-                                visible: rhymingWordsController.text.isNotEmpty,
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.all(0),
-                                  expandedAlignment: Alignment.topLeft,
-                                  title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        (rhymingWordsCount > 1)
-                                            ? "${rhymingWordsCount} rhyming words "
-                                            : "${rhymingWordsCount} rhyming word ",
-                                        style: sectionTitle,
-                                      ),
-                                    ],
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: SelectableText(
-                                        rhymingWordsController.text,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onExpansionChanged: (bool expanded) {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _rhymingTileExpanded = expanded;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 10, bottom: 20),
-                                child: Text(
-                                  appInfo,
-                                  style: corporate,
+                              const SizedBox(width: 4),
+                              Tooltip(
+                                message: '${AppConstants.appDisclaimer}',
+                                child: Icon(
+                                  Icons.policy_outlined,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withAlpha(150),
+                                  size: 14,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+
+                        // Action buttons
+                        IconButton(
+                          tooltip: "Open menu",
+                          padding: EdgeInsets.zero,
+                          constraints:
+                              const BoxConstraints(minWidth: 40, minHeight: 40),
+                          onPressed: () async {
+                            if (Platform.isLinux) {
+                              menuResult = await Dialogs.showMenuLinux(context);
+                              if (menuResult == CustomButton.positiveButton) {
+                                Future.delayed(
+                                    const Duration(milliseconds: 300), () {
+                                  launchUrl(Uri.parse(Constants.formUrl));
+                                });
+                              } else if (menuResult ==
+                                  CustomButton.negativeButton) {
+                                DoNothingAction();
+                              } else if (menuResult ==
+                                  CustomButton.neutralButton) {
+                                Future.delayed(
+                                    const Duration(milliseconds: 300), () {
+                                  launchUrl(Uri.parse(Constants.githubURL));
+                                });
+                              }
+                            } else {
+                              menuResult = await Dialogs.showMenu(context);
+                              if (menuResult == CustomButton.positiveButton) {
+                                Future.delayed(
+                                    const Duration(milliseconds: 300), () {
+                                  launchUrl(Uri.parse(Constants.formUrl));
+                                });
+                              } else if (menuResult ==
+                                  CustomButton.neutralButton) {
+                                DoNothingAction();
+                              } else if (menuResult ==
+                                  CustomButton.negativeButton) {
+                                inAppReview.openStoreListing(
+                                  appStoreId: 'id1637774027',
+                                );
+                              }
+                            }
+                          },
+                          icon: Icon(Icons.menu,
+                              size: 20,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withAlpha(150)),
+                        ),
+
+                        Visibility(
+                          visible: Platform.isAndroid || Platform.isIOS,
+                          child: IconButton(
+                            tooltip: "See more of my apps",
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                                minWidth: 40, minHeight: 40),
+                            onPressed: () async {
+                              menuResult = await Dialogs.showMoreApps(context);
+                              if (menuResult == CustomButton.negativeButton) {
+                                Future.delayed(
+                                    const Duration(milliseconds: 300), () {
+                                  launchUrl(Uri.parse((Platform.isAndroid)
+                                      ? Constants.playStoreURL
+                                      : Constants.appStoreURL));
+                                });
+                              }
+                            },
+                            icon: Icon(Icons.more_outlined,
+                                size: 20,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withAlpha(150)),
+                          ),
+                        ),
+
+                        IconButton(
+                          tooltip: (Platform.isLinux)
+                              ? "Get WordDefiner on your phone"
+                              : "Share this app",
+                          padding: EdgeInsets.zero,
+                          constraints:
+                              const BoxConstraints(minWidth: 40, minHeight: 40),
+                          onPressed: () async {
+                            if (Platform.isLinux) {
+                              menuResult =
+                                  await Dialogs.showSmartphoneMenu(context);
+                              if (menuResult == CustomButton.positiveButton) {
+                                Future.delayed(
+                                    const Duration(milliseconds: 300), () {
+                                  launchUrl(
+                                      Uri.parse(Constants.worddefinerURLApple));
+                                });
+                              } else if (menuResult ==
+                                  CustomButton.neutralButton) {
+                                Future.delayed(
+                                    const Duration(milliseconds: 300), () {
+                                  launchUrl(Uri.parse(
+                                      Constants.worddefinerURLAndroid));
+                                });
+                              }
+                            } else {
+                              await SharePlus.instance.share(ShareParams(
+                                  text:
+                                      "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
+                                          (Platform.isAndroid
+                                              ? Constants.worddefinerURLAndroid
+                                              : Constants
+                                                  .worddefinerURLApple)));
+                            }
+                          },
+                          icon: Icon(
+                              (Platform.isLinux)
+                                  ? Icons.smartphone
+                                  : (Platform.isAndroid)
+                                      ? Icons.share
+                                      : Icons.ios_share,
+                              size: 18,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withAlpha(150)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Divider(),
-              Expanded(
-                child: Container(
-                  // color: Colors.black12,
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "WordDefiner",
-                                style: corporate,
-                              ),
-                              SizedBox(width: 5),
-                              Tooltip(
-                                message: '$appDisclaimer',
-                                child: Icon(
-                                  Icons.policy_outlined,
-                                  color: Colors.grey[700],
-                                  size: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Tooltip(
-                            message: "Open menu",
-                            child: IconButton(
-                              onPressed: () async {
-                                menuResult = await Dialogs.showMenu(context);
-                                if (menuResult == CustomButton.positiveButton) {
-                                  Future.delayed(
-                                      const Duration(milliseconds: 300), () {
-                                    launchUrl(Uri.parse(Constants.formUrl));
-                                  });
-                                } else if (menuResult ==
-                                    CustomButton.negativeButton) {
-                                  DoNothingAction();
-                                } else if (menuResult ==
-                                    CustomButton.neutralButton) {
-                                  inAppReview.openStoreListing(
-                                    appStoreId: 'id1637774027',
-                                  );
-                                }
-                              },
-                              icon: Icon(
-                                Icons.menu,
-                                color: Colors.grey[400],
-                                size: 23,
-                              ),
-                            ),
-                          ),
-                          Visibility(
-                            visible: Platform.isIOS || Platform.isMacOS,
-                            child: Tooltip(
-                              message:
-                                  "Open Popops — a fun game that combines mesmerizing visuals with lightning-fast gameplay for a unique experience anyone can pick up, but few can master",
-                              child: IconButton(
-                                onPressed: () async {
-                                  await LaunchApp.openApp(
-                                    iosUrlScheme: Constants.popopsURLScheme,
-                                    appStoreLink: Constants.popopsURL,
-                                  );
-                                },
-                                icon: Image.asset(
-                                  "assets/popops_gs.png",
-                                  width: 28,
-                                  height: 28,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Tooltip(
-                            message:
-                                "Open ShortenMyURL to shorten links quickly, simply, and for free",
-                            child: IconButton(
-                              onPressed: () async {
-                                await LaunchApp.openApp(
-                                  androidPackageName:
-                                      Constants.shortenmyurlAndroidPackageName,
-                                  iosUrlScheme: Constants.shortenmyurlURLScheme,
-                                  appStoreLink: Constants.shortenmyurlURL,
-                                );
-                              },
-                              icon: Image.asset(
-                                "assets/shortenmyurl_gs.png",
-                                width: 32,
-                                height: 32,
-                              ),
-                            ),
-                          ),
-                          Tooltip(
-                            message: "Share this app",
-                            child: IconButton(
-                                iconSize: 20,
-                                icon: Icon(
-                                  (Platform.isAndroid)
-                                      ? Icons.share
-                                      : Icons.ios_share,
-                                  color: Colors.grey[400],
-                                ),
-                                onPressed: () async {
-                                  await Share.share(
-                                      "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
-                                          (Platform.isAndroid
-                                              ? Constants.worddefinerURLAndroid
-                                              : Constants.worddefinerURLApple));
-                                }),
-                          ),
-                        ],
-                      ),
-                      Visibility(
-                        visible: Platform.isIOS || Platform.isMacOS,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            InkWell(
-                              onTap: () async {
-                                await LaunchApp.openApp(
-                                  iosUrlScheme: Constants.myThymeURLScheme,
-                                  appStoreLink: Constants.myThymeURL,
-                                );
-                              },
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "Get the ultimate calendar app: My Thyme",
-                                    style: TextStyle(color: Colors.blue[900]),
-                                  ),
-                                  Tooltip(
-                                    message:
-                                        "Open My Thyme — the ultimate privacy-focused time management tool that syncs with your calendars and helps you reach your goals",
-                                    child: IconButton(
-                                      onPressed: () async {
-                                        await LaunchApp.openApp(
-                                          iosUrlScheme:
-                                              Constants.myThymeURLScheme,
-                                          appStoreLink: Constants.myThymeURL,
-                                        );
-                                      },
-                                      icon: Image.asset(
-                                        "assets/mythyme.png",
-                                        width: 36,
-                                        height: 36,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        );
+      }),
+    );
   }
 }
