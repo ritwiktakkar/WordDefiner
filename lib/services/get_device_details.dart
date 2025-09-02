@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:WordDefiner/Analytics/device_form.dart';
-import 'package:device_info/device_info.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -20,19 +20,23 @@ Future<DeviceForm> deviceDetails() async {
   try {
     appVersion = packageInfo.version;
     if (Platform.isAndroid) {
-      var build = await deviceInfoPlugin.androidInfo;
+      var androidInfo = await deviceInfoPlugin.androidInfo;
 
-      deviceName = build.model;
-      deviceVersion = build.version.toString();
-      identifier = build.androidId;
-
-      //UUID for Android
+      deviceName = androidInfo.model;
+      deviceVersion = androidInfo.version.release;
+      identifier = androidInfo.fingerprint;
     } else if (Platform.isIOS) {
-      var data = await deviceInfoPlugin.iosInfo;
+      var iosInfo = await deviceInfoPlugin.iosInfo;
 
-      deviceName = data.name;
-      deviceVersion = data.systemVersion;
-      identifier = data.identifierForVendor;
+      deviceName = iosInfo.modelName;
+      deviceVersion = iosInfo.systemVersion;
+      identifier = iosInfo.identifierForVendor.toString();
+    } else if (Platform.isLinux) {
+      var linuxInfo = await deviceInfoPlugin.linuxInfo;
+
+      deviceName = linuxInfo.id;
+      deviceVersion = linuxInfo.prettyName;
+      identifier = linuxInfo.machineId.toString();
     }
   } on PlatformException {
     debugPrint('Failed to get platform version');

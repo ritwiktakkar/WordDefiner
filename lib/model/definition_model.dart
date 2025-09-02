@@ -122,10 +122,11 @@ class License {
 class Meanings {
   String? partOfSpeech;
   List<Definitions>? definitions;
-  List<String>? synonyms;
-  List<String>? antonyms;
+  List<String>? synonymsEl;
+  List<String>? antonymsEl;
 
-  Meanings({this.partOfSpeech, this.definitions, this.synonyms, this.antonyms});
+  Meanings(
+      {this.partOfSpeech, this.definitions, this.synonymsEl, this.antonymsEl});
 
   Meanings.fromJson(Map<String, dynamic> json) {
     partOfSpeech = json['partOfSpeech'];
@@ -137,22 +138,22 @@ class Meanings {
       });
     }
 
-    if (json['synonyms'] != null) {
-      synonyms = <String>[];
-      json['synonyms'].forEach((v) {
-        synonyms!.add(v);
+    if (json['synonymsEl'] != null) {
+      synonymsEl = <String>[];
+      json['synonymsEl'].forEach((v) {
+        synonymsEl!.add(v);
       });
     }
 
-    if (json['antonyms'] != null) {
-      antonyms = <String>[];
-      json['antonyms'].forEach((v) {
-        antonyms!.add(v);
+    if (json['antonymsEl'] != null) {
+      antonymsEl = <String>[];
+      json['antonymsEl'].forEach((v) {
+        antonymsEl!.add(v);
       });
     }
 
-    synonyms = json['synonyms'].cast<String>();
-    antonyms = json['antonyms'].cast<String>();
+    synonymsEl = json['synonyms'].cast<String>();
+    antonymsEl = json['antonyms'].cast<String>();
   }
 
   Map<String, dynamic> toJson() {
@@ -161,8 +162,8 @@ class Meanings {
     if (this.definitions != null) {
       data['definitions'] = this.definitions!.map((v) => v.toJson()).toList();
     }
-    data['synonyms'] = this.synonyms;
-    data['antonyms'] = this.antonyms;
+    data['synonymsEl'] = this.synonymsEl;
+    data['antonymsEl'] = this.antonymsEl;
     return data;
   }
 }

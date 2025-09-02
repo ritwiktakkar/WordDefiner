@@ -14,6 +14,17 @@ android/key.properties
 *.aab
 *.pb
 *.apk*
+*.cxx
+.idea*
+symbols*
+parts/
+prime/
+stage/
+overlay/
+.craft/
+.idea/
+*.snap
+*.iml
 
 # Files and directories created by pub
 .dart_tool/
@@ -41,5 +52,7 @@ doc/api/
 .flutter-plugins
 .flutter-plugins-dependencies
 lib/Analytics/constants.dart
-lib/bad-words.txt
-assets/badWords.txt
+badWords.txt
+ephemeral/
+generated*
+.DS_Store
