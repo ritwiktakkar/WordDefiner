@@ -5,7 +5,7 @@
 
 ## Description
 
-WordDefiner is the ultimate online English dictionary and thesaurus app for iOS/iPadOS. Learn the phonetic/phonemic transcription, pronunciation audio, meanings, synonyms and antonyms, based on part(s) speech for words that you look up with WordDefiner. Not just that, but you can also see statistically associated, similarly spelled, similar sounding, and rhyming words — even if the definition of your query can't be found. If that's not enough, WordDefiner even lets you see words that follow or precede what you look up, which nouns they typically modify, and which adjectives often modify them. And if that's still not enough, well, WordDefiner now provides hypernyms, hyponyms, holonyms, and meronyms!
+WordDefiner is the ultimate online English dictionary and thesaurus app for iOS/iPadOS/Android/Linux. Learn the phonetic/phonemic transcription, pronunciation audio, meanings, synonyms and antonyms, based on part(s) speech for words that you look up with WordDefiner. Not just that, but you can also see statistically associated, similarly spelled, similar sounding, and rhyming words — even if the definition of your query can't be found. If that's not enough, WordDefiner even lets you see words that follow or precede what you look up, which nouns they typically modify, and which adjectives often modify them. And if that's still not enough, well, WordDefiner now provides hypernyms, hyponyms, holonyms, and meronyms!
 
 There's more to love: WordDefiner is an open-source app, meaning that its codebase is freely available on GitHub. If interested, this enables you to:
 1) ensure that no nefarious background activity is conducted by this app;
