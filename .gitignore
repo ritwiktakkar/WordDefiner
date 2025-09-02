@@ -22,9 +22,11 @@ prime/
 stage/
 overlay/
 .craft/
-.idea/
+*.idea/
 *.snap
 *.iml
+analysis_options.yaml
+
 
 # Files and directories created by pub
 .dart_tool/
