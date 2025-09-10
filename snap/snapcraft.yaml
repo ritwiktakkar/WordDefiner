@@ -1,28 +1,85 @@
-name: worddefiner-english-dictionary
-version: 5.2.2
-summary: The ultimate online English dictionary and thesaurus
-description: WordDefiner is the ultimate online English dictionary and thesaurus app for iOS, iPadOS, and macOS. Learn the phonetic/phonemic transcription, pronunciation audio, and meanings, including synonyms and antonyms, based on part(s) speech for words that you look up with WordDefiner. Not just that, but you can also see statistically associated, similarly spelled, similar sounding, and rhyming words according to your query — even if the definition of your query can't be found. If that's not enough, WordDefiner even lets you see words that follow or precede the ones you look up, which nouns they typically modify, and which adjectives often modify them. And if that's still not enough, well, WordDefiner now provides hypernyms, hyponyms, holonyms, and meronyms!
+name: worddefiner
+base: core24
+version: '5.3.2'
+summary: An English dictionary app made with Flutter.
+description: |
+  WordDefiner is an English dictionary app made with Flutter that uses the DictionaryAPI to get definitions of words. It is a simple app that is easy to use and has a clean UI.
 
-confinement: strict
-base: core22
 grade: stable
+confinement: strict
 
-slots:
-  dbus-worddefiner-english-dictionary: # adjust accordingly to your app name
-    interface: dbus
-    bus: session
-    name: org.nocturnaldevlab.worddefiner-english-dictionary # adjust accordingly to your app name and
-    
 apps:
-  worddefiner-english-dictionary:
-    command: worddefiner-english-dictionary
-    extensions: [gnome] # gnome includes the libraries required by flutter
+  worddefiner:
+    # The executable name produced by Flutter's Linux build
+    command: worddefiner
     plugs:
-    - network
-    slots:
-      - dbus-worddefiner-english-dictionary
+      - network
+      - network-status
+      - wayland
+      - x11
+      - opengl
+      - desktop
+      - desktop-legacy
+      - gsettings
+      - audio-playback
+      - home
+
 parts:
-  worddefiner-english-dictionary:
-    source: .
+  worddefiner:
     plugin: flutter
-    flutter-target: lib/main.dart # The main entry-point file of the application
+    source: .
+    flutter-target: lib/main.dart
+    stage-packages:
+      # Core GTK/GDK libraries
+      - libgtk-3-0t64
+      - libgdk-pixbuf-2.0-0
+      - libepoxy0
+      # Pango text rendering
+      - libpango-1.0-0
+      - libpangocairo-1.0-0
+      - libpangoft2-1.0-0
+      # Cairo graphics
+      - libcairo2
+      - libcairo-gobject2
+      # GLib core
+      - libglib2.0-0t64
+      # Accessibility
+      - libatk1.0-0t64
+      - libatk-bridge2.0-0t64
+      - libatspi2.0-0t64
+      # Wayland support
+      - libwayland-client0
+      - libwayland-cursor0
+      - libwayland-egl1
+      # X11 libraries
+      - libx11-6
+      - libxi6
+      - libxfixes3
+      - libxext6
+      - libxcursor1
+      - libxdamage1
+      - libxrandr2
+      - libxinerama1
+      # XCB libraries
+      - libxcb1
+      - libxcb-render0
+      - libxcb-shm0
+      # Text/font libraries
+      - libharfbuzz0b
+      - libgraphite2-3
+      - libthai0
+      # Graphics/image libraries
+      - libpixman-1-0
+      - libjpeg-turbo8
+      # Debug/profiling
+      - libunwind8
+      - libdw1t64
+      # GStreamer libraries
+      - libgstreamer1.0-0
+      - libgstreamer-plugins-base1.0-0
+      # GTK pixbuf loaders and MIME support
+      - libgdk-pixbuf2.0-bin
+      - librsvg2-common
+      - shared-mime-info
+      - libcanberra-gtk3-module
+      - adwaita-icon-theme
