@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=WordDefiner English Dictionary and Thesaurus
+Name=WordDefiner English Dictionary
 Comment=The ultimate online English dictionary and thesaurus app for Linux.
-Exec=worddefiner-english-dictionary 
+Exec=worddefiner
 Icon=${SNAP}/meta/gui/icon.png
 Terminal=false
 Type=Application
-Categories=Books and Reference;
+Categories=Education;Dictionary;Books;
