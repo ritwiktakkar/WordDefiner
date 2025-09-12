@@ -12,13 +12,13 @@ Future<DeviceForm> deviceDetails() async {
   String deviceName = '';
   String deviceVersion = '';
   String identifier = '';
-  String appVersion = '';
+  String appBuildNumber = '';
 
   final DeviceInfoPlugin deviceInfoPlugin = new DeviceInfoPlugin();
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
   try {
-    appVersion = packageInfo.version;
+    appBuildNumber = packageInfo.buildNumber;
     if (Platform.isAndroid) {
       var androidInfo = await deviceInfoPlugin.androidInfo;
 
@@ -41,5 +41,5 @@ Future<DeviceForm> deviceDetails() async {
   } on PlatformException {
     debugPrint('Failed to get platform version');
   }
-  return DeviceForm(deviceName, deviceVersion, identifier, appVersion);
+  return DeviceForm(deviceName, deviceVersion, identifier, appBuildNumber);
 }

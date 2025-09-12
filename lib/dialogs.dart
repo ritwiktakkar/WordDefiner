@@ -8,14 +8,14 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 final inAppReview = InAppReview.instance;
 String appVersion = '';
-String buildVersion = '';
+String appBuildNumber = '';
 
 class Dialogs {
   // this function is used to initialize the app version and build version
   static Future<void> initPackageInfo() async {
     final info = await PackageInfo.fromPlatform();
     appVersion = info.version;
-    buildVersion = info.buildNumber;
+    appBuildNumber = info.buildNumber;
   }
 
   // this dialog pops up when there are no definitions for the word provided
@@ -65,7 +65,7 @@ class Dialogs {
       windowTitle:
           'Thanks for using WordDefiner on ${Platform.isAndroid ? 'Android' : 'iOS'}',
       text:
-          'Version $appVersion ($buildVersion)\n\u00A9 2022–${DateTime.now().year.toString()} RT (rickytakkar.com)',
+          'Version $appVersion ($appBuildNumber)\n\u00A9 2022–${DateTime.now().year.toString()} RT (rickytakkar.com)',
       windowPosition: AlertWindowPosition.parentWindowCenter,
       positiveButtonTitle: 'Provide Feedback',
       negativeButtonTitle:
@@ -92,7 +92,7 @@ class Dialogs {
     return FlutterPlatformAlert.showCustomAlert(
       windowTitle: 'Thanks for using WordDefiner on Linux',
       text:
-          'Version $appVersion ($buildVersion)\n\u00A9 2022–${DateTime.now().year.toString()} RT (rickytakkar.com)',
+          'Version $appVersion ($appBuildNumber)\n\u00A9 2022–${DateTime.now().year.toString()} RT (rickytakkar.com)',
       windowPosition: AlertWindowPosition.parentWindowCenter,
       positiveButtonTitle: 'Provide Feedback',
       negativeButtonTitle: 'Dismiss',

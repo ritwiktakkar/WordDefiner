@@ -13,6 +13,6 @@ class AnalyticsForm {
         'deviceName': deviceForm.deviceName,
         'deviceVersion': deviceForm.deviceVersion,
         'identifier': deviceForm.identifier,
-        'appVersion': deviceForm.appVersion,
+        'appBuildNumber': deviceForm.appBuildNumber,
       };
 }
