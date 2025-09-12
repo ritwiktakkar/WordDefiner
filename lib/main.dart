@@ -1406,9 +1406,9 @@ class _HomePageState extends State<HomePage> {
                             constraints: const BoxConstraints(
                                 minWidth: 40, minHeight: 40),
                             onPressed: () async {
-                              if (Platform.isLinux) {
+                              if (Platform.isLinux || Platform.isMacOS) {
                                 menuResult =
-                                    await Dialogs.showMenuLinux(context);
+                                    await Dialogs.showMenuComputer(context);
                                 if (menuResult == CustomButton.positiveButton) {
                                   Future.delayed(
                                       const Duration(milliseconds: 300), () {
@@ -1479,14 +1479,14 @@ class _HomePageState extends State<HomePage> {
                           ),
 
                           IconButton(
-                            tooltip: (Platform.isLinux)
+                            tooltip: (Platform.isLinux || Platform.isMacOS)
                                 ? "Get WordDefiner on your phone"
                                 : "Share this app",
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                                 minWidth: 40, minHeight: 40),
                             onPressed: () async {
-                              if (Platform.isLinux) {
+                              if (Platform.isLinux || Platform.isMacOS) {
                                 menuResult =
                                     await Dialogs.showSmartphoneMenu(context);
                                 if (menuResult == CustomButton.positiveButton) {
@@ -1515,7 +1515,7 @@ class _HomePageState extends State<HomePage> {
                               }
                             },
                             icon: Icon(
-                                (Platform.isLinux)
+                                (Platform.isLinux || Platform.isMacOS)
                                     ? Icons.smartphone
                                     : (Platform.isAndroid)
                                         ? Icons.share
