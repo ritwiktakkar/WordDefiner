@@ -212,7 +212,7 @@ class _HomePageState extends State<HomePage> {
             // Search bar
             Padding(
               padding: const EdgeInsets.only(
-                  top: 65, left: 20, right: 20, bottom: 20),
+                  top: 65, left: 20, right: 20, bottom: 10),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -377,15 +377,23 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20),
               child: Container(
-                height: (screenHeight > 1200) // large comp/tab
-                    ? screenHeight * 0.8
-                    : (Platform.isIOS) // iPhone
-                        ? (screenHeight > 900)
-                            ? screenHeight * 0.74
-                            : screenHeight * 0.71
-                        : (Platform.isAndroid) // Android
-                            ? screenHeight * 0.72
-                            : screenHeight * 0.71, // default
+                height: (screenHeight > 1100 ||
+                        Platform.isLinux ||
+                        Platform.isWindows ||
+                        Platform.isMacOS) // large portrait comp/tab
+                    ? screenHeight * 0.83
+                    : (screenWidth > 1100 ||
+                            Platform.isLinux ||
+                            Platform.isWindows ||
+                            Platform.isMacOS) // large landscape comp/tab
+                        ? screenHeight * 0.77
+                        : (Platform.isIOS) // iPhone
+                            ? (screenHeight > 900)
+                                ? screenHeight * 0.75
+                                : screenHeight * 0.73
+                            : (Platform.isAndroid) // Android
+                                ? screenHeight * 0.72
+                                : screenHeight * 0.71, // default
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1275,8 +1283,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Expanded(
-              child: Padding(
+            Stack(children: [
+              Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20),
                 child: Column(
                   children: [
@@ -1505,7 +1513,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-            ),
+            ]),
           ],
         );
       }),
