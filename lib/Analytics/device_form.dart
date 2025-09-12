@@ -2,15 +2,15 @@ class DeviceForm {
   String deviceName;
   String deviceVersion;
   String identifier;
-  String appVersion;
+  String appBuildNumber;
 
-  DeviceForm(
-      this.deviceName, this.deviceVersion, this.identifier, this.appVersion);
+  DeviceForm(this.deviceName, this.deviceVersion, this.identifier,
+      this.appBuildNumber);
 
   Map toJson() => {
         'deviceName': deviceName,
         'deviceVersion': deviceVersion,
         'identifier': identifier,
-        'appVersion': appVersion,
+        'appBuildNumber': appBuildNumber,
       };
 }
