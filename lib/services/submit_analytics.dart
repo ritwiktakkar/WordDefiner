@@ -1,6 +1,6 @@
-import 'package:WordDefiner/Analytics/analytics_form.dart';
+import 'package:worddefiner/Analytics/analytics_form.dart';
 
-import 'package:WordDefiner/Analytics/constants.dart' as Constants;
+import 'package:worddefiner/Analytics/constants.dart' as Constants;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;

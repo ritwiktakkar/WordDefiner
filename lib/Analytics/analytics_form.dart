@@ -1,5 +1,5 @@
-import 'package:WordDefiner/Analytics/device_form.dart';
-import 'package:WordDefiner/Analytics/definition_form.dart';
+import 'package:worddefiner/Analytics/device_form.dart';
+import 'package:worddefiner/Analytics/definition_form.dart';
 
 class AnalyticsForm {
   DefinitionForm definitionForm;
