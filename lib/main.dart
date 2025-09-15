@@ -1479,14 +1479,14 @@ class _HomePageState extends State<HomePage> {
                           ),
 
                           IconButton(
-                            tooltip: (Platform.isLinux || Platform.isMacOS)
+                            tooltip: (Platform.isLinux)
                                 ? "Get WordDefiner on your phone"
                                 : "Share this app",
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                                 minWidth: 40, minHeight: 40),
                             onPressed: () async {
-                              if (Platform.isLinux || Platform.isMacOS) {
+                              if (Platform.isLinux) {
                                 menuResult =
                                     await Dialogs.showSmartphoneMenu(context);
                                 if (menuResult == CustomButton.positiveButton) {
@@ -1515,7 +1515,7 @@ class _HomePageState extends State<HomePage> {
                               }
                             },
                             icon: Icon(
-                                (Platform.isLinux || Platform.isMacOS)
+                                (Platform.isLinux)
                                     ? Icons.smartphone
                                     : (Platform.isAndroid)
                                         ? Icons.share
