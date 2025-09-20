@@ -2,8 +2,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
-import 'package:WordDefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
-import 'package:WordDefiner/services/datamuseAPI.dart' as DatamuseAPI;
+import 'package:worddefiner/services/dictionaryAPI.dart' as FreeDictionaryAPI;
+import 'package:worddefiner/services/datamuseAPI.dart' as DatamuseAPI;
 import 'dialogs.dart';
 
 /// Handles word search logic and API calls

@@ -1406,9 +1406,9 @@ class _HomePageState extends State<HomePage> {
                             constraints: const BoxConstraints(
                                 minWidth: 40, minHeight: 40),
                             onPressed: () async {
-                              if (Platform.isLinux) {
+                              if (Platform.isLinux || Platform.isMacOS) {
                                 menuResult =
-                                    await Dialogs.showMenuLinux(context);
+                                    await Dialogs.showMenuComputer(context);
                                 if (menuResult == CustomButton.positiveButton) {
                                   Future.delayed(
                                       const Duration(milliseconds: 300), () {
@@ -1505,6 +1505,11 @@ class _HomePageState extends State<HomePage> {
                                 }
                               } else {
                                 await SharePlus.instance.share(ShareParams(
+                                    sharePositionOrigin: Rect.fromLTWH(
+                                        0,
+                                        0,
+                                        MediaQuery.of(context).size.width,
+                                        MediaQuery.of(context).size.height / 2),
                                     text:
                                         "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
                                             (Platform.isAndroid

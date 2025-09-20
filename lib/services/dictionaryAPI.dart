@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:WordDefiner/Analytics/analytics_form.dart';
-import 'package:WordDefiner/Analytics/definition_form.dart';
-import 'package:WordDefiner/Analytics/device_form.dart';
-import 'package:WordDefiner/services/get_device_details.dart';
-import 'package:WordDefiner/services/submit_analytics.dart';
+import 'package:worddefiner/Analytics/analytics_form.dart';
+import 'package:worddefiner/Analytics/definition_form.dart';
+import 'package:worddefiner/Analytics/device_form.dart';
+import 'package:worddefiner/services/get_device_details.dart';
+import 'package:worddefiner/services/submit_analytics.dart';
 import 'package:http/http.dart' as http;
-import 'package:WordDefiner/model/definition_model.dart';
+import 'package:worddefiner/model/definition_model.dart';
 import 'dart:convert';
 
 var postURL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';

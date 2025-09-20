@@ -1,0 +1,8 @@
+# iOS
+flutter clean && flutter build ipa --obfuscate --split-debug-info=symbols/
+
+# Android
+flutter clean && flutter build appbundle --obfuscate --split-debug-info=symbols/
+
+# macOS
+flutter clean && flutter build macos --obfuscate --split-debug-info=symbols/

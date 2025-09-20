@@ -88,9 +88,10 @@ class Dialogs {
   }
 
   // this dialog pops up when the user presses the menu button on Linux
-  static Future<CustomButton> showMenuLinux(BuildContext context) async {
+  static Future<CustomButton> showMenuComputer(BuildContext context) async {
     return FlutterPlatformAlert.showCustomAlert(
-      windowTitle: 'Thanks for using WordDefiner on Linux',
+      windowTitle:
+          'Thanks for using WordDefiner on ${Platform.isMacOS ? 'macOS' : 'Linux'}',
       text:
           'Version $appVersion ($appBuildNumber)\n\u00A9 2022–${DateTime.now().year.toString()} RT (rickytakkar.com)',
       windowPosition: AlertWindowPosition.parentWindowCenter,

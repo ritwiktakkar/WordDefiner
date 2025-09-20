@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:package_info_plus/package_info_plus.dart';
 
-import 'package:WordDefiner/Analytics/device_form.dart';
+import 'package:worddefiner/Analytics/device_form.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +31,12 @@ Future<DeviceForm> deviceDetails() async {
       deviceName = iosInfo.modelName;
       deviceVersion = iosInfo.systemVersion;
       identifier = iosInfo.identifierForVendor.toString();
+    } else if (Platform.isMacOS) {
+      var macInfo = await deviceInfoPlugin.macOsInfo;
+
+      deviceName = macInfo.modelName;
+      deviceVersion = macInfo.osRelease;
+      identifier = macInfo.systemGUID.toString();
     } else if (Platform.isLinux) {
       var linuxInfo = await deviceInfoPlugin.linuxInfo;
 
