@@ -1505,6 +1505,11 @@ class _HomePageState extends State<HomePage> {
                                 }
                               } else {
                                 await SharePlus.instance.share(ShareParams(
+                                    sharePositionOrigin: Rect.fromLTWH(
+                                        0,
+                                        0,
+                                        MediaQuery.of(context).size.width,
+                                        MediaQuery.of(context).size.height / 2),
                                     text:
                                         "Try the lightweight, powerful, and free English dictionary, thesaurus, and rhyming words app, WordDefiner: " +
                                             (Platform.isAndroid
