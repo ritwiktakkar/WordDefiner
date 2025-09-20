@@ -1,6 +1,6 @@
 name: worddefiner
 base: core24
-version: '5.3.3'
+version: '5.4.0'
 summary: An English dictionary app made with Flutter.
 description: |
   WordDefiner is an English dictionary app made with Flutter that uses the DictionaryAPI to get definitions of words. It is a simple app that is easy to use and has a clean UI.
